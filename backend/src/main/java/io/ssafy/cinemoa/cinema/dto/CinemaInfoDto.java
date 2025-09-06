@@ -30,13 +30,13 @@ public class CinemaInfoDto {
     private Boolean isDolby;
     @JsonProperty("recliner")
     private Boolean isRecliner;
-    private List<ScreenInfoDto> screens;
+    private List<BriefScreenInfoDto> screens;
 
     public static CinemaInfoDto of(Cinema cinema, List<Screen> screens) {
-        List<ScreenInfoDto> screenInfoDtos = new ArrayList<>();
+        List<BriefScreenInfoDto> screenInfoDtos = new ArrayList<>();
 
         for (Screen item : screens) {
-            screenInfoDtos.add(ScreenInfoDto.of(item));
+            screenInfoDtos.add(BriefScreenInfoDto.of(item));
         }
 
         return CinemaInfoDto.builder()

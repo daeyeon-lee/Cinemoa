@@ -1,8 +1,8 @@
 package io.ssafy.cinemoa.cinema.dto;
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScreenInfoDto {
+public class BriefScreenInfoDto {
 
     private Long screenId;
     private String screenName;
@@ -29,11 +29,8 @@ public class ScreenInfoDto {
     private Integer seats;
     private Integer price;
 
-    @JsonProperty("available_time")
-    private List<Byte> availableTime;
-
-    public static ScreenInfoDto of(Screen screen, List<Byte> timeblocks) {
-        return ScreenInfoDto.builder()
+    public static BriefScreenInfoDto of(Screen screen) {
+        return BriefScreenInfoDto.builder()
                 .screenId(screen.getScreenId())
                 .screenName(screen.getScreenName())
                 .isImax(screen.getIsImax())
@@ -43,7 +40,6 @@ public class ScreenInfoDto {
                 .isRecliner(screen.getIsRecliner())
                 .seats(screen.getSeats())
                 .price(screen.getPrice())
-                .availableTime(timeblocks)
                 .build();
     }
 }
