@@ -37,4 +37,5 @@ public class CinemaController {
         CinemaInfoDto result = cinemaService.getCertainCinema(cinemaId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(result));
     }
+    
 }

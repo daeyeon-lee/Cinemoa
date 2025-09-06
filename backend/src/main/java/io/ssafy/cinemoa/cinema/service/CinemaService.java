@@ -20,7 +20,6 @@ public class CinemaService {
     private final ScreenRepository screenRepository;
 
     public List<BriefCinemaInfoDto> getAllCinema(String city, String district, List<String> feature, Long cinemaId) {
-
         List<Cinema> filtered;
 
         boolean imax = false;
@@ -51,9 +50,9 @@ public class CinemaService {
     public CinemaInfoDto getCertainCinema(Long cinemaId) {
         Cinema cinema = cinemaRepository.findById(cinemaId)
                 .orElseThrow(ResourceNotFoundException::ofCinema);
-
         List<Screen> screens = screenRepository.findByCinema_CinemaId(cinemaId);
-
         return CinemaInfoDto.of(cinema, screens);
     }
+
+
 }
