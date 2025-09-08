@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Navbar from "@/component/nav/navbar";
+import type { Metadata } from 'next';
+import './globals.css';
+import Navbar from '@/component/nav/navbar';
 
 export const metadata: Metadata = {
-  title: "씨네모아",
-  description: "씨네모아",
+  title: '씨네모아',
+  description: '씨네모아',
   icons: {
-    icon: "/cinemoa_logo_short.png",
+    icon: '/cinemoa_logo_short.png',
   },
-  viewport: "width=device-width, initial-scale=1",
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
@@ -18,8 +18,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="antialiased min-h-screen bg-slate-900 text-white w-full">
-        <div className="max-w-[1200px] mx-auto px-4 sm:mx-8 md:mx-16 lg:mx-24 xl:mx-32 2xl:mx-[360px]">
+      <body className="antialiased min-h-screen bg-slate-900 text-white w-full max-xl:px-4 sm:flex sm:justify-center">
+        <div className="sm:w-[1200px]">
           {/* 상단 네비게이션 바 */}
           <Navbar />
 
