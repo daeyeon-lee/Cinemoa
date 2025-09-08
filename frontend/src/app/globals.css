@@ -1,0 +1,37 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --spacing: 0.25rem;
+
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-green-100: #fdfcfb;
+  --color-green-200: #e9f1d7;
+  --color-green-300: #afcf7e;
+  --color-green-400: #9bc53d;
+
+  --color-pink-100: #ffc8c8;
+  --color-pink-200: #d14d72;
+
+  --color-brown-100: #bdafa1;
+  --color-brown-200: #5c4b3b;
+  --color-brown-300: #3b271c;
+
+  --color-gray-50: #fafaf9;
+  --color-gray-100: #f0f0f0;
+  --color-gray-200: #f0f0f0;
+  --color-gray-300: #e5e5e5;
+  --color-gray-400: #cccccc;
+  --color-gray-500: #b3b3b3;
+
+  --font-display: "PretendardVariable", sans-serif;
+  --font-body: "PretendardVariable", sans-serif;
+}
+
+body {
+  font-family: Pretendard, sans-serif;
+}

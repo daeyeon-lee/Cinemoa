@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "씨네모아",
+  description: "씨네모아",
+  icons: {
+    icon: "/cinemoa_logo_short.png",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ko">
+      <body className="antialiased">{children}</body>
+    </html>
+  );
+}
