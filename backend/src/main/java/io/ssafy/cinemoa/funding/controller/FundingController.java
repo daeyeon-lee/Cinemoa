@@ -1,13 +1,17 @@
 package io.ssafy.cinemoa.funding.controller;
 
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
+import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
 import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,6 +26,21 @@ public class FundingController {
     public ResponseEntity<ApiResponse<?>> createFunding(@RequestBody FundingCreateRequest request) {
         fundingService.create(request);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null));
+    }
+
+
+    @PostMapping("/{fundingId}/hold")
+    public ResponseEntity<ApiResponse<?>> holdSeatOfFunding(@PathVariable("/fundingId") Long fundingId,
+                                                            @RequestBody FundingHoldRequest request) {
+        fundingService.holdSeatOf(request.getUserId(), fundingId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 성공"));
+    }
+
+    @DeleteMapping("/{fundingId}/hold")
+    public ResponseEntity<ApiResponse<?>> holdSeatOfFunding(@PathVariable("/fundingId") Long fundingId,
+                                                            @RequestParam(required = true) Long userId) {
+        fundingService.unholdSeatOf(userId, fundingId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 해제 성공"));
     }
 
 }

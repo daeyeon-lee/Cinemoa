@@ -5,6 +5,7 @@ import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
+import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,18 @@ public class FundingService {
 
         fundingRepository.save(funding);
 
-        
+
+    }
+
+    public void holdSeatOf(Long userId, Long fundingId) {
+        //put seat info on redis, then reduce remaining seats.
+
+        if (!fundingRepository.existsById(fundingId)) {
+            throw ResourceNotFoundException.ofFunding();
+        }
+    }
+
+    public void unholdSeatOf(Long userId, Long fundingId) {
+        //remove seat info on redis, then increase remaining seats.
     }
 }
