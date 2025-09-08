@@ -2,9 +2,11 @@ package io.ssafy.cinemoa.cinema.controller;
 
 import io.ssafy.cinemoa.cinema.dto.BriefCinemaInfoDto;
 import io.ssafy.cinemoa.cinema.dto.CinemaInfoDto;
+import io.ssafy.cinemoa.cinema.enums.CinemaFeature;
 import io.ssafy.cinemoa.cinema.service.CinemaService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +26,7 @@ public class CinemaController {
     public ResponseEntity<ApiResponse<?>> getAllCinema(@RequestParam(required = false) String city,
                                                        @RequestParam(required = false) String district,
                                                        @RequestParam(required = false)
-                                                       List<String> feature,
+                                                       Set<CinemaFeature> feature,
                                                        @RequestParam(required = false) Long cinemaId) {
 
         List<BriefCinemaInfoDto> result = cinemaService.getAllCinema(city, district, feature, cinemaId);
@@ -37,5 +39,5 @@ public class CinemaController {
         CinemaInfoDto result = cinemaService.getCertainCinema(cinemaId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(result));
     }
-    
+
 }
