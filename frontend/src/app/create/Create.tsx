@@ -1,7 +1,7 @@
-export default function MainPage() {
+export default function Create() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
-      <h2 className="text-2xl font-bold">Home</h2>
+      <h2 className="text-2xl font-bold">Create</h2>
     </div>
   );
 }

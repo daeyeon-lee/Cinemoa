@@ -1,32 +1,26 @@
+/* pretendard font */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+/* 갈무리11 font */
+@import url("https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* 수정 될 수 있음 */
 :root {
   --spacing: 0.25rem;
 
-  --color-black: #000000;
-  --color-white: #ffffff;
-  --color-green-100: #fdfcfb;
-  --color-green-200: #e9f1d7;
-  --color-green-300: #afcf7e;
-  --color-green-400: #9bc53d;
+  --color-brand1-primary: #f53b3b;
+  --color-brand1-secondary: #d43333;
+  --color-brand1-tertiary: #a62828;
+  --color-brand1-strong: #ff5454;
 
-  --color-pink-100: #ffc8c8;
-  --color-pink-200: #d14d72;
-
-  --color-brown-100: #bdafa1;
-  --color-brown-200: #5c4b3b;
-  --color-brown-300: #3b271c;
-
-  --color-gray-50: #fafaf9;
-  --color-gray-100: #f0f0f0;
-  --color-gray-200: #f0f0f0;
-  --color-gray-300: #e5e5e5;
-  --color-gray-400: #cccccc;
-  --color-gray-500: #b3b3b3;
+  --color-primary: slate-50;
+  --color-secondary: slate-300;
+  --color-tertiary: slate-400;
+  --color-subtle: slate-500;
+  --color-inverse: slate-900;
 
   --font-display: "PretendardVariable", sans-serif;
   --font-body: "PretendardVariable", sans-serif;
@@ -34,4 +28,9 @@
 
 body {
   font-family: Pretendard, sans-serif;
+}
+
+/* 갈무리11 폰트 클래스 */
+.font-galmuri {
+  font-family: "Galmuri11", "Galmuri9", "Galmuri7", monospace;
 }
