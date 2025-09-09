@@ -1,10 +1,14 @@
+import Link from 'next/link';
+
 export default function Signup() {
   return (
     <div className="flex flex-col items-center justify-center pt-60 text-center">
       {/* 메인 콘텐츠 */}
       <div className="sm:w-[320px] flex flex-col items-center justify-center space-y-8 w-full">
         <img src="/login_icon.png" width={360} height={75} alt="씨네모아" />
-        <img src="/google_login_logo.png" alt="Google" />
+        <Link href="/auth/info">
+          <img src="/google_login_logo.png" alt="Google" />
+        </Link>
       </div>
 
       {/* 배경 장식 요소 */}
