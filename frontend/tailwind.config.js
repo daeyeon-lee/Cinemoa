@@ -32,10 +32,10 @@ module.exports = {
         'caption2-b': ['10px', { lineHeight: '1.4', fontWeight: '600' }],
       },
       colors: {
-        'Brand1-Primary': '#f53b3b',
-        'Brand1-Secondary': '#d43333',
-        'Brand1-Tertiary': '#a62828',
-        'Brand1-Strong': '#ff5454',
+        'Brand1-Primary': '#E83045',
+        'Brand1-Secondary': '#B92D38',
+        'Brand1-Tertiary': '#942429',
+        'Brand1-Strong': '#FF5768',
 
         'Brand2-Primary': '#2CD8CE',
         'Brand2-Secondary': '#20ACA4',
@@ -59,12 +59,46 @@ module.exports = {
         'stroke-1': '#94A3B8',
         'stroke-2': '#64748b',
         'stroke-3': '#475569',
-        'stroke-4': '#0F172A',
-        'stroke-subtle': '#94A3B8',
+        'stroke-4': '#334155',
+        'stroke-Subtle': '#94A3B8',
         'stroke-Strong': '#F8FAFC',
         'stroke-Inverse': '#0F172A',
+
+        // shadcn/ui 색상들
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        chart: {
+          1: 'hsl(var(--chart-1))',
+          2: 'hsl(var(--chart-2))',
+          3: 'hsl(var(--chart-3))',
+          4: 'hsl(var(--chart-4))',
+          5: 'hsl(var(--chart-5))',
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate')],
 };

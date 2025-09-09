@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import SearchIcon from '@/component/icon/searchIcon';
 import UserIcon from '@/component/icon/userIcon';
 import Link from 'next/link';
-import Button from '@/component/button/button';
+import { Button } from '@/components/ui/button';
 import SearchInput from '@/component/search/SearchInput';
 
 export default function Navbar() {
@@ -91,10 +91,14 @@ export default function Navbar() {
           <div className="flex w-full items-center space-x-2">
             <SearchInput placeholder="검색어를 입력해주세요" />
             <Link href="/auth">
-              <Button color="secondary" text="로그인" size="sm" />
+              <Button className="w-full px-3 rounded-[100px]" variant="secondary" size="sm">
+                로그인
+              </Button>
             </Link>
             <Link href="/auth">
-              <Button color="primary" text="회원가입" size="sm" />
+              <Button className="w-full px-3 rounded-[100px]" variant="primary" size="sm">
+                회원가입
+              </Button>
             </Link>
           </div>
         </div>
