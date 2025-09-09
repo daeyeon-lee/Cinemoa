@@ -1,10 +1,9 @@
 export default function Signup() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-full pt-60 text-center">
+    <div className="flex flex-col items-center justify-center pt-60 text-center">
       {/* 메인 콘텐츠 */}
       <div className="sm:w-[320px] flex flex-col items-center justify-center space-y-8 w-full">
-        <h6 className="font-galmuri text-h6">모아, 보자, 씨네모아.</h6>
-        <img src="/cinemoa_logo_long.png" alt="씨네모아" />
+        <img src="/login_icon.png" width={360} height={75} alt="씨네모아" />
         <img src="/google_login_logo.png" alt="Google" />
       </div>
 

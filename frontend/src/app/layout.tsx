@@ -8,7 +8,11 @@ export const metadata: Metadata = {
   icons: {
     icon: '/cinemoa_logo_short.png',
   },
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport = {
+  width: 'device-width', // 웹페이지의 너비를 기기의 화면에 맞춤
+  initialScale: 1, // 페이지 로드시 100%로 표시
 };
 
 export default function RootLayout({

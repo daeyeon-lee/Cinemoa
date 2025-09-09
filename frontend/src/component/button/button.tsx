@@ -14,7 +14,7 @@ export default function Button({ color, text, className, size }: ButtonProps) {
 
   const colorVariants = {
     primary: 'bg-primary text-inverse font-semibold',
-    secondary: 'bg-bg3 text-primary',
+    secondary: 'bg-BG-3 text-primary',
   };
   return (
     <button

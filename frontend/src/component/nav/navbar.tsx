@@ -1,3 +1,6 @@
+'use client';
+import { usePathname } from 'next/navigation';
+
 import SearchIcon from '@/component/icon/searchIcon';
 import UserIcon from '@/component/icon/userIcon';
 import Link from 'next/link';
@@ -5,6 +8,23 @@ import Button from '@/component/button/button';
 import SearchInput from '@/component/search/SearchInput';
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
+
+  const getLinkClasses = (path: string) => {
+    const baseClasses = 'text-base font-bold cursor-pointer relative pb-2'; // 공통
+    const activeClasses = 'text-primary'; // 활성화 - 흰색
+    const inactiveClasses = 'text-tertiary'; // 비활성화 - 회색
+
+    return `${baseClasses} ${isActive(path) ? activeClasses : inactiveClasses}`;
+  };
+
   return (
     <header className="bg-slate-900 border-b border-slate-900 py-3 pt-[108px] lg:pt-4">
       {/* 모바일 레이아웃 - 두 줄 */}
@@ -39,21 +59,26 @@ export default function Navbar() {
       <div className="hidden lg:flex items-center justify-between">
         {/* 로고 */}
         <div className="flex items-center justify-center gap-16">
-          <img src="/cinemoa_logo_long.png" alt="씨네모아" className="h-6" />
+          <Link href="/" className="cursor-pointer">
+            <img src="/cinemoa_logo_long.png" alt="씨네모아" className="w-[119px] h-6" />
+          </Link>
 
           {/* 네비게이션 메뉴 */}
           <nav className="flex items-center justify-center gap-x-8">
-            <Link href="/" className="text-tertiary text-base font-bold cursor-pointer">
-              홈
-            </Link>
-            <Link href="/category" className="text-tertiary text-base font-bold cursor-pointer">
+            {/* <Link href="/" className={getLinkClasses('/')}>
+              홈{isActive('/') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
+            </Link> */}
+            <Link href="/category" className={getLinkClasses('/category')}>
               둘러보기
+              {isActive('/category') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
-            <Link href="/vote" className="text-tertiary text-base font-bold cursor-pointer">
+            <Link href="/vote" className={getLinkClasses('/vote')}>
               이거어때
+              {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
-            <Link href="/create" className="text-tertiary text-base font-bold cursor-pointer">
+            <Link href="/create" className={getLinkClasses('/create')}>
               만들기
+              {isActive('/create') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
           </nav>
         </div>
@@ -61,6 +86,7 @@ export default function Navbar() {
         {/* 검색바 + 로그인/회원가입 */}
         <div className="flex items-center space-x-4">
           <div className="flex w-full items-center space-x-2">
+            <SearchInput placeholder="검색어를 입력해주세요" />
             <Link href="/auth">
               <Button color="secondary" text="로그인" size="sm" />
             </Link>

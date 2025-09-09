@@ -1,7 +1,7 @@
 /* pretendard font */
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 /* 갈무리11 font */
-@import url("https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css");
+@import url('https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css');
 /* led-counter7 font */
 @import url('https://fonts.cdnfonts.com/css/led-counter-7');
 
@@ -9,39 +9,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 수정 될 수 있음 */
-/* :root {
-  --spacing: 0.25rem;
-
-  --color-brand1-primary: #f53b3b;
-  --color-brand1-secondary: #d43333;
-  --color-brand1-tertiary: #a62828;
-  --color-brand1-strong: #ff5454;
-
-  --color-primary: #f8fafc;
-  --color-secondary: #cbd5e1;
-  --color-tertiary: #94a3b8;
-  --color-inverse: #0f172a;
-
-  --color-bg0: #0f172a;
-  --color-bg1: #1e293b;
-  --color-bg2: #334155;
-  --color-bg3: #475569;
-  --color-bg4: #64748b;
-
-  --font-display: "Pretendard", sans-serif;
-  --font-body: "Pretendard", sans-serif;
-} */
-
-/* body {
-  font-family: Pretendard, sans-serif;
-} */
-
-/* 갈무리11 폰트 클래스 */
+/* 갈무리11 폰트 */
 .font-galmuri {
-  font-family: "Galmuri11", "Galmuri9", "Galmuri7", monospace;
+  font-family: 'Galmuri11', 'Galmuri9', 'Galmuri7', monospace;
 }
 
+/* led-counter7 폰트 */
 .font-led-counter-7 {
-  font-family: "LED Counter 7", sans-serif;
+  font-family: 'LED Counter 7', sans-serif;
 }
