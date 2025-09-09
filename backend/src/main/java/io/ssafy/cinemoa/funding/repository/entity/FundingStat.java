@@ -42,6 +42,10 @@ public class FundingStat {
     @ColumnDefault("0")
     private Integer favoriteCount;
 
+    @Column(name = "recommend_score", nullable = false)
+    @ColumnDefault("0")
+    private Integer recommendScore;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) {

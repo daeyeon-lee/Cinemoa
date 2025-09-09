@@ -1,7 +1,9 @@
 package io.ssafy.cinemoa.funding.controller;
 
+import io.ssafy.cinemoa.favorite.service.FundingFavoriteService;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
 import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
+import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
 import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,24 +23,38 @@ public class FundingController {
 
 
     private final FundingService fundingService;
+    private final FundingFavoriteService fundingFavoriteService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createFunding(@RequestBody FundingCreateRequest request) {
-        fundingService.create(request);
+        fundingService.createFunding(request);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null));
     }
 
+    @PostMapping("/{fundingId}/like")
+    public ResponseEntity<ApiResponse<?>> likeFunding(@PathVariable("fundingId") Long fundingId,
+                                                      @RequestBody FundingLikeRequest request) {
+        fundingFavoriteService.like(request.getUserId(), fundingId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(null));
+    }
+
+    @DeleteMapping("/{fundingId}/like")
+    public ResponseEntity<ApiResponse<?>> likeFunding(@PathVariable("fundingId") Long fundingId,
+                                                      @RequestParam Long userId) {
+        fundingFavoriteService.unlike(userId, fundingId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(null));
+    }
 
     @PostMapping("/{fundingId}/hold")
-    public ResponseEntity<ApiResponse<?>> holdSeatOfFunding(@PathVariable("/fundingId") Long fundingId,
+    public ResponseEntity<ApiResponse<?>> holdSeatOfFunding(@PathVariable("fundingId") Long fundingId,
                                                             @RequestBody FundingHoldRequest request) {
         fundingService.holdSeatOf(request.getUserId(), fundingId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 성공"));
     }
 
     @DeleteMapping("/{fundingId}/hold")
-    public ResponseEntity<ApiResponse<?>> holdSeatOfFunding(@PathVariable("/fundingId") Long fundingId,
-                                                            @RequestParam(required = true) Long userId) {
+    public ResponseEntity<ApiResponse<?>> unholdSeatOfFunding(@PathVariable("fundingId") Long fundingId,
+                                                              @RequestParam Long userId) {
         fundingService.unholdSeatOf(userId, fundingId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 해제 성공"));
     }

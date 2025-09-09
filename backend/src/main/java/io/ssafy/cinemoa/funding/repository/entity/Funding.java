@@ -1,5 +1,7 @@
 package io.ssafy.cinemoa.funding.repository.entity;
 
+import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
+import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
@@ -38,6 +40,14 @@ public class Funding extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
     private User leader;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cinema_id", nullable = false)
+    private Cinema cinema;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "screen_id")
+    private Screen screen;
 
     @Column(columnDefinition = "varchar(100)", name = "video_name", nullable = false)
     private String videoName;
