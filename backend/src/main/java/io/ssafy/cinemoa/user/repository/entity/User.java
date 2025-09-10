@@ -78,4 +78,9 @@ public class User extends BaseTimeEntity {
                 .getPersistentClass()
                 .hashCode() : getClass().hashCode();
     }
+
+    // 추가 정보 업데이트 : sara
+    public void updateAdditionalInfo(String refundAccountNumber) {
+        this.refundAccountNumber = refundAccountNumber;
+    }
 }
