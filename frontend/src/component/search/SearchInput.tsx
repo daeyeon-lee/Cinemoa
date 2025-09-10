@@ -11,7 +11,7 @@ export default function SearchInput({ placeholder, className }: SearchInputProps
       <input
         type="text"
         placeholder={placeholder}
-        className="flex-1 h-8 bg-BG-1 text-white placeholder-tertiary placeholder-[12px]
+        className="flex-1 h-8 bg-BG-1 text-white  placeholder:text-p2-b placeholder:text-tertiary
             rounded-l-[8px] rounded-r-0
             focus:outline-none
             px-3 py-2"
