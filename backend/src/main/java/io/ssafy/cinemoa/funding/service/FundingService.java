@@ -1,7 +1,18 @@
 package io.ssafy.cinemoa.funding.service;
 
+import io.ssafy.cinemoa.cinema.repository.CinemaRepository;
+import io.ssafy.cinemoa.cinema.repository.ScreenRepository;
+import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
+import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.CinemaInfo;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.FundingInfo;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.FundingStatInfo;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.ProposerInfo;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.ScreenInfo;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.VideoInfo;
 import io.ssafy.cinemoa.funding.dto.VoteCreateRequest;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
@@ -15,6 +26,8 @@ import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
+import io.ssafy.cinemoa.user.repository.UserRepository;
+import io.ssafy.cinemoa.user.repository.entity.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,14 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class FundingService {
-    private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
 
-    private final FundingRepository fundingRepository;
-    private final FundingStatRepository statRepository;
-
-    private final UserFavoriteRepository userFavoriteRepository;
-
-    private final RedisService redisService;
 
     private static final String SEAT_RESERVATION_SCRIPT = """
             local fundingId = KEYS[1]
@@ -70,7 +76,6 @@ public class FundingService {
             
             return {1, "SUCCESS", remainSeats - 1}
             """;
-
     private static final String RELEASE_SEAT_SCRIPT = """
             local fundingId = KEYS[1]
             local userId = KEYS[2]
@@ -89,16 +94,28 @@ public class FundingService {
             
             return {1}
             """;
+    private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
+    private final FundingRepository fundingRepository;
+    private final FundingStatRepository statRepository;
 
+    private final ScreenRepository screenRepository;
+    private final CinemaRepository cinemaRepository;
+
+    private final UserRepository userRepository;
+    private final UserFavoriteRepository userFavoriteRepository;
+    private final RedisService redisService;
 
     public void createFunding(FundingCreateRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(ResourceNotFoundException::ofUser);
+
         Funding funding = Funding.builder()
                 .fundingType(FundingType.INSTANT)
                 .bannerUrl(request.getPosterUrl())
                 .content(request.getContent())
                 .title(request.getTitle())
                 .videoName(request.getVideoName())
-//                .leader()
+                .leader(user)
                 .maxPeople(request.getMaxPeople())
                 .screenDay(request.getScreenDay())
                 .screenStartsOn(request.getScreenStartsOn())
@@ -160,13 +177,17 @@ public class FundingService {
 
     @Transactional
     public void createVote(VoteCreateRequest request) {
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(ResourceNotFoundException::ofUser);
+
         Funding vote = Funding.builder()
                 .fundingType(FundingType.VOTE)
                 .bannerUrl(request.getPosterUrl())
                 .content(request.getContent())
                 .title(request.getTitle())
                 .videoName(request.getVideoName())
-//                .leader()
+                .leader(user)
                 .maxPeople(request.getMaxPeople())
                 .state(FundingState.EVALUATING)
                 .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
@@ -178,5 +199,83 @@ public class FundingService {
         fundingRepository.save(vote);
 
         fundingEstimatedDayRepository.save(estimatedDay);
+    }
+
+    @Transactional
+    public FundingDetailResponse getFundingDetail(Long fundingId, Long userId) {
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+
+        FundingStat stat = statRepository.findByFunding_FundingId(fundingId)
+                .orElseThrow(InternalServerException::ofUnknown);
+
+        Boolean isLiked =
+                userId != null && userFavoriteRepository.existsByUser_IdAndFunding_FundingId(userId, fundingId);
+
+        Screen screen = funding.getScreen();
+        Cinema cinema = funding.getCinema();
+        User proposer = funding.getLeader();
+
+        FundingInfo fundingInfo = FundingInfo.builder()
+                .fundingId(funding.getFundingId())
+                .progressRate(stat.getParticipantCount() / funding.getMaxPeople() * 100)
+                .title(funding.getTitle())
+                .bannerUrl(funding.getBannerUrl())
+                .content(funding.getContent())
+                .state(funding.getState())
+                .fundingEndsOn(funding.getEndsOn())
+                .price(screen.getPrice() / funding.getMaxPeople())
+                .build();
+
+        ProposerInfo proposerInfo = ProposerInfo.builder()
+                .proposerId(proposer.getId())
+                .nickname(proposer.getNickname())
+                .profileImgUrl(proposer.getProfileImgUrl())
+                .build();
+
+        VideoInfo videoInfo = VideoInfo.builder()
+                .videoName(funding.getVideoName())
+                .screenStartsOn(funding.getScreenStartsOn())
+                .screenEndsOn(funding.getScreenEndsOn())
+                .build();
+
+        FundingStatInfo statInfo = FundingStatInfo.builder()
+                .maxPeople(funding.getMaxPeople())
+                .isLiked(isLiked)
+                .participantCount(stat.getParticipantCount())
+                .likeCount(stat.getFavoriteCount())
+                .viewCount(stat.getViewCount())
+                .build();
+
+        ScreenInfo screenInfo = ScreenInfo.builder()
+                .screenId(screen.getScreenId())
+                .screenName(screen.getScreenName())
+                .is4dx(screen.getIs4dx())
+                .isRecliner(screen.getIsRecliner())
+                .isScreenx(screen.getIsScreenX())
+                .isDolby(screen.getIsDolby())
+                .isImax(screen.getIsImax())
+                .build();
+
+        CinemaInfo cinemaInfo = CinemaInfo.builder()
+                .city(cinema.getCity())
+                .cinemaId(cinema.getCinemaId())
+                .cinemaName(cinema.getCinemaName())
+                .district(cinema.getDistrict())
+                .build();
+
+        FundingDetailResponse response = FundingDetailResponse.builder()
+                .type(funding.getFundingType())
+                .funding(fundingInfo)
+                .screening(videoInfo)
+                .stat(statInfo)
+                .proposer(proposerInfo)
+                .screen(screenInfo)
+                .cinema(cinemaInfo)
+                .build();
+
+        stat.setViewCount(stat.getViewCount() + 1);
+
+        return response;
     }
 }

@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserFavoriteRepository extends JpaRepository<UserFavorite, UserFavoriteId> {
     long deleteById_UserIdAndId_FundingId(Long userId, Long fundingId);
+
+    boolean existsByUser_IdAndFunding_FundingId(Long id, Long fundingId);
 }

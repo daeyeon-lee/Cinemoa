@@ -2,6 +2,7 @@ package io.ssafy.cinemoa.funding.controller;
 
 import io.ssafy.cinemoa.favorite.service.FundingFavoriteService;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
 import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
 import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
 import io.ssafy.cinemoa.funding.service.FundingService;
@@ -9,6 +10,7 @@ import io.ssafy.cinemoa.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +31,14 @@ public class FundingController {
     public ResponseEntity<ApiResponse<?>> createFunding(@RequestBody FundingCreateRequest request) {
         fundingService.createFunding(request);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null));
+    }
+
+    @GetMapping("/{fundingId}")
+    public ResponseEntity<ApiResponse<?>> getFundingDetails(@PathVariable("fundingId") Long fundingId,
+                                                            @RequestParam(value = "userId", required = false) Long userId) {
+        FundingDetailResponse response = fundingService.getFundingDetail(fundingId, userId);
+
+        return ResponseEntity.ok(ApiResponse.ofSuccess(response));
     }
 
     @PostMapping("/{fundingId}/like")
