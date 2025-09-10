@@ -2,6 +2,7 @@ package io.ssafy.cinemoa.payment.repository.entity;
 
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
+import io.ssafy.cinemoa.payment.enums.TransactionState;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,6 +46,5 @@ public class Transaction extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private TransactionState state;
-
 
 }
