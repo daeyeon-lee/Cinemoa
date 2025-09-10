@@ -11,7 +11,7 @@ const buttonVariants = cva(
       variant: {
         // 색상만 정의
         primary: 'bg-BG-Inverse text-inverse',
-        secondary: 'bg-BG-3 text-secondary',
+        secondary: 'bg-BG-3 text-secondary hover:bg-BG-2',
         tertiary: 'bg-BG-2 text-secondary',
         brand1: 'bg-Brand1-Primary text-primary hover:bg-Brand1-Secondary',
         brand2: 'bg-Brand2-Primary text-primary hover:bg-Brand2-Secondary',
