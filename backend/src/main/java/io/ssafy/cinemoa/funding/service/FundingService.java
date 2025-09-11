@@ -37,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -105,12 +106,19 @@ public class FundingService {
     private final UserFavoriteRepository userFavoriteRepository;
     private final RedisService redisService;
 
+    @Transactional
     public void createFunding(FundingCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
+        Cinema cinema = cinemaRepository.findById(request.getCinemaId())
+                .orElseThrow(ResourceNotFoundException::ofCinema);
+
+        Screen screen = screenRepository.findById(request.getScreenId())
+                .orElseThrow(ResourceNotFoundException::ofScreen);
+
         Funding funding = Funding.builder()
-                .fundingType(FundingType.INSTANT)
+                .fundingType(FundingType.FUNDING)
                 .bannerUrl(request.getPosterUrl())
                 .content(request.getContent())
                 .title(request.getTitle())
@@ -122,6 +130,8 @@ public class FundingService {
                 .screenEndsOn(request.getScreenEndsOn())
                 .state(FundingState.EVALUATING)
                 .endsOn(request.getScreenDay().minusDays(7))
+                .cinema(cinema)
+                .screen(screen)
                 .build();
 
         fundingRepository.save(funding);
@@ -136,12 +146,6 @@ public class FundingService {
 
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(ResourceNotFoundException::ofFunding);
-
-        FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
-                .orElseThrow(() -> {
-                    log.error("존재하는 펀딩이나 통계가 존재하지 않습니다. 펀딩 id : {}", fundingId);
-                    return InternalServerException.ofUnknown();
-                });
 
         List<Object> result = redisService.execute(
                 RedisScript.of(SEAT_RESERVATION_SCRIPT, List.class),
@@ -274,8 +278,15 @@ public class FundingService {
                 .cinema(cinemaInfo)
                 .build();
 
-        stat.setViewCount(stat.getViewCount() + 1);
+        updateViewCount(fundingId);
 
         return response;
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void updateViewCount(Long fundingId) {
+        statRepository.incrementViewCount(fundingId);
+    }
+
+
 }
