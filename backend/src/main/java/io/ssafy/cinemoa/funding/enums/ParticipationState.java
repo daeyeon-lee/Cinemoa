@@ -1,4 +1,4 @@
-package io.ssafy.cinemoa.funding.repository.entity;
+package io.ssafy.cinemoa.funding.enums;
 
 public enum ParticipationState {
     RESERVED, NEED_REFUND
