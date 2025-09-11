@@ -1,6 +1,5 @@
 package io.ssafy.cinemoa.global.redis.config;
 
-import io.ssafy.cinemoa.global.redis.listener.SeatExpirationListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
@@ -9,8 +8,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.PatternTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -19,7 +16,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     private final RedisProperties redisProperties;
-    private final SeatExpirationListener seatExpirationListener;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -44,13 +40,5 @@ public class RedisConfig {
         redisTemplate.setHashValueSerializer(serializer);
         redisTemplate.setValueSerializer(serializer);
         return redisTemplate;
-    }
-
-    @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory connectionFactory) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(seatExpirationListener, new PatternTopic("__keyevent@0__:expired"));
-        return container;
     }
 }
