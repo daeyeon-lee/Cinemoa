@@ -14,7 +14,7 @@ public class FinanceApiConfig {
     @Value("${finance.api.key}")
     private String apiKey;
 
-    @Value("${finance.api.user-key}")
+    @Value("${finance.api.user-key}") // 향후 삭제 가능
     private String userKey;
 
     @Value("${finance.api.institution-code}")
