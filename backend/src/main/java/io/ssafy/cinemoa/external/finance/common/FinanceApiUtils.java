@@ -38,7 +38,7 @@ public class FinanceApiUtils {
    * 고유 거래번호 생성
    * 
    * 금융망 API에서 요구하는 기관거래고유번호를 생성합니다.
-   * 형식: yyyyMMdd + HHmmss + 일련번호6자리 (총 20자리)
+   * 형식: yyyyMMdd + HHmmssSSS + 3자리 난수 (총 20자리)
    * 예시: 20250910140605123456
    * 
    * @return 20자리 고유 거래번호
@@ -46,11 +46,11 @@ public class FinanceApiUtils {
   public static String generateTransactionUniqueNo() {
     LocalDateTime now = LocalDateTime.now();
     String date = now.format(DateTimeFormatter.ofPattern("yyyyMMdd")); // 날짜 8자리
-    String time = now.format(DateTimeFormatter.ofPattern("HHmmss")); // 시간 6자리
+    String time = now.format(DateTimeFormatter.ofPattern("HHmmssSSS")); // 시간 9자리
 
-    // 일련번호 6자리 생성 (000000 ~ 999999)
-    int serialNumber = (int) (Math.random() * 1000000);
-    String serialNumberStr = String.format("%06d", serialNumber);
+    // 일련번호 6자리 생성 (000 ~ 999)
+    int serialNumber = (int) (Math.random() * 1000);
+    String serialNumberStr = String.format("%03d", serialNumber);
 
     return date + time + serialNumberStr; // 20자리 고유번호
   }
