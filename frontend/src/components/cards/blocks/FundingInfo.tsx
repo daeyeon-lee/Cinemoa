@@ -2,16 +2,16 @@ import React from 'react';
 import { Progress } from '../primitives/Progress';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type FundingBlockProps = {
+type FundingInfoProps = {
   price: number;
   progressRate: number;
   participantCount: number;
   maxPeople: number;
   fundingEndsOn: string;
-  loadingState?: 'ready' | 'loading';
+  loadingState?: 'ready' | 'loading' | 'error';
 };
 
-const FundingBlock: React.FC<FundingBlockProps> = ({
+const FundingInfo: React.FC<FundingInfoProps> = ({
   price,
   progressRate,
   participantCount,
@@ -68,5 +68,5 @@ const FundingBlock: React.FC<FundingBlockProps> = ({
   );
 };
 
-export { FundingBlock };
-export type { FundingBlockProps };
+export { FundingInfo };
+export type { FundingInfoProps };

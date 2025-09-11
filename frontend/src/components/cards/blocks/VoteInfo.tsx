@@ -2,16 +2,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type VoteBlockProps = {
+type VoteInfoProps = {
   likeCount: number;
   isLiked?: boolean;
   ctaLabel?: string;
   disabled?: boolean;
-  loadingState?: 'ready' | 'loading';
+  loadingState?: 'ready' | 'loading' | 'error';
   onClick?: () => void;
 };
 
-const VoteBlock: React.FC<VoteBlockProps> = ({
+const VoteInfo: React.FC<VoteInfoProps> = ({
   likeCount,
   isLiked = false,
   ctaLabel = '보고싶어요',
@@ -49,5 +49,5 @@ const VoteBlock: React.FC<VoteBlockProps> = ({
   );
 };
 
-export { VoteBlock };
-export type { VoteBlockProps };
+export { VoteInfo };
+export type { VoteInfoProps };
