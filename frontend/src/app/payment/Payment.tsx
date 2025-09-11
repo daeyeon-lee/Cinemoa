@@ -103,9 +103,21 @@ export default function Payment() {
     }
   };
 
-  // 이전으로 이동
+  // 이전으로 이동 (입력 데이터 리셋)
   const handleBackToStep1 = () => {
     setCurrentStep('step1');
+    // step1으로 돌아갈 때 입력 데이터 리셋
+    setPaymentData({
+      cardNumber1: '',
+      cardNumber2: '',
+      cardNumber3: '',
+      cardNumber4: '',
+      expiryDate: '',
+      cvc: '',
+      password: '',
+      birthDate: '',
+      termsAgreed: false,
+    });
   };
 
   const handleBackToStep2 = () => {
@@ -114,7 +126,26 @@ export default function Payment() {
 
   // 최종 제출
   const handleConfirmComplete = () => {
-    setCurrentStep('step1');
+    resetAllStates();
+  };
+
+  // 모든 상태를 초기화하는 함수
+  const resetAllStates = () => {
+    setCurrentStep('step1'); // 첫 번째 단계로 리셋
+    setIsLoading(false); // 로딩 상태 리셋
+    setPaymentCompleted(false); // 결제 완료 상태 리셋
+    setPaymentData({
+      // 결제 데이터 리셋
+      cardNumber1: '',
+      cardNumber2: '',
+      cardNumber3: '',
+      cardNumber4: '',
+      expiryDate: '',
+      cvc: '',
+      password: '',
+      birthDate: '',
+      termsAgreed: false,
+    });
   };
 
   // step3에 진입하면 자동으로 결제 처리 시작
@@ -129,9 +160,8 @@ export default function Payment() {
     if (currentStep === 'step1') {
       return (
         <>
-          <DialogHeader className="self-stretch">
+          <DialogHeader className="self-stretch" onClose={resetAllStates}>
             <DialogTitle>결제 내역</DialogTitle>
-            <DialogDescription className="sr-only">펀딩 결제 내역을 확인하고 결제를 진행합니다</DialogDescription>
           </DialogHeader>
           <div className="w-full flex flex-col gap-6">
             <div className="flex flex-col">
@@ -161,11 +191,8 @@ export default function Payment() {
     if (currentStep === 'step2') {
       return (
         <>
-          <DialogHeader className="self-stretch">
+          <DialogHeader className="self-stretch" onClose={resetAllStates}>
             <DialogTitle>결제 정보 입력</DialogTitle>
-            <DialogDescription className="sr-only">
-              카드 정보와 개인 정보를 입력하여 결제를 완료합니다
-            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
             <label className="h5-b text-primary">
@@ -268,7 +295,9 @@ export default function Payment() {
               checked={paymentData.termsAgreed}
               onChange={(e) => setPaymentData({ ...paymentData, termsAgreed: e.target.checked })}
             />
-            <DialogDescription className="mb-0">[필수] 결제 서비스 이용 약관, 개인정보 처리 동의</DialogDescription>
+            <label htmlFor="terms-agreement" className="p1 text-primary">
+              [필수] 결제 서비스 이용 약관, 개인정보 처리 동의
+            </label>
           </div>
 
           <div className="self-stretch flex gap-3">
@@ -300,10 +329,9 @@ export default function Payment() {
         // 로딩 중 상태
         return (
           <>
-            <DialogDescription className="sr-only">결제 처리중입니다.</DialogDescription>
             <div className="w-full flex flex-col items-center gap-4 py-8">
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-subtle border-t-transparent"></div>
-              <div className="text-center">
+              <div className="text-center mt-4">
                 <div className="h5-b text-primary">결제 처리중입니다</div>
                 <div className="p2 text-tertiary">잠시만 기다려주세요</div>
               </div>
@@ -314,7 +342,6 @@ export default function Payment() {
         // 결제 완료 상태
         return (
           <>
-            <DialogDescription className="sr-only">결제가 성공적으로 완료되었습니다</DialogDescription>
             <div className="w-full flex flex-col items-center">
               <SuccessCheckIcon width={72} height={72} />
 
@@ -326,14 +353,14 @@ export default function Payment() {
               </div>
             </div>
 
-            <div className="w-full flex gap-4">
+            {/* <div className="w-full flex gap-4">
               <Button variant="secondary" size="lg" className="w-full" onClick={handleBackToStep2}>
                 이전
-              </Button>
-              <Button variant="brand1" size="lg" className="w-full" onClick={handleConfirmComplete}>
-                확인
-              </Button>
-            </div>
+              </Button> */}
+
+            <Button variant="brand1" size="lg" className="w-full" onClick={handleConfirmComplete}>
+              확인
+            </Button>
           </>
         );
       }
@@ -341,7 +368,7 @@ export default function Payment() {
   };
 
   return (
-    <DialogContent className="p-10 bg-slate-800 border-slate-700 max-w-md duration-0 data-[state=open]:animate-none data-[state=closed]:animate-none">
+    <DialogContent onPointerDownOutside={resetAllStates} onEscapeKeyDown={resetAllStates}>
       {renderContent()}
     </DialogContent>
   );
