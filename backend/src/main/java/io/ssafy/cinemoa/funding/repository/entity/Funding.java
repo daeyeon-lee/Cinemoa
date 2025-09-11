@@ -86,4 +86,7 @@ public class Funding extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "funding_type", nullable = false)
     private FundingType fundingType;
+
+    @Column(name = "funding_account", nullable = false)
+    private String fundingAccount;
 }
