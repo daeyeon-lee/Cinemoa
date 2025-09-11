@@ -193,7 +193,7 @@ public class FundingService {
                 .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
                 .build();
 
-        FundingEstimatedDay estimatedDay = new FundingEstimatedDay(vote, request.getRangeStart(),
+        FundingEstimatedDay estimatedDay = new FundingEstimatedDay(null, vote, request.getRangeStart(),
                 request.getRangeEnd());
 
         fundingRepository.save(vote);

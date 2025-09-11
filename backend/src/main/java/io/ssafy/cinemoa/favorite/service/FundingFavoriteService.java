@@ -47,7 +47,7 @@ public class FundingFavoriteService {
         userFavoriteRepository.save(userFavorite);
 
         FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
-                .orElse(new FundingStat(funding, 0, 0, 0));
+                .orElse(new FundingStat(null, funding, 0, 0, 0, 0));
 
         fundingStat.setFavoriteCount(fundingStat.getFavoriteCount() + 1);
 
