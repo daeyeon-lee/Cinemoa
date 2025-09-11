@@ -37,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -274,8 +275,15 @@ public class FundingService {
                 .cinema(cinemaInfo)
                 .build();
 
-        stat.setViewCount(stat.getViewCount() + 1);
+        updateViewCount(fundingId);
 
         return response;
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void updateViewCount(Long fundingId) {
+        statRepository.incrementViewCount(fundingId);
+    }
+
+    
 }
