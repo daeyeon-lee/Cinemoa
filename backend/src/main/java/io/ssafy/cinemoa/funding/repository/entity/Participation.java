@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.funding.repository.entity;
 
+import io.ssafy.cinemoa.funding.enums.ParticipationState;
 import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import jakarta.persistence.Column;

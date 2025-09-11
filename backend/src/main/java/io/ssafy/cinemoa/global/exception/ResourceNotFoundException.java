@@ -21,7 +21,7 @@ public class ResourceNotFoundException extends BaseException {
     }
 
     public static ResourceNotFoundException ofFunding() {
-        return new ResourceNotFoundException("존재하지 않는 펀딩입니다.", ResourceCode.SCREEN);
+        return new ResourceNotFoundException("존재하지 않는 펀딩입니다.", ResourceCode.FUNDING);
     }
 
     public static ResourceNotFoundException ofCard() {
