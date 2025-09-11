@@ -1,4 +1,4 @@
-package io.ssafy.cinemoa.global.config;
+package io.ssafy.cinemoa.global.elastic.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
