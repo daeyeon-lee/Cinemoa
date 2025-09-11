@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import SuccessCheckIcon from '@/component/icon/success_check_icon';
+import { validateAndFormatExpiryDate, validateBirthDate, validateAllPaymentFields } from '@/utils/validation';
 
 export default function Payment() {
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
@@ -24,26 +25,13 @@ export default function Payment() {
     termsAgreed: false,
   });
 
-  // 유효기간 입력 포맷팅 함수
+  // 유효기간 입력 처리 (validation 함수 사용)
   const handleExpiryDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-
-    // 숫자만 추출
-    let numbersOnly = value.replace(/\D/g, '');
-
-    // 최대 4자리까지만 허용
-    if (numbersOnly.length > 4) {
-      numbersOnly = numbersOnly.substring(0, 4);
+    const result = validateAndFormatExpiryDate(e.target.value);
+    if (result.formattedValue) {
+      setPaymentData({ ...paymentData, expiryDate: result.formattedValue });
     }
-
-    // 포맷팅 적용
-    if (numbersOnly.length >= 3) {
-      value = numbersOnly.substring(0, 2) + '/' + numbersOnly.substring(2);
-    } else {
-      value = numbersOnly;
-    }
-
-    setPaymentData({ ...paymentData, expiryDate: value });
+    // TODO: 에러 처리 (result.error가 있을 때 에러 메시지 표시)
   };
 
   // 백스페이스 키 처리
@@ -58,19 +46,9 @@ export default function Payment() {
     }
   };
 
-  // 모든 필드가 입력되었는지 확인
+  // 모든 필드가 입력되었는지 확인 (validation 함수 사용)
   const isAllFieldsCompleted = () => {
-    return (
-      paymentData.cardNumber1.length === 4 &&
-      paymentData.cardNumber2.length === 4 &&
-      paymentData.cardNumber3.length === 4 &&
-      paymentData.cardNumber4.length === 4 &&
-      paymentData.expiryDate.length === 5 && // MM/YY 형식 (5자리)
-      paymentData.cvc.length === 3 &&
-      paymentData.password.length === 2 &&
-      paymentData.birthDate.length === 6 &&
-      paymentData.termsAgreed
-    );
+    return validateAllPaymentFields(paymentData).isValid;
   };
 
   // 다음으로 이동
@@ -103,10 +81,10 @@ export default function Payment() {
     }
   };
 
-  // 이전으로 이동 (입력 데이터 리셋)
+  // step1 이동 시 데이터 초기화
   const handleBackToStep1 = () => {
     setCurrentStep('step1');
-    // step1으로 돌아갈 때 입력 데이터 리셋
+    // 입력 데이터 초기화
     setPaymentData({
       cardNumber1: '',
       cardNumber2: '',
@@ -120,9 +98,10 @@ export default function Payment() {
     });
   };
 
-  const handleBackToStep2 = () => {
-    setCurrentStep('step2');
-  };
+  // step2로 이동
+  // const handleBackToStep2 = () => {
+  //   setCurrentStep('step2');
+  // };
 
   // 최종 제출
   const handleConfirmComplete = () => {
@@ -368,7 +347,12 @@ export default function Payment() {
   };
 
   return (
-    <DialogContent onPointerDownOutside={resetAllStates} onEscapeKeyDown={resetAllStates}>
+    <DialogContent
+      onPointerDownOutside={resetAllStates}
+      onEscapeKeyDown={resetAllStates}
+      // dialogDescription 숨기기
+      aria-describedby={undefined}
+    >
       {renderContent()}
     </DialogContent>
   );
