@@ -6,6 +6,10 @@ import io.ssafy.cinemoa.external.finance.dto.ReqHeader;
 import io.ssafy.cinemoa.external.finance.dto.AccountVerifyRequest;
 import io.ssafy.cinemoa.external.finance.dto.AccountVerifyResponse;
 
+// 공통헤더, 기관거래고유번호 생성용 유틸들
+import static io.ssafy.cinemoa.external.finance.support.FinanceHttp.createHeaders;
+import static io.ssafy.cinemoa.external.finance.support.TransactionNoGenerator.generateTransactionUniqueNo;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,14 +21,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * ✅ AccountVerifyClient
+ * ✅ AccountVerifyApiClient
  * - 외부 금융망 API 중 "계좌 유효성 검증"만 담당
- * - 다른 인증 로직과 독립 운영 (관심사 분리)
+ * - 헤더 생성/거래번호 생성은 공용 유틸(FinanceHttp / TransactionNoGenerator) 사용
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AccountVerifyClient {
+public class AccountVerifyApiClient {
 
     private final RestTemplate restTemplate;
     private final FinanceApiConfig financeApiConfig;
@@ -34,6 +38,7 @@ public class AccountVerifyClient {
      */
     public BaseApiResponse<AccountVerifyResponse> verifyAccount(String accountNo) {
         AccountVerifyRequest request = buildAccountVerifyRequest(accountNo);
+        // 공통 헤더 생성
         HttpEntity<AccountVerifyRequest> entity = new HttpEntity<>(request, createHeaders());
 
         log.info("계좌 확인 API 호출 시작(verifyAccount) - 계좌: {}",
@@ -54,7 +59,7 @@ public class AccountVerifyClient {
 
     // ----------------------------- 빌더/유틸 -----------------------------
     private AccountVerifyRequest buildAccountVerifyRequest(String accountNo) {
-        ReqHeader header = buildReqHeader("verifyAccount", "verifyAccount");
+        ReqHeader header = buildReqHeader("inquireDemandDepositAccount", "inquireDemandDepositAccount");
         return AccountVerifyRequest.builder()
                 .Header(header)
                 .accountNo(accountNo)
@@ -65,6 +70,7 @@ public class AccountVerifyClient {
         LocalDateTime now = LocalDateTime.now();
         String transmissionDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String transmissionTime = now.format(DateTimeFormatter.ofPattern("HHmmss"));
+        // 기관고유거래번호 생성
         String uniqueNo = generateTransactionUniqueNo();
 
         return ReqHeader.builder()
@@ -80,21 +86,7 @@ public class AccountVerifyClient {
                 .build();
     }
 
-    private HttpHeaders createHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        return headers;
-    }
-
-    private String generateTransactionUniqueNo() {
-        LocalDateTime now = LocalDateTime.now();
-        String date = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String time = now.format(DateTimeFormatter.ofPattern("HHmmss"));
-        int serial = (int) (Math.random() * 1_000_000);
-        return date + time + String.format("%06d", serial);
-    }
-
+    // 계좌 번호 마스킹
     private String maskAccountNumber(String accountNo) {
         if (accountNo == null || accountNo.length() < 4) return "****";
         int len = accountNo.length();

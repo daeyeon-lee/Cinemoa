@@ -4,6 +4,10 @@ import io.ssafy.cinemoa.external.finance.config.FinanceApiConfig;
 import io.ssafy.cinemoa.external.finance.dto.BaseApiResponse;
 import io.ssafy.cinemoa.external.finance.dto.ReqHeader;
 
+// 공통헤더, 기관거래고유번호 생성용 유틸들
+import static io.ssafy.cinemoa.external.finance.support.FinanceHttp.createHeaders;
+import static io.ssafy.cinemoa.external.finance.support.TransactionNoGenerator.generateTransactionUniqueNo;
+
 // --- 우리가 만든 DTO들 import ---
 import io.ssafy.cinemoa.external.finance.dto.WonSendRequest;
 import io.ssafy.cinemoa.external.finance.dto.WonSendResponse;
@@ -11,8 +15,6 @@ import io.ssafy.cinemoa.external.finance.dto.WonVerifyRequest;
 import io.ssafy.cinemoa.external.finance.dto.WonVerifyResponse;
 import io.ssafy.cinemoa.external.finance.dto.TransactionHistoryRequest;
 import io.ssafy.cinemoa.external.finance.dto.TransactionHistoryResponse;
-import io.ssafy.cinemoa.external.finance.dto.AccountVerifyRequest;
-import io.ssafy.cinemoa.external.finance.dto.AccountVerifyResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -180,23 +182,6 @@ public class WonAuthApiClient {
                 .build();
     }
 
-    // =============================== 공통 유틸 ===============================
-
-    private HttpHeaders createHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-        return headers;
-    }
-
-    private String generateTransactionUniqueNo() {
-        LocalDateTime now = LocalDateTime.now();
-        String date = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String time = now.format(DateTimeFormatter.ofPattern("HHmmss"));
-        int serialNumber = (int) (Math.random() * 1_000_000);
-        String serialNumberStr = String.format("%06d", serialNumber);
-        return date + time + serialNumberStr;
-    }
 
     private String maskAccountNumber(String accountNo) {
         if (accountNo == null || accountNo.length() < 4) return "****";
