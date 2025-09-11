@@ -34,16 +34,16 @@ public class UserAdditionalInfoService {
         List<Long> categoryIds = request.getCategoryIds();
         List<Category> validatedCategories = validateCategories(categoryIds);
 
-        // 3. 계좌 유효성 검증 (나중에 api 연결)
-        if (!isValidAccount(request.getBankCode(), request.getAccountNo())) {
+        // 3. 계좌번호 정규화 (하이픈 있으면 제거)
+        String normalizedAccountNo = request.getAccountNo().replaceAll("-", "");
+
+        // 4. 계좌 유효성 검증 (나중에 api 연결)
+        if (!isValidAccount(request.getBankCode(), normalizedAccountNo)) {
             throw BadRequestException.ofAccount();
         }
 
-        // 4. 계좌번호 정규화 (하이픈 있으면 제거)
-        String normalizedAccountNo = request.getAccountNo().replaceAll("-", "");
-        
         // 5. 사용자 정보 업데이트
-        user.updateAdditionalInfo(normalizedAccountNo);
+        user.updateAdditionalInfo(normalizedAccountNo, request.getBankCode());
         userRepository.save(user); // 명시적으로 저장 (Dirty Checking은 트랜잭션 커밋 시 작동)
         
         // 6. 기존 사용자-카테고리 관계 삭제 (중복 방지)
