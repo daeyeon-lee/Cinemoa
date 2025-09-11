@@ -16,5 +16,5 @@ public class CreditCardTransactionResponse {
     private String merchantName;
     private String transactionDate;
     private String transactionTime;
-    private String paymentBalance;
+    private Long paymentBalance; // 거래금액
 }
