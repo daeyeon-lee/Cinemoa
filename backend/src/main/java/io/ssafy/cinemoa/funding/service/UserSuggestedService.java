@@ -1,14 +1,29 @@
 package io.ssafy.cinemoa.funding.service;
 
-import io.ssafy.cinemoa.funding.repository.entity.Funding;
-import io.ssafy.cinemoa.funding.enums.FundingType;
-import io.ssafy.cinemoa.global.exception.BadRequestException;
-import io.ssafy.cinemoa.global.enums.ResourceCode;
-import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
-import io.ssafy.cinemoa.funding.dto.*;
-import io.ssafy.cinemoa.funding.repository.*;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
+import io.ssafy.cinemoa.funding.dto.FundingInfoDto;
+import io.ssafy.cinemoa.funding.dto.FundingStatDto;
+import io.ssafy.cinemoa.funding.dto.MetadataDto;
+import io.ssafy.cinemoa.funding.dto.PaginationDto;
+import io.ssafy.cinemoa.funding.dto.ParticipationDto;
+import io.ssafy.cinemoa.funding.dto.ProposerDto;
+import io.ssafy.cinemoa.funding.dto.ScreeningDto;
+import io.ssafy.cinemoa.funding.dto.SuggestedProjectItemDto;
+import io.ssafy.cinemoa.funding.dto.SuggestedProjectListResponse;
+import io.ssafy.cinemoa.funding.enums.FundingType;
+import io.ssafy.cinemoa.funding.repository.FundingCategoryRepository;
+import io.ssafy.cinemoa.funding.repository.FundingRepository;
+import io.ssafy.cinemoa.funding.repository.ParticipationRepository;
+import io.ssafy.cinemoa.funding.repository.entity.Funding;
+import io.ssafy.cinemoa.global.enums.ResourceCode;
+import io.ssafy.cinemoa.global.exception.BadRequestException;
+import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.user.repository.UserRepository;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,21 +31,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
  * 사용자가 제안한 상영물 목록 조회를 위한 Service 클래스
- * 
+ *
  * 주요 기능:
  * - 특정 사용자가 제안한 펀딩/투표 목록 조회
  * - 무한 스크롤 방식의 커서 기반 페이지네이션
  * - 펀딩/투표 타입별 필터링
  * - 관련 통계 정보 및 좋아요 상태 조회
- * 
+ *
  * API 경로: GET /api/user/{userId}/funding-proposals
  */
 @Service
@@ -47,7 +56,7 @@ public class UserSuggestedService {
     /**
      * 특정 사용자가 제안한 펀딩/투표 목록을 조회합니다.
      * 무한 스크롤 방식으로 동작하며, 커서 기반 페이지네이션을 사용합니다.
-     * 
+     *
      * @param userId 조회할 사용자의 ID
      * @param type   펀딩 타입 필터 (funding, vote) - null이면 전체 조회
      * @param cursor 다음 페이지 조회를 위한 커서 (이전 응답의 nextCursor 값)
@@ -121,7 +130,7 @@ public class UserSuggestedService {
 
     /**
      * 파라미터 검증 및 기본값 설정
-     * 
+     *
      * @param type   펀딩 타입 (funding, vote)
      * @param cursor 커서 값
      * @param limit  조회 개수
@@ -148,7 +157,7 @@ public class UserSuggestedService {
 
     /**
      * 문자열을 FundingType enum으로 변환
-     * 
+     *
      * @param type 문자열 타입 (funding, vote)
      * @return FundingType enum (null이면 전체 조회)
      */
@@ -156,13 +165,13 @@ public class UserSuggestedService {
         if (type == null) {
             return null; // 전체 조회
         }
-        return "funding".equals(type) ? FundingType.INSTANT : FundingType.VOTE;
+        return "funding".equals(type) ? FundingType.FUNDING : FundingType.VOTE;
     }
 
     /**
      * 펀딩 데이터를 페이지 단위로 조회
      * 무한 스크롤을 위해 커서 기반 페이지네이션 사용
-     * 
+     *
      * @param userId      사용자 ID
      * @param fundingType 펀딩 타입 (null이면 전체)
      * @param cursor      커서 값 (null이면 첫 페이지)
@@ -200,7 +209,7 @@ public class UserSuggestedService {
     /**
      * 펀딩 통계 정보를 Map으로 조회
      * N+1 문제 방지를 위한 일괄 조회
-     * 
+     *
      * @param fundingIds 펀딩 ID 목록
      * @return 펀딩 ID를 키로 하는 통계 정보 Map
      */
@@ -211,13 +220,13 @@ public class UserSuggestedService {
                 .collect(Collectors.toMap(
                         FundingStatDto::getFundingId,
                         stat -> stat));
-        
+
         // Transaction에서 참여자 수 조회하여 업데이트
         List<Object[]> transactionCounts = participationRepository.countSuccessfulTransactionsByFundingIds(fundingIds);
         for (Object[] result : transactionCounts) {
             Long fundingId = (Long) result[0];
             Long participantCount = (Long) result[1];
-            
+
             if (fundingStats.containsKey(fundingId)) {
                 // 기존 통계 정보에 참여자 수 업데이트
                 FundingStatDto existingStat = fundingStats.get(fundingId);
@@ -237,13 +246,13 @@ public class UserSuggestedService {
                         .build());
             }
         }
-        
+
         return fundingStats;
     }
 
     /**
      * 사용자가 좋아요를 누른 펀딩 ID 목록 조회
-     * 
+     *
      * @param userId     사용자 ID
      * @param fundingIds 펀딩 ID 목록
      * @return 좋아요를 누른 펀딩 ID Set
@@ -254,7 +263,7 @@ public class UserSuggestedService {
 
     /**
      * 펀딩별 카테고리 ID 조회
-     * 
+     *
      * @param fundingIds 펀딩 ID 목록
      * @return 펀딩 ID를 키로 하는 카테고리 ID Map
      */
@@ -268,7 +277,7 @@ public class UserSuggestedService {
 
     /**
      * Funding 엔티티를 SuggestedProjectItemDto로 변환
-     * 
+     *
      * @param funding     펀딩 엔티티
      * @param fundingStat 펀딩 통계 정보
      * @param isLiked     좋아요 여부
@@ -279,7 +288,7 @@ public class UserSuggestedService {
             Funding funding, FundingStatDto fundingStat, boolean isLiked, Long categoryId) {
 
         // 펀딩/투표 타입 결정
-        String type = funding.getFundingType() == FundingType.INSTANT ? "funding" : "vote";
+        String type = funding.getFundingType() == FundingType.FUNDING ? "funding" : "vote";
 
         // 기본 정보 DTO 생성
         FundingInfoDto fundingInfo = createFundingInfoDto(funding, fundingStat);
@@ -309,7 +318,7 @@ public class UserSuggestedService {
 
     /**
      * 펀딩 기본 정보 DTO 생성
-     * 
+     *
      * @param funding     펀딩 엔티티
      * @param fundingStat 펀딩 통계 정보
      * @return 펀딩 기본 정보 DTO
@@ -317,14 +326,14 @@ public class UserSuggestedService {
     private FundingInfoDto createFundingInfoDto(Funding funding, FundingStatDto fundingStat) {
         // 진행률 계산 (펀딩인 경우에만)
         Integer progressRate = null;
-        if (funding.getFundingType() == FundingType.INSTANT && funding.getMaxPeople() > 0) {
+        if (funding.getFundingType() == FundingType.FUNDING && funding.getMaxPeople() > 0) {
             int participantCount = fundingStat != null ? fundingStat.getParticipantCount() : 0;
             progressRate = Math.min(100, (participantCount * 100) / funding.getMaxPeople());
         }
 
         // 1인당 가격 계산 (펀딩인 경우에만)
         Integer price = null;
-        if (funding.getFundingType() == FundingType.INSTANT) {
+        if (funding.getFundingType() == FundingType.FUNDING) {
             // TODO: screens 테이블에서 price 정보를 가져와야 함
             // 현재는 임시로 0으로 설정
             price = 0;
@@ -346,7 +355,7 @@ public class UserSuggestedService {
 
     /**
      * 제안자 정보 DTO 생성
-     * 
+     *
      * @param funding 펀딩 엔티티
      * @return 제안자 정보 DTO
      */
@@ -359,7 +368,7 @@ public class UserSuggestedService {
 
     /**
      * 상영 정보 DTO 생성
-     * 
+     *
      * @param funding 펀딩 엔티티
      * @return 상영 정보 DTO
      */
@@ -375,7 +384,7 @@ public class UserSuggestedService {
 
     /**
      * 참여 및 통계 정보 DTO 생성
-     * 
+     *
      * @param funding     펀딩 엔티티
      * @param fundingStat 펀딩 통계 정보
      * @param isLiked     좋아요 여부
@@ -393,7 +402,7 @@ public class UserSuggestedService {
 
     /**
      * 메타데이터 DTO 생성
-     * 
+     *
      * @param funding     펀딩 엔티티
      * @param fundingStat 펀딩 통계 정보
      * @param categoryId  카테고리 ID
@@ -406,7 +415,7 @@ public class UserSuggestedService {
             recommendationScore += fundingStat.getViewCount() * 2;
         }
 
-        if (funding.getFundingType() == FundingType.INSTANT && funding.getMaxPeople() > 0) {
+        if (funding.getFundingType() == FundingType.FUNDING && funding.getMaxPeople() > 0) {
             int participantCount = fundingStat != null ? fundingStat.getParticipantCount() : 0;
             int progressRate = (participantCount * 100) / funding.getMaxPeople();
             recommendationScore += progressRate;
@@ -420,7 +429,7 @@ public class UserSuggestedService {
 
     /**
      * 페이지네이션 정보 DTO 생성
-     * 
+     *
      * @param fundingPage 펀딩 페이지 데이터
      * @param fundingIds  펀딩 ID 목록
      * @param limit       실제 요청된 limit 값

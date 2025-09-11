@@ -17,6 +17,6 @@ public class SearchRequest {
     private FundingSortOrder sortBy;
     private Long category;
     private List<String> region;
-    private List<CinemaFeature> theaterType;
+    private CinemaFeature theaterType;
     private Boolean isClosed;
 }
