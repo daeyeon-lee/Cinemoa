@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: '씨네모아',
   description: '씨네모아',
   icons: {
-    icon: '/cinemoa_logo_short.png',
+    icon: '/favicon.png',
   },
 };
 

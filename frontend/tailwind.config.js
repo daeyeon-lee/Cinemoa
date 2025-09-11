@@ -42,11 +42,11 @@ module.exports = {
         'Brand2-Tertiary': '#167873',
         'Brand2-Strong': '#71E5DE',
 
-        primary: '#f8fafc', // slate50
-        secondary: '#cbd5e1', // slate300
-        tertiary: '#94a3b8', // slate400
-        subtle: '#64748b', // slate500
-        inverse: '#0f172a', // slate900
+        primary: '#F8FAFC', // slate50
+        secondary: '#CBD5E1', // slate300
+        tertiary: '#94A3B8', // slate400
+        subtle: '#64748B', // slate500
+        inverse: '#0F172A', // slate900
 
         'BG-0': '#0f172a',
         'BG-1': '#1e293b',

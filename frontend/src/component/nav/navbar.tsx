@@ -5,7 +5,7 @@ import SearchIcon from '@/component/icon/searchIcon';
 import UserIcon from '@/component/icon/userIcon';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import SearchInput from '@/component/search/SearchInput';
+import { Input } from '@/components/ui/input';
 
 export default function Navbar() {
   // navbar 페이지 활성화 여부 확인 함수
@@ -79,9 +79,10 @@ export default function Navbar() {
               이거어때
               {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
-            <Link href="/create" className={getLinkClasses('/create')}>
+            {/* 임시로 결제창 붙여놓음 나중에 /create로 변경해야함함 */}
+            <Link href="/payment" className={getLinkClasses('/payment')}>
               만들기
-              {isActive('/create') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
+              {isActive('/payment') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
           </nav>
         </div>
@@ -89,14 +90,29 @@ export default function Navbar() {
         {/* 검색바 + 로그인/회원가입 */}
         <div className="flex items-center space-x-4">
           <div className="flex w-full items-center space-x-2">
-            <SearchInput placeholder="검색어를 입력해주세요" />
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="검색어를 입력해주세요"
+                className="h-8 bg-BG-1 text-primary placeholder:text-tertiary border-none rounded-[8px] pr-10 pl-3"
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
+                <SearchIcon stroke="#94A3B8" />
+              </div>
+            </div>
             <Link href="/auth">
-              <Button className="w-full px-3 rounded-[100px]" variant="secondary" size="sm">
+              <Button className="w-full rounded-[99px]" variant="secondary" size="sm" textSize="sm">
                 로그인
               </Button>
             </Link>
             <Link href="/auth">
-              <Button className="w-full px-3 rounded-[100px]" variant="primary" size="sm">
+              {/* 바꿔야함 */}
+              <Button
+                className="w-full rounded-[99px] text-inverse font-semibold text-xs"
+                variant="primary"
+                size="sm"
+                textSize="sm"
+              >
                 회원가입
               </Button>
             </Link>
