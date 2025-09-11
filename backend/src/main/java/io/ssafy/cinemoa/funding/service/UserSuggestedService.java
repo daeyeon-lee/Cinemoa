@@ -42,6 +42,7 @@ public class UserSuggestedService {
     private final FundingRepository fundingRepository; // 펀딩 데이터 조회
     private final UserFavoriteRepository userFavoriteRepository; // 사용자 좋아요 조회
     private final FundingCategoryRepository fundingCategoryRepository; // 펀딩 카테고리 조회
+    private final ParticipationRepository participationRepository; // 참여자 수 조회 (Transaction 기반)
 
     /**
      * 특정 사용자가 제안한 펀딩/투표 목록을 조회합니다.
@@ -204,14 +205,40 @@ public class UserSuggestedService {
      * @return 펀딩 ID를 키로 하는 통계 정보 Map
      */
     private Map<Long, FundingStatDto> getFundingStats(List<Long> fundingIds) {
-        return fundingRepository.findFundingStatsByFundingIds(fundingIds) // 데이터베이스 일괄 조회, 예. WHERE funding_id IN (1, 2,
-                                                                          // 3)
+        // FundingStat에서 기본 통계 정보 조회
+        Map<Long, FundingStatDto> fundingStats = fundingRepository.findFundingStatsByFundingIds(fundingIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        FundingStatDto::getFundingId, // 키
-                        stat -> stat)); // 값
-        // 통계 정보가 Map에 있다면: fundingStats.get(5L)처럼 ID를 Key로 사용하여 단 한 번에 원하는 통계 정보를 즉시 찾을
-        // 수 있음
+                        FundingStatDto::getFundingId,
+                        stat -> stat));
+        
+        // Transaction에서 참여자 수 조회하여 업데이트
+        List<Object[]> transactionCounts = participationRepository.countSuccessfulTransactionsByFundingIds(fundingIds);
+        for (Object[] result : transactionCounts) {
+            Long fundingId = (Long) result[0];
+            Long participantCount = (Long) result[1];
+            
+            if (fundingStats.containsKey(fundingId)) {
+                // 기존 통계 정보에 참여자 수 업데이트
+                FundingStatDto existingStat = fundingStats.get(fundingId);
+                fundingStats.put(fundingId, FundingStatDto.builder()
+                        .fundingId(existingStat.getFundingId())
+                        .participantCount(participantCount.intValue())
+                        .viewCount(existingStat.getViewCount())
+                        .favoriteCount(existingStat.getFavoriteCount())
+                        .build());
+            } else {
+                // 새로운 통계 정보 생성 (참여자 수만 있는 경우)
+                fundingStats.put(fundingId, FundingStatDto.builder()
+                        .fundingId(fundingId)
+                        .participantCount(participantCount.intValue())
+                        .viewCount(0)
+                        .favoriteCount(0)
+                        .build());
+            }
+        }
+        
+        return fundingStats;
     }
 
     /**
