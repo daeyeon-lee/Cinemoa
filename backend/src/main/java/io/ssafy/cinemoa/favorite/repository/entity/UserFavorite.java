@@ -1,6 +1,7 @@
-package io.ssafy.cinemoa.user.repository.entity;
+package io.ssafy.cinemoa.favorite.repository.entity;
 
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
+import io.ssafy.cinemoa.user.repository.entity.User;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
