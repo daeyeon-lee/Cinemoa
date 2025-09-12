@@ -27,7 +27,6 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ApiResponse<?>> baseExceptionHandler(BaseException e) {
         ApiResponse<Object> body = ApiResponse.ofFail(e.getMessage(), e.getCode());
-
         if (e instanceof ResourceNotFoundException) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
         }

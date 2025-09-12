@@ -14,7 +14,11 @@ public class FinanceApiConfig {
     @Value("${finance.api.key}")
     private String apiKey;
 
+<<<<<<< HEAD
     @Value("${finance.api.admin-user-key}")
+=======
+    @Value("${finance.api.user-key}") // 향후 삭제 가능
+>>>>>>> BE
     private String userKey;
 
     @Value("${finance.api.institution-code}")
@@ -30,6 +34,7 @@ public class FinanceApiConfig {
     public String getCreditCardTransactionUrl() {
         return baseUrl + "/edu/creditCard/createCreditCardTransaction";
     }
+<<<<<<< HEAD
 
     // 계좌 조회 (단건) (유효한 계좌인지 확인할 때 사용)
     public String getAccountVerifyUrl() {
@@ -50,4 +55,6 @@ public class FinanceApiConfig {
     public String getTransactionHistoryUrl() {
         return baseUrl + "/edu/demandDeposit/inquireTransactionHistoryList";
     }
+=======
+>>>>>>> BE
 }

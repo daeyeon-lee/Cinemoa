@@ -59,7 +59,7 @@ public class WonAuthApiClient {
         log.info("1원 송금 API 호출 시작(openAccountAuth) - 계좌: {}, authText: {}",
                 maskAccountNumber(accountNo), authText);
 
-        // 4. 실제 HTTP POST 호출
+        // 4. HTTP POST 호출
         ResponseEntity<BaseApiResponse<WonSendResponse>> response =
                 restTemplate.exchange(
                         financeApiConfig.getWonSendUrl(),
