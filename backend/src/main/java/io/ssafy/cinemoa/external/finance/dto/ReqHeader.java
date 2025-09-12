@@ -1,9 +1,5 @@
 package io.ssafy.cinemoa.external.finance.dto;
 
-<<<<<<< HEAD
-import com.fasterxml.jackson.annotation.JsonProperty;
-=======
->>>>>>> BE
 import lombok.Builder;
 import lombok.Data;
 

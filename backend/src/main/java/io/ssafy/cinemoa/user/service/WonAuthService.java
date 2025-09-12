@@ -43,11 +43,11 @@ public class WonAuthService {
      * - 지금은 "SSAFY" 상수로 사용
      * - 나중에 운영환경/설정파일로 분리 가능
      */
-    private static final String AUTH_CODE = "SSAFY";
+//    private static final String AUTH_CODE = "SSAFY";
     private static final String AUTH_TEXT = "CINEMOA";
 
     // --------------------------------------------------------------------
-    // 1) 회원가입 단계에서: 계좌번호만 받아 "계좌검증 → 1원송금" 까지 수행
+    // 계좌검증 → 1원송금
     // --------------------------------------------------------------------
     @Transactional(readOnly = true)
     public BaseApiResponse<WonSendResponse> startWonAuth(String accountNo) {
@@ -68,7 +68,7 @@ public class WonAuthService {
 
         // 검증 성공시에만 1원 송금
         try {
-            return wonAuthApiClient.openAccountAuth(accountNo, AUTH_CODE);
+            return wonAuthApiClient.openAccountAuth(accountNo, AUTH_TEXT);
         } catch (HttpStatusCodeException e) {
             // 벤더 에러 원문 남기기 (중요!)
             log.error("원화 1원인증 송금 호출 실패 - status:{} headers:{}\nbody:\n{}",
@@ -79,17 +79,33 @@ public class WonAuthService {
 
 
     // --------------------------------------------------------------------
-    // 2) 사용자에게서 인증코드를 받은 뒤: "1원 인증 검증" 수행
+    // 1원 인증 검증
+    // API 호출 → REC.status 확인 → SUCCESS면 secretKey 발급 → secretKey만 data로 반환
     // --------------------------------------------------------------------
     @Transactional(readOnly = true)
     public BaseApiResponse<WonVerifyResponse> verifyWonAuth(String accountNo, String authCode) {
-        // (1) 입력 검증
+        // 입력 유효성 검사
         must(accountNo, "accountNo(계좌번호)는 필수입니다.");
         must(authCode,  "authCode(인증코드)는 필수입니다.");
 
-        // (2) 1원 인증 검증 호출 (accountNo + auth + AUTH_CODE)
-        return wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, AUTH_CODE);
+        try {
+            // 1원 인증 검증 호출 (계좌번호 + 기업명(CINEMOA) + 인증코드)
+            return wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, authCode);
+
+        } catch (HttpStatusCodeException e) {
+            // 외부 API 호출 시 HTTP 에러(4xx/5xx) → 상세 로깅
+            log.error("[WonAuthApiClient 4xx/5xx] status:{} headers:{}\nbody:\n{}",
+                    e.getStatusCode(), e.getResponseHeaders(), e.getResponseBodyAsString(), e);
+
+            throw new IllegalStateException("1원 인증 검증 중 오류가 발생했습니다.", e);
+
+        } catch (Exception e) {
+            // 그 외 예상치 못한 에러
+            log.error("[WonAuthApiClient ERROR]", e);
+            throw new RuntimeException("알 수 없는 오류가 발생했습니다.", e);
+        }
     }
+
 
     // ============================ 공통 유틸 ============================
 

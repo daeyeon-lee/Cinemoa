@@ -16,11 +16,7 @@ public class FinanceApiConfig {
     @Value("${finance.api.key}")
     private String apiKey;
 
-<<<<<<< HEAD
-    @Value("${finance.api.admin-user-key}")
-=======
     @Value("${finance.api.user-key}") // 향후 삭제 가능
->>>>>>> BE
     private String userKey;
 
     @Value("${finance.api.institution-code}")
@@ -35,6 +31,26 @@ public class FinanceApiConfig {
     // 카드 결제
     public String getCreditCardTransactionUrl() {
         return baseUrl + "/edu/creditCard/createCreditCardTransaction";
+    }
+
+    // 계좌 확인
+    public String getAccountVerifyUrl() {
+        return baseUrl + "/edu/demandDeposit/inquireDemandDepositAccount";
+    }
+
+    // 1원 송금
+    public String getWonSendUrl() {
+        return baseUrl + "/edu/accountAuth/openAccountAuth";
+    }
+
+    // 1원 검증
+    public String getWonVerifyUrl() {
+        return baseUrl + "/edu/accountAuth/checkAuthCode";
+    }
+
+    // 결제내역 조회
+    public String getTransactionHistoryUrl() {
+        return baseUrl + "/edu/demandDeposit/inquireTransactionHistoryList";
     }
 
     @Bean
