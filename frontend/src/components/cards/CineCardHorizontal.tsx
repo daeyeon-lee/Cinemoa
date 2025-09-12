@@ -4,12 +4,7 @@ import { HorizontalRight } from './sections/HorizontalRight';
 import { PerforationLine } from './primitives/PerforationLine';
 import { FundingData, VoteData, CineCardProps } from './CineCardVertical';
 
-const CineCardHorizontal: React.FC<CineCardProps> = ({ 
-  data, 
-  loadingState = 'ready', 
-  onVoteClick, 
-  onCardClick 
-}) => {
+const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick }) => {
   const formatRegion = (region: string) => {
     const regionMap: { [key: string]: string } = {
       seoul: '서울',
@@ -40,32 +35,21 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({
 
   const handleCardClick = () => {
     if (onCardClick) {
-      const id = data.type === 'funding' 
-        ? (data as FundingData).funding.fundingId 
-        : (data as VoteData).vote.voteId;
+      const id = data.type === 'funding' ? (data as FundingData).funding.fundingId : (data as VoteData).vote.fundingId;
       onCardClick(id);
     }
   };
 
   return (
-    <div 
+    <div
       className="w-96 inline-flex justify-center items-start cursor-pointer hover:bg-slate-800/50 transition-colors rounded-lg"
       onClick={handleCardClick}
     >
-      <HorizontalLeft
-        data={data}
-        loadingState={loadingState}
-        formatRegion={formatRegion}
-        formatDate={formatDate}
-      />
+      <HorizontalLeft data={data} loadingState={loadingState} formatRegion={formatRegion} formatDate={formatDate} />
       <div className="self-stretch">
         <PerforationLine orientation="vertical" />
       </div>
-      <HorizontalRight
-        data={data}
-        loadingState={loadingState}
-        onVoteClick={onVoteClick}
-      />
+      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} />
     </div>
   );
 };
