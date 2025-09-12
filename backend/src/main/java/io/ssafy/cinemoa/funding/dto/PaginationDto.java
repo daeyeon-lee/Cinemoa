@@ -2,7 +2,6 @@
 // "pagination": {
 // 	      "nextCursor": "eyJpZCI6MTE1fQ==",
 // 	      "hasNext": true,
-// 	      "limit": 20,
 // 	      "totalCount": 47
 // 	    }
 
