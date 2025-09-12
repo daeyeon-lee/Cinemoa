@@ -39,13 +39,32 @@ public enum PaymentErrorCode {
         if (ssafyCode == null) {
             return UNKNOWN_ERROR;
         }
-        for (PaymentErrorCode errorCode : PaymentErrorCode.values()) {
-            if (errorCode.getCode().equals(ssafyCode)) {
-                return errorCode;
-            }
-        }
-        return UNKNOWN_ERROR;
+
+        return switch (ssafyCode) {
+            case "H0000" -> SUCCESS;
+            case "A1054" -> INVALID_CARD_NUMBER;
+            case "A1055" -> INVALID_CVC;
+            // case "H1002":
+            // return INSUFFICIENT_BALANCE;
+            // case "H1003":
+            // return INVALID_CARD;
+            // case "H1004":
+            // return EXPIRED_CARD;
+            // case "H2001":
+            // return INVALID_AMOUNT;
+            // case "H2002":
+            // return DUPLICATE_TRANSACTION;
+            // case "H2003":
+            // return TRANSACTION_LIMIT_EXCEEDED;
+            // case "H2004":
+            // return MERCHANT_ERROR;
+            case "H9001" -> NETWORK_ERROR;
+            case "H9002" -> API_TIMEOUT;
+            case "H9999" -> EXTERNAL_API_ERROR;
+            default -> UNKNOWN_ERROR;
+        };
     }
+  }
 
     /**
      * 성공 여부 확인
