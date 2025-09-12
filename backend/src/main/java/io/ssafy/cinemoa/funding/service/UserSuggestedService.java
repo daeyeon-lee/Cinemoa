@@ -13,11 +13,11 @@ import io.ssafy.cinemoa.funding.dto.SuggestedProjectListResponse;
 import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.funding.repository.FundingCategoryRepository;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
-import io.ssafy.cinemoa.funding.repository.ParticipationRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.global.enums.ResourceCode;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
+import io.ssafy.cinemoa.payment.repository.TransactionRepository;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,13 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 사용자가 제안한 상영물 목록 조회를 위한 Service 클래스
- *
- * 주요 기능:
- * - 특정 사용자가 제안한 펀딩/투표 목록 조회
- * - 무한 스크롤 방식의 커서 기반 페이지네이션
- * - 펀딩/투표 타입별 필터링
- * - 관련 통계 정보 및 좋아요 상태 조회
- *
+ * <p>
+ * 주요 기능: - 특정 사용자가 제안한 펀딩/투표 목록 조회 - 무한 스크롤 방식의 커서 기반 페이지네이션 - 펀딩/투표 타입별 필터링 - 관련 통계 정보 및 좋아요 상태 조회
+ * <p>
  * API 경로: GET /api/user/{userId}/funding-proposals
  */
 @Service
@@ -51,11 +47,10 @@ public class UserSuggestedService {
     private final FundingRepository fundingRepository; // 펀딩 데이터 조회
     private final UserFavoriteRepository userFavoriteRepository; // 사용자 좋아요 조회
     private final FundingCategoryRepository fundingCategoryRepository; // 펀딩 카테고리 조회
-    private final ParticipationRepository participationRepository; // 참여자 수 조회 (Transaction 기반)
+    private final TransactionRepository transactionRepository; // 참여자 수 조회 (Transaction 기반)
 
     /**
-     * 특정 사용자가 제안한 펀딩/투표 목록을 조회합니다.
-     * 무한 스크롤 방식으로 동작하며, 커서 기반 페이지네이션을 사용합니다.
+     * 특정 사용자가 제안한 펀딩/투표 목록을 조회합니다. 무한 스크롤 방식으로 동작하며, 커서 기반 페이지네이션을 사용합니다.
      *
      * @param userId 조회할 사용자의 ID
      * @param type   펀딩 타입 필터 (funding, vote) - null이면 전체 조회
@@ -169,8 +164,7 @@ public class UserSuggestedService {
     }
 
     /**
-     * 펀딩 데이터를 페이지 단위로 조회
-     * 무한 스크롤을 위해 커서 기반 페이지네이션 사용
+     * 펀딩 데이터를 페이지 단위로 조회 무한 스크롤을 위해 커서 기반 페이지네이션 사용
      *
      * @param userId      사용자 ID
      * @param fundingType 펀딩 타입 (null이면 전체)
@@ -207,8 +201,7 @@ public class UserSuggestedService {
     }
 
     /**
-     * 펀딩 통계 정보를 Map으로 조회
-     * N+1 문제 방지를 위한 일괄 조회
+     * 펀딩 통계 정보를 Map으로 조회 N+1 문제 방지를 위한 일괄 조회
      *
      * @param fundingIds 펀딩 ID 목록
      * @return 펀딩 ID를 키로 하는 통계 정보 Map
@@ -222,7 +215,7 @@ public class UserSuggestedService {
                         stat -> stat));
 
         // Transaction에서 참여자 수 조회하여 업데이트
-        List<Object[]> transactionCounts = participationRepository.countSuccessfulTransactionsByFundingIds(fundingIds);
+        List<Object[]> transactionCounts = transactionRepository.countSuccessfulTransactionsByFundingIds(fundingIds);
         for (Object[] result : transactionCounts) {
             Long fundingId = (Long) result[0];
             Long participantCount = (Long) result[1];
