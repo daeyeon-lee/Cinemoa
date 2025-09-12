@@ -35,7 +35,7 @@ public enum PaymentErrorCode {
     /**
      * 금융망 API 응답 코드를 프로젝트 내부 코드로 매핑
      */
-    public static PaymentErrorCode fromApiCode(String ssafyCode) {
+    public static PaymentErrorCode fromCode(String ssafyCode) {
         if (ssafyCode == null) {
             return UNKNOWN_ERROR;
         }
@@ -64,24 +64,11 @@ public enum PaymentErrorCode {
             default -> UNKNOWN_ERROR;
         };
     }
-  }
 
     /**
      * 성공 여부 확인
      */
     public boolean isSuccess() {
         return this == SUCCESS;
-    }
-
-    /**
-     * 코드로 ErrorCode 찾기
-     */
-    public static PaymentErrorCode fromCode(String code) {
-        for (PaymentErrorCode errorCode : values()) {
-            if (errorCode.getCode().equals(code)) {
-                return errorCode;
-            }
-        }
-        return UNKNOWN_ERROR;
     }
 }
