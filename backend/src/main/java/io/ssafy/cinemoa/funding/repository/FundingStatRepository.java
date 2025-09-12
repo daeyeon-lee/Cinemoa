@@ -13,7 +13,7 @@ public interface FundingStatRepository extends JpaRepository<FundingStat, Long> 
     Optional<FundingStat> findByFunding_FundingId(Long fundingId);
 
     @Modifying
-    @Query("UPDATE FundingStat fs SET fs.currentParticipants = fs.currentParticipants + 1 WHERE fs.funding.fundingId = :fundingId")
+    @Query("UPDATE FundingStat fs SET fs.participantCount = fs.participantCount + 1 WHERE fs.funding.fundingId = :fundingId")
     void incrementParticipantCount(@Param("fundingId") Long fundingId);
 
     @Query("update FundingStat fs SET fs.viewCount = fs.viewCount + 1 WHERE fs.funding.fundingId = :fundingId")

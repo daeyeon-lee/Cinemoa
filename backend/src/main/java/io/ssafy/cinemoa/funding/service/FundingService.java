@@ -1,5 +1,7 @@
 package io.ssafy.cinemoa.funding.service;
 
+import io.ssafy.cinemoa.category.repository.CategoryRepository;
+import io.ssafy.cinemoa.category.repository.entity.Category;
 import io.ssafy.cinemoa.cinema.repository.CinemaRepository;
 import io.ssafy.cinemoa.cinema.repository.ScreenRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
@@ -7,6 +9,7 @@ import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
+import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.CategoryInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.CinemaInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.FundingInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.FundingStatInfo;
@@ -44,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class FundingService {
+    private final CategoryRepository categoryRepository;
 
 
     private static final String SEAT_RESERVATION_SCRIPT = """
@@ -111,6 +115,9 @@ public class FundingService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(ResourceNotFoundException::ofCategory);
+
         Cinema cinema = cinemaRepository.findById(request.getCinemaId())
                 .orElseThrow(ResourceNotFoundException::ofCinema);
 
@@ -128,6 +135,7 @@ public class FundingService {
                 .screenDay(request.getScreenDay())
                 .screenStartsOn(request.getScreenStartsOn())
                 .screenEndsOn(request.getScreenEndsOn())
+                .category(category)
                 .state(FundingState.EVALUATING)
                 .endsOn(request.getScreenDay().minusDays(7))
                 .cinema(cinema)
@@ -185,6 +193,9 @@ public class FundingService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(ResourceNotFoundException::ofCategory);
+
         Funding vote = Funding.builder()
                 .fundingType(FundingType.VOTE)
                 .bannerUrl(request.getPosterUrl())
@@ -192,6 +203,7 @@ public class FundingService {
                 .title(request.getTitle())
                 .videoName(request.getVideoName())
                 .leader(user)
+                .category(category)
                 .maxPeople(request.getMaxPeople())
                 .state(FundingState.EVALUATING)
                 .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
@@ -220,6 +232,9 @@ public class FundingService {
         Cinema cinema = funding.getCinema();
         User proposer = funding.getLeader();
 
+        Category category = funding.getCategory();
+        Category parentCategory = category.getParentCategory();
+
         FundingInfo fundingInfo = FundingInfo.builder()
                 .fundingId(funding.getFundingId())
                 .progressRate(stat.getParticipantCount() / funding.getMaxPeople() * 100)
@@ -229,6 +244,13 @@ public class FundingService {
                 .state(funding.getState())
                 .fundingEndsOn(funding.getEndsOn())
                 .price(screen.getPrice() / funding.getMaxPeople())
+                .build();
+
+        CategoryInfo categoryInfo = CategoryInfo.builder()
+                .categoryId(category.getCategoryId())
+                .categoryName(category.getTagName())
+                .parentCategoryId(parentCategory.getCategoryId())
+                .parentCategoryName(parentCategory.getTagName())
                 .build();
 
         ProposerInfo proposerInfo = ProposerInfo.builder()
@@ -275,6 +297,7 @@ public class FundingService {
                 .stat(statInfo)
                 .proposer(proposerInfo)
                 .screen(screenInfo)
+                .category(categoryInfo)
                 .cinema(cinemaInfo)
                 .build();
 

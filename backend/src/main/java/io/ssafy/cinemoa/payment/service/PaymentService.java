@@ -58,11 +58,11 @@ public class PaymentService {
                 boolean isSuccess = paymentResult.isSuccess();
 
                 // 5. 결제 로그 저장
-                // TODO: 달라진 컬럼에 맞게 transction_unique_no 추가
                 Transaction transaction = Transaction.builder()
+                                .transactionUniqueNo(apiResponse.getTransactionUniqueNo())
                                 .user(user)
                                 .funding(funding)
-                                .balance(apiResponse.getPaymentBalance().intValue())
+                                .balance(isSuccess ? apiResponse.getPaymentBalance().intValue() : 0)
                                 .state(isSuccess ? TransactionState.SUCCESS : TransactionState.ERROR)
                                 .build();
                 Transaction savedTransaction = paymentRepository.save(transaction);
@@ -74,6 +74,10 @@ public class PaymentService {
 
                         // 7. 펀딩 상태 업데이트(참가자 수 +1)
                         fundingStatRepository.incrementParticipantCount(fundingId);
+                } // 결제 실패 시 로깅
+                else {
+                        log.warn("결제 실패 - 사용자: {}, 펀딩: {}, 에러코드: {}, 메시지: {}",
+                                        userId, fundingId, paymentResult.getCode(), paymentResult.getMessage());
                 }
 
                 // 8. 응답 데이터 구성

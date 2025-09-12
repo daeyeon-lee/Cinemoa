@@ -1,7 +1,9 @@
 package io.ssafy.cinemoa.external.finance.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -34,27 +36,9 @@ public class FinanceApiConfig {
     public String getCreditCardTransactionUrl() {
         return baseUrl + "/edu/creditCard/createCreditCardTransaction";
     }
-<<<<<<< HEAD
 
-    // 계좌 조회 (단건) (유효한 계좌인지 확인할 때 사용)
-    public String getAccountVerifyUrl() {
-        return baseUrl + "/edu/demandDeposit/inquireDemandDepositAccount";
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
-
-    // 1원 송금
-    public String getWonSendUrl() {
-        return baseUrl + "/edu/accountAuth/openAccountAuth";
-    }
-
-    // 1원 검증
-    public String getWonVerifyUrl() {
-        return baseUrl + "/edu/accountAuth/checkAuthCode";
-    }
-
-    // 결제내역 조회
-    public String getTransactionHistoryUrl() {
-        return baseUrl + "/edu/demandDeposit/inquireTransactionHistoryList";
-    }
-=======
->>>>>>> BE
 }

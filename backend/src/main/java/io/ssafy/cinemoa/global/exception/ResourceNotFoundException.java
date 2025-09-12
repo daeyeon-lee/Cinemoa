@@ -31,4 +31,8 @@ public class ResourceNotFoundException extends BaseException {
     public static ResourceNotFoundException ofLike() {
         return new ResourceNotFoundException("존재하지 않는 좋아요입니다.", ResourceCode.LIKE);
     }
+
+    public static ResourceNotFoundException ofCategory() {
+        return new ResourceNotFoundException("존재하지 않는 카테고리입니다.", ResourceCode.CATEGORY);
+    }
 }

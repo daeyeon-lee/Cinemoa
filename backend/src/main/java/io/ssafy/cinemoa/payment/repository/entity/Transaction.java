@@ -35,7 +35,7 @@ public class Transaction extends BaseTimeEntity {
     private Long transactionId;
 
     @Column(name = "transaction_unique_no", nullable = false)
-    private Long transactionUniqueNo;
+    private String transactionUniqueNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

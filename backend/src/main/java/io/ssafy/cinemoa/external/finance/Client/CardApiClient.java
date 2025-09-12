@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.external.finance.Client;
 
+import io.ssafy.cinemoa.external.finance.common.HttpClientUtil;
 import io.ssafy.cinemoa.external.finance.common.FinanceApiUtils;
 import io.ssafy.cinemoa.external.finance.config.FinanceApiConfig;
 import io.ssafy.cinemoa.external.finance.dto.BaseApiResponse;
@@ -10,13 +11,8 @@ import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * 금융망 API 카드 결제 클라이언트
@@ -30,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class CardApiClient {
 
-    private final RestTemplate restTemplate;
+    private final HttpClientUtil httpClientUtil;
     private final FinanceApiConfig financeApiConfig;
 
     /**
@@ -52,21 +48,17 @@ public class CardApiClient {
         try {
             // 1. API 요청 객체 생성
             CreditCardTransactionRequest request = buildRequest(cardNo, cvc, paymentBalance);
-            HttpHeaders headers = FinanceApiUtils.createHeaders();
-            HttpEntity<CreditCardTransactionRequest> entity = new HttpEntity<>(request, headers);
 
             log.info("카드 결제 API 호출 시작 - 카드번호: {}, 금액: {}",
                     FinanceApiUtils.maskCardNumber(cardNo), paymentBalance);
 
-            // 2. 금융망 API 호출
-            ResponseEntity<BaseApiResponse<CreditCardTransactionResponse>> response = restTemplate.exchange(
+            // 2. 공통 API 유틸리티를 사용한 금융망 API 호출
+            BaseApiResponse<CreditCardTransactionResponse> responseBody = httpClientUtil.post(
                     financeApiConfig.getCreditCardTransactionUrl(),
-                    HttpMethod.POST,
-                    entity,
+                    request,
                     new ParameterizedTypeReference<BaseApiResponse<CreditCardTransactionResponse>>() {
-                    });
-
-            BaseApiResponse<CreditCardTransactionResponse> responseBody = response.getBody();
+                    },
+                    "카드결제");
 
             if (responseBody != null) {
                 // 3. 응답 코드를 프로젝트 내부 코드로 매핑
@@ -77,6 +69,7 @@ public class CardApiClient {
                 // REC 데이터 추출 (실제 거래 정보)
                 CreditCardTransactionResponse result = responseBody.getREC();
                 if (result == null) {
+                    log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
                     result = new CreditCardTransactionResponse();
                 }
 
@@ -84,14 +77,14 @@ public class CardApiClient {
                 result.setResponseCode(errorCode.getCode()); // PAY_XXXX
                 result.setResponseMessage(errorCode.getMessage());
 
-                // 5. 성공/실패에 따른 로깅
+                // 6. 성공/실패에 따른 로깅
                 if (errorCode.isSuccess()) {
-                    log.info("✅ 카드 결제 성공 - 거래번호: {}, 금액: {}, 내부코드: {}",
+                    log.info("■■■■■■■■카드 결제 성공 - 거래번호: {}, 금액: {}, 내부코드: {}■■■■■■■■",
                             result.getTransactionUniqueNo(),
                             result.getPaymentBalance(),
                             errorCode.getCode());
                 } else {
-                    log.warn("❌ 카드 결제 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 카드: {}, 금액: {}",
+                    log.warn("■■■■■■■■카드 결제 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 카드: {}, 금액: {}■■■■■■■■",
                             apiCode,
                             apiMsg,
                             errorCode.getCode(),
@@ -102,6 +95,7 @@ public class CardApiClient {
 
                 return result;
             } else {
+                log.error("응답 데이터가 null입니다.");
                 return createErrorResponse("응답 데이터가 없습니다.");
             }
 

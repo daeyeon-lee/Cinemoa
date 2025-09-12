@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.funding.repository.entity;
 
+import io.ssafy.cinemoa.category.repository.entity.Category;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.funding.enums.FundingState;
@@ -75,6 +76,10 @@ public class Funding extends BaseTimeEntity {
 
     @Column(name = "screen_ends_on", columnDefinition = "tinyint")
     private Byte screenEndsOn;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Column(name = "ends_on")
     private LocalDate endsOn;

@@ -30,7 +30,7 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
-    private Category category;
+    private Category parentCategory;
 
     @Column(name = "tag_name", columnDefinition = "varchar(10)")
     private String tagName;

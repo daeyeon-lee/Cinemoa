@@ -6,89 +6,79 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PaymentErrorCode {
-  // 성공
-  SUCCESS("PAY_0000", "결제가 성공적으로 완료되었습니다"),
+    // 성공
+    SUCCESS("PAY_0000", "결제가 성공적으로 완료되었습니다"),
 
-  // 카드 관련 (1000번대)
-  INVALID_CARD_NUMBER("PAY_1001", "유효하지 않은 카드번호입니다"),
-  INVALID_CVC("PAY_1002", "CVC 번호가 유효하지 않습니다"),
-  // EXPIRED_CARD("PAY_1004", "만료된 카드입니다"),
+    // 카드 관련 (1000번대)
+    INVALID_CARD_NUMBER("PAY_1001", "유효하지 않은 카드번호입니다"),
+    INVALID_CVC("PAY_1002", "CVC 번호가 유효하지 않습니다"),
+    // EXPIRED_CARD("PAY_1004", "만료된 카드입니다"),
 
-  // // 거래 관련 (2000번대)
-  // INVALID_AMOUNT("PAY_2001", "유효하지 않은 금액입니다"),
-  // DUPLICATE_TRANSACTION("PAY_2002", "중복된 거래입니다"),
-  // TRANSACTION_LIMIT_EXCEEDED("PAY_2003", "거래 한도를 초과했습니다"),
-  // MERCHANT_ERROR("PAY_2004", "가맹점 정보 오류입니다"),
+    // // 거래 관련 (2000번대)
+    // INVALID_AMOUNT("PAY_2001", "유효하지 않은 금액입니다"),
+    // DUPLICATE_TRANSACTION("PAY_2002", "중복된 거래입니다"),
+    // TRANSACTION_LIMIT_EXCEEDED("PAY_2003", "거래 한도를 초과했습니다"),
+    // MERCHANT_ERROR("PAY_2004", "가맹점 정보 오류입니다"),
 
-  // 시스템 관련 (9000번대)
-  NETWORK_ERROR("PAY_9001", "네트워크 오류가 발생했습니다"),
-  API_TIMEOUT("PAY_9002", "API 응답 시간이 초과되었습니다"),
-  EXTERNAL_API_ERROR("PAY_9003", "외부 결제 시스템 오류입니다"),
-  SYSTEM_ERROR("PAY_9999", "시스템 오류가 발생했습니다"),
+    // 시스템 관련 (9000번대)
+    NETWORK_ERROR("PAY_9001", "네트워크 오류가 발생했습니다"),
+    API_TIMEOUT("PAY_9002", "API 응답 시간이 초과되었습니다"),
+    EXTERNAL_API_ERROR("PAY_9003", "외부 결제 시스템 오류입니다"),
+    SYSTEM_ERROR("PAY_9999", "시스템 오류가 발생했습니다"),
 
-  // 기타
-  UNKNOWN_ERROR("PAY_E999", "알 수 없는 오류가 발생했습니다");
+    // 기타
+    UNKNOWN_ERROR("PAY_E999", "알 수 없는 오류가 발생했습니다");
 
-  private final String code;
-  private final String message;
+    private final String code;
+    private final String message;
 
-  /**
-   * 금융망 API 응답 코드를 프로젝트 내부 코드로 매핑
-   */
-  public static PaymentErrorCode fromApiCode(String ssafyCode) {
-    if (ssafyCode == null) {
-      return UNKNOWN_ERROR;
+    /**
+     * 금융망 API 응답 코드를 프로젝트 내부 코드로 매핑
+     */
+    public static PaymentErrorCode fromApiCode(String ssafyCode) {
+        if (ssafyCode == null) {
+            return UNKNOWN_ERROR;
+        }
+
+        return switch (ssafyCode) {
+            case "H0000" -> SUCCESS;
+            case "A1054" -> INVALID_CARD_NUMBER;
+            case "A1055" -> INVALID_CVC;
+            // case "H1002":
+            // return INSUFFICIENT_BALANCE;
+            // case "H1003":
+            // return INVALID_CARD;
+            // case "H1004":
+            // return EXPIRED_CARD;
+            // case "H2001":
+            // return INVALID_AMOUNT;
+            // case "H2002":
+            // return DUPLICATE_TRANSACTION;
+            // case "H2003":
+            // return TRANSACTION_LIMIT_EXCEEDED;
+            // case "H2004":
+            // return MERCHANT_ERROR;
+            case "H9001" -> NETWORK_ERROR;
+            case "H9002" -> API_TIMEOUT;
+            case "H9999" -> EXTERNAL_API_ERROR;
+            default -> UNKNOWN_ERROR;
+        };
     }
 
-    switch (ssafyCode) {
-      case "H0000":
-        return SUCCESS;
-      case "A1054":
-        return INVALID_CARD_NUMBER;
-      case "A1055":
-        return INVALID_CVC;
-      // case "H1002":
-      // return INSUFFICIENT_BALANCE;
-      // case "H1003":
-      // return INVALID_CARD;
-      // case "H1004":
-      // return EXPIRED_CARD;
-
-      // case "H2001":
-      // return INVALID_AMOUNT;
-      // case "H2002":
-      // return DUPLICATE_TRANSACTION;
-      // case "H2003":
-      // return TRANSACTION_LIMIT_EXCEEDED;
-      // case "H2004":
-      // return MERCHANT_ERROR;
-      case "H9001":
-        return NETWORK_ERROR;
-      case "H9002":
-        return API_TIMEOUT;
-      case "H9999":
-        return EXTERNAL_API_ERROR;
-      default:
+    public static PaymentErrorCode fromCode(String code) {
+        for (PaymentErrorCode errorCode : values()) {
+            if (errorCode.getCode().equals(code)) {
+                return errorCode;
+            }
+        }
         return UNKNOWN_ERROR;
     }
-  }
 
-  /**
-   * 성공 여부 확인
-   */
-  public boolean isSuccess() {
-    return this == SUCCESS;
-  }
 
-  /**
-   * 코드로 ErrorCode 찾기
-   */
-  public static PaymentErrorCode fromCode(String code) {
-    for (PaymentErrorCode errorCode : values()) {
-      if (errorCode.getCode().equals(code)) {
-        return errorCode;
-      }
+    /**
+     * 성공 여부 확인
+     */
+    public boolean isSuccess() {
+        return this == SUCCESS;
     }
-    return UNKNOWN_ERROR;
-  }
 }

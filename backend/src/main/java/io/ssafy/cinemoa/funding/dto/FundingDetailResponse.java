@@ -79,6 +79,9 @@ public class FundingDetailResponse {
     @AllArgsConstructor
     public static class CategoryInfo {
         private Long categoryId;
+        private String categoryName;
+        private Long parentCategoryId;
+        private String parentCategoryName;
     }
 
     @Data
