@@ -35,16 +35,34 @@ public enum PaymentErrorCode {
     /**
      * 금융망 API 응답 코드를 프로젝트 내부 코드로 매핑
      */
-    public static PaymentErrorCode fromApiCode(String ssafyCode) {
+    public static PaymentErrorCode fromCode(String ssafyCode) {
         if (ssafyCode == null) {
             return UNKNOWN_ERROR;
         }
-        for (PaymentErrorCode errorCode : PaymentErrorCode.values()) {
-            if (errorCode.getCode().equals(ssafyCode)) {
-                return errorCode;
-            }
-        }
-        return UNKNOWN_ERROR;
+
+        return switch (ssafyCode) {
+            case "H0000" -> SUCCESS;
+            case "A1054" -> INVALID_CARD_NUMBER;
+            case "A1055" -> INVALID_CVC;
+            // case "H1002":
+            // return INSUFFICIENT_BALANCE;
+            // case "H1003":
+            // return INVALID_CARD;
+            // case "H1004":
+            // return EXPIRED_CARD;
+            // case "H2001":
+            // return INVALID_AMOUNT;
+            // case "H2002":
+            // return DUPLICATE_TRANSACTION;
+            // case "H2003":
+            // return TRANSACTION_LIMIT_EXCEEDED;
+            // case "H2004":
+            // return MERCHANT_ERROR;
+            case "H9001" -> NETWORK_ERROR;
+            case "H9002" -> API_TIMEOUT;
+            case "H9999" -> EXTERNAL_API_ERROR;
+            default -> UNKNOWN_ERROR;
+        };
     }
 
     /**
@@ -52,17 +70,5 @@ public enum PaymentErrorCode {
      */
     public boolean isSuccess() {
         return this == SUCCESS;
-    }
-
-    /**
-     * 코드로 ErrorCode 찾기
-     */
-    public static PaymentErrorCode fromCode(String code) {
-        for (PaymentErrorCode errorCode : values()) {
-            if (errorCode.getCode().equals(code)) {
-                return errorCode;
-            }
-        }
-        return UNKNOWN_ERROR;
     }
 }

@@ -11,7 +11,6 @@ import io.ssafy.cinemoa.funding.dto.ScreeningDto;
 import io.ssafy.cinemoa.funding.dto.SuggestedProjectItemDto;
 import io.ssafy.cinemoa.funding.dto.SuggestedProjectListResponse;
 import io.ssafy.cinemoa.funding.enums.FundingType;
-import io.ssafy.cinemoa.funding.repository.FundingCategoryRepository;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.global.enums.ResourceCode;
@@ -46,7 +45,6 @@ public class UserSuggestedService {
     private final UserRepository userRepository; // 사용자 정보 조회
     private final FundingRepository fundingRepository; // 펀딩 데이터 조회
     private final UserFavoriteRepository userFavoriteRepository; // 사용자 좋아요 조회
-    private final FundingCategoryRepository fundingCategoryRepository; // 펀딩 카테고리 조회
     private final TransactionRepository transactionRepository; // 참여자 수 조회 (Transaction 기반)
 
     /**
@@ -99,14 +97,13 @@ public class UserSuggestedService {
         // 7. 관련 데이터 조회 (통계, 좋아요, 카테고리)
         Map<Long, FundingStatDto> fundingStats = getFundingStats(fundingIds);
         Set<Long> likedFundingIds = getLikedFundingIds(userId, fundingIds);
-        Map<Long, Long> fundingCategories = getFundingCategories(fundingIds);
 
         // 8. DTO 변환
         List<SuggestedProjectItemDto> items = fundingPage.getContent().stream()
                 .map(funding -> convertToSuggestedProjectItemDto(
                         funding, fundingStats.get(funding.getFundingId()),
                         likedFundingIds.contains(funding.getFundingId()),
-                        fundingCategories.get(funding.getFundingId())))
+                        funding.getCategory().getCategoryId()))
                 .collect(Collectors.toList());
 
         // 9. 페이지네이션 정보 생성
@@ -252,20 +249,6 @@ public class UserSuggestedService {
      */
     private Set<Long> getLikedFundingIds(Long userId, List<Long> fundingIds) {
         return userFavoriteRepository.findLikedFundingIdsByUserIdAndFundingIds(userId, fundingIds); // 데이터베이스 일괄 조회
-    }
-
-    /**
-     * 펀딩별 카테고리 ID 조회
-     *
-     * @param fundingIds 펀딩 ID 목록
-     * @return 펀딩 ID를 키로 하는 카테고리 ID Map
-     */
-    private Map<Long, Long> getFundingCategories(List<Long> fundingIds) {
-        return fundingCategoryRepository.findByFundingIds(fundingIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        fc -> fc.getFunding().getFundingId(),
-                        fc -> fc.getCategory().getCategoryId()));
     }
 
     /**
