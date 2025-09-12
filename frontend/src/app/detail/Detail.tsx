@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import CalenderIcon from '@/component/icon/calenderIcon';
 import TimeIcon from '@/component/icon/timeIcon';
 import LocationIcon from '@/component/icon/locationIcon';
+import KakaoMap from '@/component/KakaoMap';
 
 export default function Detail() {
   return (
@@ -107,6 +108,7 @@ export default function Detail() {
               >
                 지도
               </div>
+              <KakaoMap />
             </div>
           </CardContent>
         </Card>
