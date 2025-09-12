@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.funding.repository;
 
+import io.ssafy.cinemoa.category.repository.CategoryRepository;
 import io.ssafy.cinemoa.cinema.enums.CinemaFeature;
 import io.ssafy.cinemoa.funding.dto.SearchRequest;
 import io.ssafy.cinemoa.funding.dto.SearchResultDto;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Repository;
 public class FundingFilterRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final CategoryRepository categoryRepository;
 
     public Page<SearchResultDto> findWithFilters(SearchRequest request, Pageable pageable) {
         // 1. 기본 쿼리 구성 (userId를 먼저 추가)
@@ -67,6 +69,10 @@ public class FundingFilterRepository {
         // 종료 여부 필터
         if (request.getIsClosed() != null) {
             queryBuilder.addClosedFilter(request.getIsClosed());
+        }
+
+        if (request.getCategory() != null) {
+            queryBuilder.addCategoryFilter(request.getCategory(), categoryRepository);
         }
     }
 
@@ -273,6 +279,30 @@ public class FundingFilterRepository {
                     .collect(Collectors.joining(","));
             sql.append(" AND c.district IN (").append(placeholders).append(")");
             params.addAll(regions);
+        }
+
+        public void addCategoryFilter(Long categoryId, CategoryRepository categoryRepository) {
+            boolean isParent = categoryRepository.isParent(categoryId);
+
+            if (isParent) {
+                List<Long> childIds = categoryRepository.findSubCategoryIdsByParentId(categoryId);
+
+                if (!childIds.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int idx = 0; idx < childIds.size(); ++idx) {
+                        if (idx > 0) {
+                            sb.append(",");
+                        }
+                        sb.append("?");
+                    }
+                    sql.append(" AND f.category_id IN(").append(sb).append(")");
+                    params.addAll(childIds);
+                }
+                return;
+            }
+
+            sql.append(" AND f.category_id = ?");
+            params.add(categoryId);
         }
 
         public void addTheaterTypeFilter(CinemaFeature theaterType) {
