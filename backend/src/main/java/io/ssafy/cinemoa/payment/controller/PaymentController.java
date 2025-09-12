@@ -29,9 +29,18 @@ public class PaymentController {
         // request.getFundingId(), request.getAmount());
         // Long userId = Long.valueOf(userDetails.getUsername());
         Long userId = 1L;
-        FundingPaymentResponse response = paymentService.processPayment(userId, request);
+        FundingPaymentResponse response = paymentService.processFundingPayment(userId, request);
 
         return ResponseEntity.ok(ApiResponse.ofSuccess(response));
     }
+
+    // 펀딩금 환불
+    // @PostMapping("/{fundingId}/hold")
+    // public ResponseEntity<ApiResponse<?>>
+    // holdSeatOfFunding(@PathVariable("/fundingId") Long fundingId,
+    // @RequestBody FundingHoldRequest request) {
+    // paymentService.holdSeatOf(request.getUserId(), fundingId);
+    // return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 성공"));
+    // }
 
 }

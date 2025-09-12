@@ -72,6 +72,22 @@ public class FinanceApiUtils {
   }
 
   /**
+   * 계좌번호 마스킹
+   * 
+   * 로그 출력 시 계좌번호를 마스킹하여 보안을 강화합니다.
+   * 형식: 0016****358792
+   * 
+   * @param accountNo 원본 계좌번호
+   * @return 마스킹된 계좌번호
+   */
+  public static String maskAccountNumber(String accountNo) {
+    if (accountNo == null || accountNo.length() < 8) {
+      return "****";
+    }
+    return accountNo.substring(0, 4) + "****" + accountNo.substring(accountNo.length() - 6);
+  }
+
+  /**
    * 전송 날짜시간 포맷팅
    * 
    * API 요청에 사용되는 날짜와 시간을 동시에 반환합니다.
@@ -90,9 +106,10 @@ public class FinanceApiUtils {
    * 
    * @param config  API 설정 객체
    * @param apiName API 서비스명
+   * @param isAdmin 관리자 user-key 사용 유무
    * @return 구성된 ReqHeader 객체
    */
-  public static ReqHeader buildCommonHeader(FinanceApiConfig config, String apiName) {
+  public static ReqHeader buildCommonHeader(FinanceApiConfig config, String apiName, boolean isAdmin) {
     String[] dateTime = formatTransmissionDateTime();
 
     return ReqHeader.builder()
@@ -104,7 +121,7 @@ public class FinanceApiUtils {
         .apiServiceCode(apiName)
         .institutionTransactionUniqueNo(generateTransactionUniqueNo())
         .apiKey(config.getApiKey())
-        .userKey(config.getUserKey())
+        .userKey(isAdmin ? config.getAdminUserKey() : config.getUserKey())
         .build();
   }
 }

@@ -1,9 +1,7 @@
 package io.ssafy.cinemoa.external.finance.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -19,6 +17,9 @@ public class FinanceApiConfig {
     @Value("${finance.api.user-key}") // 향후 삭제 가능
     private String userKey;
 
+    @Value("${finance.api.admin-user-key}") // 향후 삭제 가능
+    private String adminUserKey;
+
     @Value("${finance.api.institution-code}")
     private String institutionCode;
 
@@ -33,8 +34,9 @@ public class FinanceApiConfig {
         return baseUrl + "/edu/creditCard/createCreditCardTransaction";
     }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+    // 계좌 입금
+    public String getAccounDepositUrl() {
+        return baseUrl + "/edu/demandDeposit/updateDemandDepositAccountDeposit";
     }
+
 }
