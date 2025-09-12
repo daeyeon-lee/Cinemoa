@@ -6,14 +6,103 @@ import CalenderIcon from '@/component/icon/calenderIcon';
 import TimeIcon from '@/component/icon/timeIcon';
 import LocationIcon from '@/component/icon/locationIcon';
 import KakaoMap from '@/component/KakaoMap';
+import { CineDetailCard } from '@/components/cards/CineDetailCard';
+
+type FundingDetailData = {
+  type: 'funding';
+  funding: {
+    fundingId: number;
+    title: string;
+    bannerUrl: string;
+    content: string;
+    state: string;
+    progressRate: number;
+    fundingEndsOn: string;
+    price: number;
+  };
+  proposer: {
+    proposerId: number;
+    creatorNickname: string;
+  };
+  screening: {
+    videoName: string;
+    screeningTitle: string;
+    screenStartsOn: number;
+    screenEndsOn: number;
+  };
+  stat: {
+    maxPeople: number;
+    participantCount: number;
+    viewCount: number;
+    likeCount: number;
+    isLiked: boolean;
+  };
+  metadata: {
+    categoryId: number;
+    recommendationScore: number;
+  };
+  screen: {
+    screenId: number;
+    screenName: string;
+  };
+  cinema: {
+    cinemaId: number;
+    cinemaName: string;
+    city: string;
+    district: string;
+  };
+};
+
+const sampleDetailFundingData: FundingDetailData = {
+  type: 'funding',
+  funding: {
+    fundingId: 1,
+    title: '타이타닉',
+    bannerUrl: 'images/image.png',
+    content: '명작 <타이타닉>을 대형 스크린에서 함께 봅시다!',
+    state: 'ON_PROGRESS',
+    progressRate: 80,
+    fundingEndsOn: '2025-12-15T23:59:59+09:00',
+    price: 10000,
+  },
+  proposer: {
+    proposerId: 2,
+    creatorNickname: '당근123',
+  },
+  screening: {
+    videoName: '타이타닉',
+    screeningTitle: '명작 <타이타닉> 봅시다!',
+    screenStartsOn: 19,
+    screenEndsOn: 21,
+  },
+  stat: {
+    maxPeople: 100,
+    participantCount: 80,
+    viewCount: 144,
+    likeCount: 34,
+    isLiked: true,
+  },
+  metadata: {
+    categoryId: 1,
+    recommendationScore: 13,
+  },
+  screen: {
+    screenId: 1,
+    screenName: '범계 롯데시네마 7관',
+  },
+  cinema: {
+    cinemaId: 1,
+    cinemaName: '안양(범계) 롯데시네마',
+    city: '안양시',
+    district: '동안구',
+  },
+};
 
 export default function Detail() {
   return (
     // 이동 시키는 navbar
     <section>
-      <div className="w-1200 h-[461px] my-4 border-2 border-stroke-1 rounded-[8px] h2-b text-tertiary flex items-center justify-center">
-        카드
-      </div>
+      <CineDetailCard data={sampleDetailFundingData} loadingState="ready" />
       <div className="flex flex-col gap-10 mt-10">
         <div className="flex w-max px-4 py-2 gap-4">
           <Button variant="brand1" size="md" className="w-full rounded-[25px]">
@@ -73,42 +162,41 @@ export default function Detail() {
             </div>
             <Separator />
             {/* 상영일 정보 */}
-            <div className="flex flex-col gap-4 mt-4">
-              <div className="flex items-center gap-4">
+            <div className="flex gap-6 justify-between w-full mt-4">
+              {/* 왼쪽: 상영 정보 */}
+              <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
-                  <CalenderIcon />
-                  <div>
-                    <p className="p2 text-tertiary">상영일</p>
-                    <p className="p1 text-primary">2025년 10월 10일 (금)</p>
+                  <div className="flex items-center gap-4">
+                    <CalenderIcon />
+                    <div>
+                      <p className="p2 text-tertiary">상영일</p>
+                      <p className="p1 text-primary">2025년 10월 10일 (금)</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <TimeIcon />
+                    <div>
+                      <p className="p2 text-tertiary">관람 시간</p>
+                      <p className="p1 text-primary">14:00 ~ 18:00</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <LocationIcon />
+                    <div>
+                      <p className="p2 text-tertiary">영화관 주소</p>
+                      <p className="p1 text-primary">서울특별시 강남구 테헤란로 152</p>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <TimeIcon />
-                  <div>
-                    <p className="p2 text-tertiary">관람 시간</p>
-                    <p className="p1 text-primary">14:00 ~ 18:00</p>
-                  </div>
-                </div>
+              {/* 오른쪽: 카카오맵 */}
+              <div className="rounded-2xl overflow-hidden ">
+                <KakaoMap width="647px" height="300px" />
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <LocationIcon />
-                  <div>
-                    <p className="p2 text-tertiary">영화관 주소</p>
-                    <p className="p1 text-primary">서울특별시 강남구 테헤란로 152</p>
-                  </div>
-                </div>
-              </div>
-              {/* 여기에 지도 표시 컴포넌트 추가 */}
-              <div
-                className="w-[647px] h-[545px] my-4
-            border-2 border-stroke-1 rounded-[8px] h2-b text-tertiary flex items-center justify-center"
-              >
-                지도
-              </div>
-              <KakaoMap />
             </div>
           </CardContent>
         </Card>
