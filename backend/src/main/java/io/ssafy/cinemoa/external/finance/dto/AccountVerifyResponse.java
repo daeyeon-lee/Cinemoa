@@ -16,7 +16,7 @@ public class AccountVerifyResponse {
     private String accountTypeName;      // 계좌 유형 이름
     private String accountCreatedDate;   // 계좌 개설일 (YYYYMMDD)
     private String accountExpiryDate;    // 계좌 만기일 (YYYYMMDD)
-    private String dailyTransferLimit;   // 1일 이체 한도
+    private String dailyTransferLimit;   // 1일 이체 한도a
     private String oneTimeTransferLimit; // 1회 이체 한도
     private String accountBalance;       // 계좌 잔액
     private String lastTransactionDate;  // 최종 거래일 (없을 수 있음)

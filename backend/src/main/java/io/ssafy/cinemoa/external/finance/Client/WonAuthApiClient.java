@@ -78,7 +78,7 @@ public class WonAuthApiClient {
     }
 
     // ---------------------------------------------------------------------
-    // 2) 1원 인증 검증: checkAuthCode → WonVerify
+    // 2) 1원 인증 검증
     // ---------------------------------------------------------------------
     public BaseApiResponse<WonVerifyResponse> checkAuthCode(String accountNo, String authText, String authCode) {
         WonVerifyRequest request = buildWonVerifyRequest(accountNo, authText, authCode);

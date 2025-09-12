@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -36,13 +37,10 @@ public class AccountVerifyApiClient {
     /**
      * 계좌 유효성 검증 호출
      */
-    public BaseApiResponse<AccountVerifyResponse> verifyAccount(String accountNo) {
-        AccountVerifyRequest request = buildAccountVerifyRequest(accountNo);
-        // 공통 헤더 생성
-        HttpEntity<AccountVerifyRequest> entity = new HttpEntity<>(request, createHeaders());
 
-        log.info("계좌 확인 API 호출 시작(verifyAccount) - 계좌: {}",
-                maskAccountNumber(accountNo));
+    public boolean verifyAccount(String accountNo) {
+        AccountVerifyRequest request = buildAccountVerifyRequest(accountNo);
+        HttpEntity<AccountVerifyRequest> entity = new HttpEntity<>(request, createHeaders());
 
         ResponseEntity<BaseApiResponse<AccountVerifyResponse>> response =
                 restTemplate.exchange(
@@ -53,9 +51,13 @@ public class AccountVerifyApiClient {
                 );
 
         BaseApiResponse<AccountVerifyResponse> body = response.getBody();
-        log.info("계좌 확인 API 응답 수신(verifyAccount) - HTTP: {}", response.getStatusCode());
-        return body;
+        String code = (body != null && body.getHeader() != null)
+                ? body.getHeader().getResponseCode()
+                : null;
+
+        return "H0000".equals(code); // 👈 성공 코드일 때 true 반환
     }
+
 
     // ----------------------------- 빌더/유틸 -----------------------------
     private AccountVerifyRequest buildAccountVerifyRequest(String accountNo) {
@@ -93,3 +95,5 @@ public class AccountVerifyApiClient {
         return accountNo.substring(0, Math.min(3, len)) + "****" + accountNo.substring(len - 4);
     }
 }
+
+
