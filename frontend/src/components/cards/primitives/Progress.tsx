@@ -26,10 +26,7 @@ const Progress: React.FC<ProgressProps> = ({ value, height = 4, showLabel = fals
       {showLabel && <div className="text-xs text-slate-300 mb-1">{clampedValue}%</div>}
       <div className="w-full bg-slate-700 rounded-full overflow-hidden" style={{ height }}>
         <div
-          className={cn(
-            'h-full bg-brand1-primary transition-all duration-300 ease-out',
-            'bg-gradient-to-r from-red-500 to-red-400',
-          )}
+          className={cn('h-full bg-Brand1-Primary transition-all duration-300 ease-out')}
           style={{ width: `${clampedValue}%` }}
         />
       </div>
