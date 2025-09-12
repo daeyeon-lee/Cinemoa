@@ -38,7 +38,7 @@ public class User extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(50)", nullable = false)
     private String nickname;
 
-    @Column(columnDefinition = "varchar(11)", name = "phone_number", nullable = false)
+    @Column(columnDefinition = "varchar(11)", name = "phone_number")
     private String phoneNumber;
 
     @Column(name = "profile_img_url", nullable = false)
@@ -50,6 +50,9 @@ public class User extends BaseTimeEntity {
     @Column(name = "is_adult", nullable = false)
     @ColumnDefault("false")
     private Boolean isAdult;
+
+    @Column(columnDefinition = "varchar(11)", name = "bank_code")
+    private String bankCode;
 
     @Override
     public final boolean equals(Object o) {
@@ -77,5 +80,11 @@ public class User extends BaseTimeEntity {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer()
                 .getPersistentClass()
                 .hashCode() : getClass().hashCode();
+    }
+
+    // 추가 정보 업데이트 : sara
+    public void updateAdditionalInfo(String refundAccountNumber, String bankCode) {
+        this.refundAccountNumber = refundAccountNumber;
+        this.bankCode = bankCode;
     }
 }

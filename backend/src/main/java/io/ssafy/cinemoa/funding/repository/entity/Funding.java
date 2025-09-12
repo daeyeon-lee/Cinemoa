@@ -87,6 +87,6 @@ public class Funding extends BaseTimeEntity {
     @Column(name = "funding_type", nullable = false)
     private FundingType fundingType;
 
-    @Column(name = "funding_account", nullable = false)
+    @Column(name = "funding_account")
     private String fundingAccount;
 }
