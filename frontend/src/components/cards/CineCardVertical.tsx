@@ -6,144 +6,95 @@ import { VoteInfo } from './blocks/VoteInfo';
 import { FundingInfo } from './blocks/FundingInfo';
 import { HeartIcon } from '../icons/HeartIcon';
 
-// 백엔드 데이터 타입 정의
-type FundingData = {
-  type: 'funding';
+// 목록 API에 맞춘 데이터 타입 정의 (펀딩/투표 공통)
+type ListCardData = {
   funding: {
     fundingId: number;
     title: string;
     bannerUrl: string;
     state: string;
     progressRate: number;
-    isClosed: boolean;
-    fundingStartsOn: string;
     fundingEndsOn: string;
+    screenDate: string;
     price: number;
-  };
-  proposer: {
-    proposerId: number;
-    creatorNickname: string;
-  };
-  screening: {
-    videoName: string;
-    screeningTitle: string;
-    screenStartsOn: number;
-    screenEndsOn: number;
-    cinema: {
-      cinemaName: string;
-      theaterType: string;
-      region: string;
-    };
-  };
-  participation: {
-    participantCount: number;
     maxPeople: number;
-    viewCount: number;
-    likeCount: number;
-    isLike: boolean;
+    participantCount: number;
+    favoriteCount: number;
+    isLiked: boolean;
+    fundingType: 'FUNDING' | 'VOTE';
   };
-  metadata: {
-    categoryId: number;
-    recommendationScore: number;
+  cinema: {
+    cinemaId: number;
+    cinemaName: string;
+    city: string;
+    district: string;
   };
 };
 
-type VoteData = {
-  type: 'vote';
-  vote: {
-    fundingId: number;
-    title: string;
-    bannerUrl: string;
-    state: string;
-    isClosed: boolean;
-    fundingStartsOn: string;
-    fundingEndsOn: string;
-  };
-  proposer: {
-    proposerId: number;
-    proposerNickname: string;
-  };
-  screening: {
-    videoName: string;
-    screeningTitle: string;
-    screenStartsOn: string;
-    screenEndsOn: string;
-    cinema: {
-      cinemaName: string;
-      cinemaType: string;
-      region: string;
-    };
-  };
-  participation: {
-    participantCount: number;
-    maxPeople: number;
-    viewCount: number;
-    likeCount: number;
-    isLike: boolean;
-  };
-  metadata: {
-    categoryId: number;
-    recommendationScore: number;
-  };
-};
+// 호환성을 위한 타입 별칭
+type FundingData = ListCardData;
+type VoteData = ListCardData;
 
 type CineCardProps = {
   data: FundingData | VoteData;
   loadingState?: 'ready' | 'loading' | 'error';
-  onVoteClick?: (fundingId: number) => void;
-  onCardClick?: (fundingId: number) => void;
+  onCardClick?: (id: number) => void;
+  onVoteClick?: (id: number) => void;
 };
 
 const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick }) => {
-  const isFunding = data.type === 'funding';
-
-  const formatRegion = (region: string) => {
-    const regionMap: { [key: string]: string } = {
-      seoul: '서울',
-      busan: '부산',
-      incheon: '인천',
-      // 추가 지역 매핑
-    };
-    return regionMap[region] || region;
-  };
+  const isFunding = data.funding.fundingType === 'FUNDING';
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getMonth() + 1}/${date.getDate()}`;
   };
 
-  const formatTime = (hour: number) => {
-    return `${hour}:00`;
+  const formatLocation = (city: string, district: string) => {
+    return `${city} ${district}`;
   };
 
   const handleCardClick = () => {
     if (onCardClick) {
-      const fundingId = isFunding ? data.funding.fundingId : data.vote.fundingId;
-      onCardClick(fundingId);
+      onCardClick(data.funding.fundingId);
     }
   };
 
   const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onVoteClick) {
-      const fundingId = isFunding ? data.funding.fundingId : data.vote.fundingId;
-      onVoteClick(fundingId);
+      onVoteClick(data.funding.fundingId);
     }
   };
 
+  if (loadingState === 'loading') {
+    return (
+      <div className="w-full h-[300px] bg-slate-700 animate-pulse rounded-xl">
+        <div className="p-4 space-y-2">
+          <div className="h-4 bg-slate-600 rounded w-3/4"></div>
+          <div className="h-3 bg-slate-600 rounded w-1/2"></div>
+          <div className="h-20 bg-slate-600 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingState === 'error') {
+    return (
+      <div className="w-full h-[300px] bg-slate-700 rounded-xl flex items-center justify-center">
+        <p className="text-slate-400">카드를 불러올 수 없습니다</p>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="min-w-44 overflow-hidden cursor-pointer hover:bg-slate-750 transition-colors"
-      onClick={handleCardClick}
-    >
-      {/* 상단 영역 (이미지 + 정보) */}
-      <div className="p-3 bg-slate-800 rounded-xl space-y-2">
-        {/* 이미지 영역 */}
+    <div className="w-full h-[300px] bg-slate-800 rounded-xl cursor-pointer transition-transform hover:scale-[1.02]" onClick={handleCardClick}>
+      <div className="p-[11px] space-y-[7px] h-full flex flex-col">
         <div className="flex gap-[5px]">
           <div className="flex-1 h-24">
             <Media
-              src={isFunding ? data.funding.bannerUrl : data.vote.bannerUrl}
-              alt={data.screening.videoName}
+              src={data.funding.bannerUrl}
+              alt={data.funding.title}
               aspect="auto"
               height={96}
               loadingState={loadingState}
@@ -154,7 +105,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               <>
                 {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
                 <button onClick={handleVoteClick} className="p-0 rounded-full transition-transform hover:scale-110">
-                  <HeartIcon filled={data.participation.isLike} size={14} />
+                  <HeartIcon filled={data.funding.isLiked} size={14} />
                 </button>
                 {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
                 <div className="flex-1 min-h-0">
@@ -169,59 +120,53 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
         </div>
 
         <div className="space-y-2">
-          {/* 상영물 제목 */}
+          {/* 프로젝트 제목 */}
           <h3 className="text-sm font-semibold leading-tight text-slate-50 line-clamp-2 h-10">
-            {data.screening.videoName}
+            {data.funding.title}
           </h3>
-          {/* 배지 영역: 나중에 컴포넌트 넣기 */}
-          {/* px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded */}
+          {/* 배지 영역 */}
           <div className="flex gap-1 flex-wrap ">
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {formatRegion(data.screening.cinema.region)}
+              {formatLocation(data.cinema.city, data.cinema.district)}
             </span>
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {isFunding ? formatDate(data.funding.fundingEndsOn) : formatDate(data.vote.fundingEndsOn)}
+              {formatDate(data.funding.fundingEndsOn)}
             </span>
-            {isFunding && (
-              <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-                {formatTime(data.screening.screenStartsOn)}-{formatTime(data.screening.screenEndsOn)}
-              </span>
-            )}
+            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
+              {formatDate(data.funding.screenDate)}
+            </span>
           </div>
-          {/* 프로젝트 제목 */}
-          <p className="text-xs font-normal text-slate-300 line-clamp-2 leading-none">
-            {data.screening.screeningTitle}
-          </p>
+          {/* 영화관 이름 */}
+          <h4 className="text-xs font-normal leading-tight text-slate-300 line-clamp-2 h-8">
+            {data.cinema.cinemaName}
+          </h4>
         </div>
-      </div>
 
-      {/* 절취선 */}
-      <PerforationLine />
+        <PerforationLine />
 
-      {/* 하단 영역 */}
-      <div className="p-3 bg-slate-800 rounded-xl">
-        {isFunding ? (
-          <FundingInfo
-            price={data.funding.price}
-            progressRate={data.funding.progressRate}
-            participantCount={data.participation.participantCount}
-            maxPeople={data.participation.maxPeople}
-            fundingEndsOn={data.funding.fundingEndsOn}
-            loadingState={loadingState}
-          />
-        ) : (
-          <div onClick={handleVoteClick}>
-            <VoteInfo
-              likeCount={data.participation.likeCount}
-              isLiked={data.participation.isLike}
+        <div className="flex-1 flex flex-col justify-end min-h-0">
+          {isFunding ? (
+            <FundingInfo 
+              price={data.funding.price}
+              progressRate={data.funding.progressRate}
+              participantCount={data.funding.participantCount}
+              maxPeople={data.funding.maxPeople}
+              fundingEndsOn={data.funding.fundingEndsOn}
               loadingState={loadingState}
             />
-          </div>
-        )}
+          ) : (
+            <VoteInfo 
+              likeCount={data.funding.favoriteCount}
+              isLiked={data.funding.isLiked}
+              loadingState={loadingState}
+              onClick={() => handleVoteClick({} as React.MouseEvent)}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 export { CineCardVertical };
-export type { CineCardProps, FundingData, VoteData };
+export type { FundingData, VoteData, ListCardData };
