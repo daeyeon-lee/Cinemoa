@@ -281,6 +281,9 @@ public class UserSuggestedService {
         // 메타데이터 DTO 생성
         MetadataDto metadata = createMetadataDto(funding, fundingStat, categoryId);
 
+        // 극장 정보 DTO 생성
+        SuggestedProjectItemDto.BriefCinemaInfo cinema = createCinemaDto(funding);
+
         return SuggestedProjectItemDto.builder()
                 .type(type)
                 .funding(type.equals("funding") ? fundingInfo : null)
@@ -289,6 +292,7 @@ public class UserSuggestedService {
                 .screening(screening)
                 .participation(participation)
                 .metadata(metadata)
+                .cinema(cinema)
                 .build();
     }
 
@@ -318,6 +322,7 @@ public class UserSuggestedService {
         return FundingInfoDto.builder()
                 .fundingId(funding.getFundingId())
                 .title(funding.getTitle())
+                .summary(funding.getSummary())
                 .bannerUrl(funding.getBannerUrl())
                 .state(funding.getState().name())
                 .progressRate(progressRate)
@@ -426,6 +431,21 @@ public class UserSuggestedService {
                 .nextCursor(nextCursor)
                 .hasNext(hasNext)
                 .totalCount(totalCount)
+                .build();
+    }
+
+    /**
+     * 극장 정보 DTO 생성
+     *
+     * @param funding 펀딩 엔티티
+     * @return 극장 정보 DTO
+     */
+    private SuggestedProjectItemDto.BriefCinemaInfo createCinemaDto(Funding funding) {
+        return SuggestedProjectItemDto.BriefCinemaInfo.builder()
+                .cinemaId(funding.getCinema().getCinemaId())
+                .cinemaName(funding.getCinema().getCinemaName())
+                .city(funding.getCinema().getCity())
+                .district(funding.getCinema().getDistrict())
                 .build();
     }
 }
