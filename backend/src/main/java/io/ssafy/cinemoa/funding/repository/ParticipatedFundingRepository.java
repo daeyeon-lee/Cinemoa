@@ -143,6 +143,7 @@ public class ParticipatedFundingRepository {
         ParticipatedFundingItemDto.BriefFundingInfo funding = ParticipatedFundingItemDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
                 .title(rs.getString("title"))
+                .summary(rs.getString("summary"))
                 .bannerUrl(rs.getString("banner_url"))
                 .state(rs.getString("state"))
                 .progressRate(progressRate)
@@ -174,7 +175,7 @@ public class ParticipatedFundingRepository {
 
         public void buildBaseQuery(Long userId) {
             sql.append("""
-                    SELECT f.funding_id, f.title, f.banner_url, f.state, f.ends_on, f.screen_day,
+                    SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
                            f.funding_type, f.max_people, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,

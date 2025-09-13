@@ -44,6 +44,13 @@ public class FundingInfoDto {
     private String title;
     
     /**
+     * 펀딩/투표 요약
+     * fundings 테이블의 summary 값
+     */
+    @JsonProperty("summary")
+    private String summary;
+    
+    /**
      * 펀딩/투표 배너 이미지 URL
      * fundings 테이블의 banner_url 값
      */
