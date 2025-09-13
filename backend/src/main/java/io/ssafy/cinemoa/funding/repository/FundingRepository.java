@@ -99,4 +99,22 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
      * @author sara
      */
     long countByLeader_IdAndFundingType(Long leaderId, FundingType fundingType);
+
+    /**
+     * 전체 데이터베이스에서 좋아요 수의 합계를 조회합니다.
+     * 
+     * @return 좋아요 수의 합계
+     * @author sara
+     */
+    @Query("SELECT COALESCE(SUM(fs.favoriteCount), 0) FROM FundingStat fs")
+    int findTotalFavoriteCount();
+
+    /**
+     * 전체 데이터베이스에서 조회수의 합계를 조회합니다.
+     * 
+     * @return 조회수의 합계
+     * @author sara
+     */
+    @Query("SELECT COALESCE(SUM(fs.viewCount), 0) FROM FundingStat fs")
+    int findTotalViewCount();
 }

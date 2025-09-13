@@ -7,8 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 분류 및 추천 정보를 담는 DTO 클래스
- * 펀딩과 투표의 카테고리 정보를 포함합니다.
+ * 추천 펀딩 메타데이터 DTO 클래스
+ * 
+ * API 경로: GET /api/user/{userId}/recommended-funding
  */
 @Data
 @Builder
@@ -18,12 +19,14 @@ public class MetadataDto {
     
     /**
      * 카테고리 ID
-     * funding_categories 테이블을 통해 연결된 카테고리 ID
-     * funding_tags -> tags 테이블을 통한 연결
      */
     @JsonProperty("categoryId")
     private Long categoryId;
-
+    
+    /**
+     * 추천 점수 (성공 가능성 기반)
+     * 달성률(0.5) + 보고싶어요(0.3) + 조회수(0.2) 가중치 적용
+     */
     @JsonProperty("recommendationScore")
-    private Integer recommendationScore;
+    private Double recommendationScore;
 }
