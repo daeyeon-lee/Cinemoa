@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Media } from '@/components/cards/primitives/Media';
@@ -8,6 +11,7 @@ import LocationIcon from '@/component/icon/locationIcon';
 import KakaoMap from '@/component/maps/KakaoMap';
 import { CineDetailCard } from '@/components/cards/CineDetailCard';
 
+// 더미데이터 타입
 type FundingDetailData = {
   type: 'funding';
   funding: {
@@ -53,6 +57,7 @@ type FundingDetailData = {
   };
 };
 
+// 더미데이터
 const sampleDetailFundingData: FundingDetailData = {
   type: 'funding',
   funding: {
@@ -99,26 +104,82 @@ const sampleDetailFundingData: FundingDetailData = {
 };
 
 export default function Detail() {
+  const [activeButton, setActiveButton] = useState('funding-info'); // 기본값 : 펀딩 소개 활성화
+
+  // 좋아요 상태 관리
+  const [isLiked, setIsLiked] = useState(sampleDetailFundingData.stat.isLiked);
+  const [likeCount, setLikeCount] = useState(sampleDetailFundingData.stat.likeCount);
+
+  const handleButtonClick = (buttonId: string, targetId: string) => {
+    // 버튼 클릭 시 해당 버튼 활성화
+    setActiveButton(buttonId);
+    // 해당 버튼 클릭 시 해당 컨텐츠 이동
+    document
+      .getElementById(targetId as 'funding-info' | 'movie-info' | 'theater-info' | 'refund-info')
+      ?.scrollIntoView({ behavior: 'smooth' }); // 부드럽게 이동
+  };
+
+  const handleLikeClick = () => {
+    if (isLiked) {
+      const newCount = likeCount - 1;
+      setLikeCount(newCount);
+      setIsLiked(false);
+      console.log('좋아요 취소, 새로운 카운트:', newCount);
+    } else {
+      const newCount = likeCount + 1;
+      setLikeCount(newCount);
+      setIsLiked(true);
+      console.log('좋아요 추가, 새로운 카운트:', newCount);
+    }
+  };
+
   return (
-    // 이동 시키는 navbar
     <section>
-      <CineDetailCard data={sampleDetailFundingData} loadingState="ready" />
+      {/* 펀딩 카드 */}
+      <CineDetailCard
+        data={sampleDetailFundingData}
+        loadingState="ready"
+        isLiked={isLiked}
+        likeCount={likeCount}
+        onPrimaryAction={handleLikeClick}
+      />
+      {/* navbar : 펀딩 소개, 상영물 소개, 영화관 정보, 환불 및 위약 정보 */}
       <div className="flex flex-col gap-10 mt-10">
         <div className="flex w-max px-4 py-2 gap-4">
-          <Button variant="brand1" size="md" className="w-full rounded-[25px]">
+          <Button
+            variant={activeButton === 'funding-info' ? 'brand1' : 'tertiary'}
+            size="md"
+            className="w-full rounded-[25px]"
+            onClick={() => handleButtonClick('funding-info', 'funding-info')}
+          >
             펀딩 소개
           </Button>
-          <Button variant="tertiary" size="md" className="w-full rounded-[25px]">
+          <Button
+            variant={activeButton === 'movie-info' ? 'brand1' : 'tertiary'}
+            size="md"
+            className="w-full rounded-[25px]"
+            onClick={() => handleButtonClick('movie-info', 'movie-info')}
+          >
             상영물 소개
           </Button>
-          <Button variant="tertiary" size="md" className="w-full rounded-[25px]">
+          <Button
+            variant={activeButton === 'theater-info' ? 'brand1' : 'tertiary'}
+            size="md"
+            className="w-full rounded-[25px]"
+            onClick={() => handleButtonClick('theater-info', 'theater-info')}
+          >
             영화관 정보
           </Button>
-          <Button variant="tertiary" size="md" className="w-full rounded-[25px]">
+          <Button
+            variant={activeButton === 'refund-info' ? 'brand1' : 'tertiary'}
+            size="md"
+            className="w-full rounded-[25px]"
+            onClick={() => handleButtonClick('refund-info', 'refund-info')}
+          >
             환불 및 위약 정보
           </Button>
         </div>
-        <Card className="flex flex-col gap-4" variant="detail">
+        <Card id="funding-info" className="flex flex-col gap-4" variant="detail">
           {/* 펀딩 상세 소개 */}
           <CardHeader>
             <CardTitle>펀딩 소개</CardTitle>
@@ -128,44 +189,45 @@ export default function Detail() {
             함께 모여서 대관해서 봐요! 펀딩 성공해서 꼭 같이 볼 수 있었으면 좋겠습니다.
           </CardContent>
         </Card>
-        <Card className="flex flex-col gap-4" variant="detail">
-          {/* 상영물 소개 */}
-          <CardHeader>
-            <CardTitle>상영물 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* 상영물 이미지 */}
-            <div className="flex gap-4">
-              <div className="w-20">
-                <Media src="/images/image.png" alt="상영물 정보" aspect="auto" height={112} />
+        <Separator />
+        <div id="movie-info" className="flex w-full gap-4">
+          <Card className="flex flex-col gap-4 w-1/3 min-h-[400px]">
+            {/* 상영물 소개 */}
+            <CardHeader>
+              <CardTitle>상영물 정보</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1">
+              {/* 상영물 이미지 */}
+              <div className="w-full">
+                <Media src="/images/image.png" alt="상영물 정보" aspect="4/3" height={200} />
               </div>
               {/* 상영물 정보 */}
-              <div className="w-full flex flex-col gap-2">
+              <div className="w-full flex flex-col gap-2 mt-3">
                 <h6 className="h6-b text-primary">케이팝 데몬 헌터스(상영물 제목)</h6>
                 <h6 className="p2 text-tertiary">
                   케이팝 슈퍼스타 루미, 미라, 조이, 그리고 제니. 화려한 무대 뒤, 그들은 사실 악마를 사냥하는
                   데몬헌터스다! 인간 세계를 위협하는 악마 군단에 맞서 싸우는 네 소녀의 화끈한 액션 판타지!(상영물 설명)
                 </h6>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="flex flex-col gap-4" variant="detail">
-          {/* 영화관 정보 */}
-          <CardHeader>
-            <CardTitle>영화관 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between mb-4">
-              <p className="p1-b text-primary">CGV 강남 (영화관 정보)</p>
-              <p className="p1-b text-primary">2관 | Dolby Atmos</p>
-            </div>
-            <Separator />
-            {/* 상영일 정보 */}
-            <div className="flex gap-6 justify-between w-full mt-4">
-              {/* 왼쪽: 상영 정보 */}
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4">
+              {/* 빈 공간을 늘리는 div */}
+              <div className="flex-1"></div>
+            </CardContent>
+          </Card>
+          <Card id="theater-info" className="flex flex-col gap-4 w-2/3 min-h-[400px]">
+            {/* 영화관 정보 */}
+            <CardHeader>
+              <CardTitle>영화관 정보</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between mb-4">
+                <p className="p1-b text-primary">CGV 강남 (영화관 정보)</p>
+                <p className="p1-b text-primary">2관 | Dolby Atmos</p>
+              </div>
+              <Separator />
+              {/* 상영일 정보 */}
+              <div className="flex flex-col gap-4 w-full mt-4">
+                {/* 상영 정보 */}
+                <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <CalenderIcon />
                     <div>
@@ -173,8 +235,6 @@ export default function Detail() {
                       <p className="p1 text-primary">2025년 10월 10일 (금)</p>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-4">
                     <TimeIcon />
                     <div>
@@ -182,8 +242,6 @@ export default function Detail() {
                       <p className="p1 text-primary">14:00 ~ 18:00</p>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-4">
                     <LocationIcon />
                     <div>
@@ -192,15 +250,15 @@ export default function Detail() {
                     </div>
                   </div>
                 </div>
+                {/* 카카오맵 */}
+                <div className="rounded-2xl overflow-hidden">
+                  <KakaoMap width="100%" height="300px" location="CGV 강남" />
+                </div>
               </div>
-              {/* 오른쪽: 카카오맵 */}
-              <div className="rounded-2xl overflow-hidden ">
-                <KakaoMap width="647px" height="300px" location="CGV 강남" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="flex flex-col gap-4">
+            </CardContent>
+          </Card>
+        </div>
+        <Card id="refund-info" className="flex flex-col gap-4" variant="detail">
           {/* 환불 및 위약 정보 */}
           <CardHeader>
             <CardTitle>환불 및 위약 정보</CardTitle>
