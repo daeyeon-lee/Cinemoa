@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import CalenderIcon from '@/component/icon/calenderIcon';
 import TimeIcon from '@/component/icon/timeIcon';
 import LocationIcon from '@/component/icon/locationIcon';
-import KakaoMap from '@/component/KakaoMap';
+import KakaoMap from '@/component/maps/KakaoMap';
 import { CineDetailCard } from '@/components/cards/CineDetailCard';
 
 type FundingDetailData = {
@@ -195,7 +195,7 @@ export default function Detail() {
               </div>
               {/* 오른쪽: 카카오맵 */}
               <div className="rounded-2xl overflow-hidden ">
-                <KakaoMap width="647px" height="300px" />
+                <KakaoMap width="647px" height="300px" location="CGV 강남" />
               </div>
             </div>
           </CardContent>
