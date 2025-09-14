@@ -19,7 +19,7 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
   endDate,
   progressRate,
   maxPeople,
-  loadingState = 'ready'
+  loadingState = 'ready',
 }) => {
   const calculateDaysLeft = (endDateString: string): number => {
     const endDateObj = new Date(endDateString);
@@ -30,22 +30,20 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
   };
 
   const daysLeft = calculateDaysLeft(endDate);
-  
+
   const getParticipantText = (): string => {
-    return type === 'funding' 
+    return type === 'funding'
       ? `${participantCount.toLocaleString()}명 참여`
       : `${participantCount.toLocaleString()}명이 보고싶어해요`;
   };
 
   const getTimeText = (): string => {
-    return type === 'funding'
-      ? `${daysLeft}일 남음`
-      : `${daysLeft}일 후 투표 종료`;
+    return type === 'funding' ? `${daysLeft}일 남음` : `${daysLeft}일 후 투표 종료`;
   };
 
   if (loadingState === 'loading') {
     return (
-      <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
+      <div className="flex flex-col justify-start items-start gap-3.5">
         <div className="self-stretch inline-flex justify-between items-center">
           <Skeleton className="h-7 w-32" />
           <Skeleton className="h-7 w-24" />
@@ -67,32 +65,20 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
     <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
       {/* 공통: 참여자수 + 남은시간 */}
       <div className="self-stretch inline-flex justify-between items-center">
-        <StatItem 
-          icon="people" 
-          text={getParticipantText()}
-          loadingState={loadingState}
-        />
-        <StatItem 
-          icon="time" 
-          text={getTimeText()}
-          loadingState={loadingState}
-        />
+        <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
+        <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
       </div>
-      
+
       {/* 펀딩 전용: 프로그래스 바 + 퍼센트 정보 */}
       {type === 'funding' && progressRate !== undefined && maxPeople !== undefined && (
         <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
           <Progress value={progressRate} height={10} />
           <div className="self-stretch h-7 inline-flex justify-between items-start">
             <div className="self-stretch inline-flex flex-col justify-start items-start">
-              <div className="justify-center text-Brand1-Primary text-xl font-bold font-['Pretendard'] leading-7">
-                {Math.round(progressRate)}%
-              </div>
+              <div className="justify-center h4 text-Brand1-Primary">{Math.round(progressRate)}%</div>
             </div>
             <div className="self-stretch inline-flex flex-col justify-start items-start">
-              <div className="justify-center text-gray-400 text-base font-medium font-['Pretendard'] leading-normal">
-                {maxPeople.toLocaleString()}명 모집
-              </div>
+              <div className="justify-center h6 text-tertiary">{maxPeople.toLocaleString()}명 모집</div>
             </div>
           </div>
         </div>

@@ -26,9 +26,9 @@ const buttonVariants = cva(
       },
       // 글자 크기 별도 variant
       textSize: {
-        sm: 'text-p3-b',
-        md: 'text-p2-b',
-        lg: 'text-h6-b',
+        sm: 'p3-b',
+        md: 'p2-b',
+        lg: 'h6-b',
       },
     },
     defaultVariants: {
