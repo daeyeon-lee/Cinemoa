@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Media } from './primitives/Media';
 import { ProjectInfoSection } from './sections/ProjectInfoSection';
 import { ProgressInfoSection } from './sections/ProgressInfoSection';
@@ -99,19 +99,23 @@ type CineDetailCardData = FundingDetailData | VoteDetailData;
 type CineDetailCardProps = {
   data: CineDetailCardData;
   loadingState?: 'ready' | 'loading';
+  isLiked?: boolean;
+  likeCount?: number;
   onPrimaryAction?: () => void;
   onSecondaryAction?: () => void;
 };
 
-const CineDetailCard: React.FC<CineDetailCardProps> = ({ 
-  data, 
+const CineDetailCard: React.FC<CineDetailCardProps> = ({
+  data,
   loadingState = 'ready',
+  isLiked: propIsLiked,
+  likeCount: propLikeCount,
   onPrimaryAction,
-  onSecondaryAction 
+  onSecondaryAction,
 }) => {
   const { type } = data;
   const isFunding = type === 'funding';
-  
+
   // 데이터 추출 (타입에 따라 분기)
   const fundingData = isFunding ? (data as FundingDetailData).funding : null;
   const voteData = !isFunding ? (data as VoteDetailData).vote : null;
@@ -122,8 +126,10 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
   const title = isFunding ? fundingData!.title : voteData!.title;
   const endDate = isFunding ? fundingData!.fundingEndsOn : voteData!.fundingEndsOn;
   const participantCount = isFunding ? statData!.participantCount : participationData!.likeCount;
-  const likeCount = isFunding ? statData!.likeCount : participationData!.likeCount;
-  const isLiked = isFunding ? statData!.isLiked : participationData!.isLike;
+
+  // Props로 받은 값이 있으면 사용, 없으면 데이터에서 추출
+  const likeCount = propLikeCount ?? (isFunding ? statData!.likeCount : participationData!.likeCount);
+  const isLiked = propIsLiked ?? (isFunding ? statData!.isLiked : participationData!.isLike);
 
   return (
     <>
@@ -131,15 +137,9 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
       <div className="w-full max-w-[1200px] py-5 flex flex-col sm:flex-row gap-5 sm:gap-12">
         {/* 이미지 영역 */}
         <div className="w-full sm:w-[465px] h-[346px] sm:h-[420px]">
-          <Media 
-            src={bannerUrl}
-            alt={title}
-            aspect="auto"
-            height={420}
-            loadingState={loadingState}
-          />
+          <Media src={bannerUrl} alt={title} aspect="auto" height={420} loadingState={loadingState} />
         </div>
-        
+
         {/* 정보 영역 */}
         <div className="flex-1 px-4 py-5 border-b border-slate-700 flex flex-col justify-between">
           {/* 프로젝트 정보 */}
@@ -150,7 +150,7 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
             type={type}
             loadingState={loadingState}
           />
-          
+
           {/* 진행 정보 + 액션 */}
           <div className="flex flex-col gap-3">
             <ProgressInfoSection
@@ -161,7 +161,7 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
               maxPeople={isFunding ? statData!.maxPeople : undefined}
               loadingState={loadingState}
             />
-            
+
             {/* 데스크톱 액션 영역 */}
             <div className="sm:block hidden">
               <ActionSection
@@ -177,7 +177,7 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* 모바일 하단 고정 액션 */}
       <MobileFixedActions
         type={type}
