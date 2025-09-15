@@ -58,7 +58,7 @@ public class CardApiClient {
                     request,
                     new ParameterizedTypeReference<BaseApiResponse<CreditCardTransactionResponse>>() {
                     },
-                    "카드결제");
+                    "펀딩 참여금 카드결제");
 
             if (responseBody != null) {
                 // 3. 응답 코드를 프로젝트 내부 코드로 매핑
@@ -118,7 +118,7 @@ public class CardApiClient {
         // 공통 헤더 생성
         ReqHeader header = FinanceApiUtils.buildCommonHeader(
                 financeApiConfig,
-                "createCreditCardTransaction");
+                "createCreditCardTransaction", false);
 
         // 전체 요청 객체 구성 (헤더 + 카드 정보)
         return CreditCardTransactionRequest.builder()

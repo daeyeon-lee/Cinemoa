@@ -17,6 +17,9 @@ public class FinanceApiConfig {
     @Value("${finance.api.user-key}") // 향후 삭제 가능
     private String userKey;
 
+    @Value("${finance.api.admin-user-key}") // 향후 삭제 가능
+    private String adminUserKey;
+
     @Value("${finance.api.institution-code}")
     private String institutionCode;
 
@@ -34,5 +37,10 @@ public class FinanceApiConfig {
     public String getAccountCreateUrl() {
         return baseUrl + "/edu/demandDeposit/createDemandDepositAccount";
     }
-    
+
+    // 계좌 입금
+    public String getAccounDepositUrl() {
+        return baseUrl + "/edu/demandDeposit/updateDemandDepositAccountDeposit";
+    }
+
 }
