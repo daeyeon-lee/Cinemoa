@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import SuccessCheckIcon from '@/component/icon/success_check_icon';
 import { validateAndFormatExpiryDate, validateBirthDate, validateAllPaymentFields } from '@/utils/validation';
 
@@ -142,6 +142,7 @@ export default function Payment() {
           <DialogHeader className="self-stretch" onClose={resetAllStates}>
             <DialogTitle>결제 내역</DialogTitle>
           </DialogHeader>
+          <DialogDescription className="sr-only">펀딩 결제를 위한 내역을 확인하는 단계입니다.</DialogDescription>
           <div className="w-full flex flex-col gap-6">
             <div className="flex flex-col">
               <div className="h5-b text-primary leading-7">펀딩 제목</div>
@@ -173,6 +174,7 @@ export default function Payment() {
           <DialogHeader className="self-stretch" onClose={resetAllStates}>
             <DialogTitle>결제 정보 입력</DialogTitle>
           </DialogHeader>
+          <DialogDescription className="sr-only">카드 정보와 개인 정보를 입력하는 단계입니다.</DialogDescription>
           <div className="flex flex-col gap-2">
             <label className="h5-b text-primary">
               카드번호 <span className="text-Brand1-Primary">*</span>
@@ -308,6 +310,7 @@ export default function Payment() {
         // 로딩 중 상태
         return (
           <>
+            <DialogDescription className="sr-only">결제 처리가 진행 중입니다. 잠시만 기다려주세요.</DialogDescription>
             <div className="w-full flex flex-col items-center gap-4 py-8">
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-subtle border-t-transparent"></div>
               <div className="text-center mt-4">
@@ -321,6 +324,7 @@ export default function Payment() {
         // 결제 완료 상태
         return (
           <>
+            <DialogDescription className="sr-only">결제가 성공적으로 완료되었습니다.</DialogDescription>
             <div className="w-full flex flex-col items-center">
               <SuccessCheckIcon width={72} height={72} />
 
@@ -347,12 +351,7 @@ export default function Payment() {
   };
 
   return (
-    <DialogContent
-      onPointerDownOutside={resetAllStates}
-      onEscapeKeyDown={resetAllStates}
-      // dialogDescription 숨기기
-      aria-describedby={undefined}
-    >
+    <DialogContent onPointerDownOutside={resetAllStates} onEscapeKeyDown={resetAllStates}>
       {renderContent()}
     </DialogContent>
   );

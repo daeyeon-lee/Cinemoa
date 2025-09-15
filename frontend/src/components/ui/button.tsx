@@ -14,7 +14,7 @@ const buttonVariants = cva(
         secondary: 'bg-BG-3 text-secondary hover:bg-BG-2',
         tertiary: 'bg-BG-2 text-secondary',
         brand1: 'bg-Brand1-Primary text-primary hover:bg-Brand1-Secondary',
-        brand2: 'bg-Brand2-Primary text-primary hover:bg-Brand2-Secondary',
+        brand2: 'bg-Brand2-Primary text-inverse hover:bg-Brand2-Secondary',
         outline: 'text-tertiary hover:border-stroke-2 border-stroke-4 border-2',
       },
       size: {

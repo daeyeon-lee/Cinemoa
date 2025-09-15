@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type ProgressInfoSectionProps = {
   type: 'funding' | 'vote';
   participantCount: number;
+  likeCount: number;
   endDate: string;
   // 펀딩 전용
   progressRate?: number;
@@ -16,6 +17,7 @@ type ProgressInfoSectionProps = {
 const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
   type,
   participantCount,
+  likeCount,
   endDate,
   progressRate,
   maxPeople,
@@ -34,7 +36,7 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
   const getParticipantText = (): string => {
     return type === 'funding'
       ? `${participantCount.toLocaleString()}명 참여`
-      : `${participantCount.toLocaleString()}명이 보고싶어해요`;
+      : `${likeCount.toLocaleString()}명이 보고 싶어해요`;
   };
 
   const getTimeText = (): string => {
@@ -64,10 +66,17 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
   return (
     <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
       {/* 공통: 참여자수 + 남은시간 */}
-      <div className="self-stretch inline-flex justify-between items-center">
-        <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
-        <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
-      </div>
+      {type === 'vote' ? (
+        <div className="self-stretch flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mt-1.5">
+          <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
+          <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
+        </div>
+      ) : (
+        <div className="self-stretch inline-flex justify-between items-center mt-1.5">
+          <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
+          <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
+        </div>
+      )}
 
       {/* 펀딩 전용: 프로그래스 바 + 퍼센트 정보 */}
       {type === 'funding' && progressRate !== undefined && maxPeople !== undefined && (

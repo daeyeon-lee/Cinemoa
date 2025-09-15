@@ -28,7 +28,7 @@ const ProjectInfoSection: React.FC<ProjectInfoSectionProps> = ({
   }
 
   return (
-    <div className={`flex flex-col ${type === 'funding' ? 'gap-4' : 'gap-3'}`}>
+    <div className="flex flex-col gap-4">
       <div className="flex flex-col justify-start items-start">
         <CategoryBreadcrumb categoryId={categoryId} />
       </div>
