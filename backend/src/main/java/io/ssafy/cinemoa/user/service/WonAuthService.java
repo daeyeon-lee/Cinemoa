@@ -2,10 +2,7 @@ package io.ssafy.cinemoa.user.service;
 
 import io.ssafy.cinemoa.external.finance.Client.AccountVerifyApiClient;
 import io.ssafy.cinemoa.external.finance.Client.WonAuthApiClient;
-import io.ssafy.cinemoa.external.finance.dto.BaseApiResponse;
-import io.ssafy.cinemoa.external.finance.dto.AccountVerifyResponse;
-import io.ssafy.cinemoa.external.finance.dto.WonSendResponse;
-import io.ssafy.cinemoa.external.finance.dto.WonVerifyResponse;
+import io.ssafy.cinemoa.external.finance.dto.*;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.Drafttttttttt;
 import io.ssafy.cinemoa.global.response.ApiResponse;
@@ -48,18 +45,17 @@ public class WonAuthService {
     private final AccountVerifyApiClient accountVerifyApiClient; // 계좌 유효성 검증 전용
     private final WonAuthApiClient wonAuthApiClient;             // 1원 송금 + 1원 검증
 
-//    private static final String AUTH_CODE = "SSAFY";
     private static final String AUTH_TEXT = "CINEMOA";
 
     // --------------------------------------------------------------------
-    // 계좌검증 → 1원송금
+    // 계좌검증 + 1원송금
     // --------------------------------------------------------------------
     @Transactional(readOnly = true)
     public BaseApiResponse<WonSendResponse> startWonAuth(String accountNo) {
         // 입력 검증: null/공백 방지
         must(accountNo, "accountNo(계좌번호)는 필수입니다.");
 
-        // 계좌 유효성 검증 호출
+        // 계좌 검증
         //     있으면 true, 없으면 false
         try {
             boolean verified = accountVerifyApiClient.verifyAccount(accountNo);
@@ -71,7 +67,7 @@ public class WonAuthService {
             throw new Drafttttttttt("계좌 검증 중 오류가 발생했습니다.", e);
         }
 
-        // 검증 성공시에만 1원 송금
+        // 1원 송금 (검증 성공시에만)
         try {
             return wonAuthApiClient.openAccountAuth(accountNo, AUTH_TEXT);
         } catch (HttpStatusCodeException e) {
@@ -85,36 +81,35 @@ public class WonAuthService {
 
     // --------------------------------------------------------------------
     // 1원 인증 검증
-    //      API 호출 → REC.status 확인 → SUCCESS면 secretKey 발급 → secretKey만 data로 반환
     // --------------------------------------------------------------------
     @Transactional(readOnly = true)
     public ApiResponse<WonAuthVerifyResponse> verifyWonAuth(String accountNo, String authCode) {
-        // 입력 유효성 검사
+        // 입력 필수
         must(accountNo, "accountNo(계좌번호)는 필수입니다.");
         must(authCode,  "authCode(인증코드)는 필수입니다.");
 
         try {
-            // 외부 API 호출: BaseApiResponse<WonVerifyResponse> 형태로 수신
+            // 1. 외부 API 호출
             BaseApiResponse<WonVerifyResponse> vendor =
                     wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, authCode);
 
-            // 널 가드: body 또는 REC가 비어있으면 예외
+            // body 또는 REC가 비어있으면 예외
             if (vendor == null || vendor.getREC() == null) {
                 log.error("[WonAuthApiClient] 응답 본문이 비어있습니다. vendor={}", vendor);
                 throw new IllegalStateException("1원 인증 응답이 비어있습니다.");
             }
 
-            // (3) 상태 확인: REC.status ("SUCCESS"/"FAIL")
+            // 2. 상태(REC.status) 확인 : ("SUCCESS"/"FAIL")
             String status = vendor.getREC().getStatus();
             if (!"SUCCESS".equalsIgnoreCase(status)) {
                 log.warn("[WonAuthApiClient] 인증 실패 status={}", status);
                 throw new IllegalArgumentException("인증 실패: 잘못된 인증 코드입니다.");
             }
 
-            // (4) SUCCESS → 우리측 secretKey 생성(JDK17 호환 방식)
+            // 3. secretKey 생성 (SUCCESS 일 때만)(JDK17 호환 방식)
             String secretKey = generateDeterministicSecret(accountNo); // 아래 유틸 메서드 사용
 
-            // (5) secretKey만 담아 성공 응답 반환
+            // 4. secretKey만 담아 성공 응답 반환
             return ApiResponse.ofSuccess(
                     WonAuthVerifyResponse.builder().secretKey(secretKey).build(),
                     "1원인증 검증 성공"
@@ -131,6 +126,103 @@ public class WonAuthService {
         }
 
     }
+
+
+    // 인증코드 정규식: "CINEMOA 7814" → 7814
+    private static final java.util.regex.Pattern AUTH_CODE_PATTERN =
+            java.util.regex.Pattern.compile("CINEMOA\\s*(\\d{4})");
+    // --------------------------------------------------------------------
+    // 인증 코드 추출
+    // --------------------------------------------------------------------
+    @Transactional(readOnly = true) //
+    public void extractAuthCode(String accountNo, String startDate, String endDate) {
+
+        // 입력 필수
+        must(accountNo, "accountNo(계좌번호)는 필수입니다.");
+        must(startDate, "startDate(조회 시작일, YYYYMMDD)는 필수입니다.");
+        must(endDate, "endDate(조회 종료일, YYYYMMDD)는 필수입니다.");
+
+        try {
+            // 1. 외부 API 호출 (입금 "M", 내림차순 "DESC")
+            BaseApiResponse<TransactionHistoryResponse> vendor =
+                    wonAuthApiClient.inquireTransactionHistoryList(accountNo, startDate, endDate, "M", "DESC");
+
+            // 응답 기본 검증
+            if (vendor == null || vendor.getHeader() == null) {
+                log.warn("[TxnHistory] 응답 본문/헤더가 null입니다. vendor={}", vendor);
+                return;
+            }
+            if (!"H0000".equals(vendor.getHeader().getResponseCode())) {
+                log.warn("[TxnHistory] 실패 코드 수신: code={}, message={}",
+                        vendor.getHeader().getResponseCode(), vendor.getHeader().getResponseMessage());
+                return;
+            }
+
+            var rec = vendor.getREC();
+            if (rec == null || rec.getList() == null || rec.getList().isEmpty()) {
+                log.info("[TxnHistory] 해당 기간 거래내역 없음. accountNo={}, {}~{}", accountNo, startDate, endDate);
+                return;
+            }
+
+            // 2. 내림차순 리스트에서 '1원 입금' 첫 건 선택
+            var item = rec.getList().stream()
+                    .filter(i -> "1".equals(i.getTransactionType()))                    // 1=입금
+                    .filter(i -> "1".equals(normalizeAmount(i.getTransactionBalance()))) // 금액 == "1"
+                    .findFirst()
+                    .orElse(null);
+
+            if (item == null) {
+                log.info("[TxnHistory] 1원 입금 매칭 없음. accountNo={}, {}~{}", accountNo, startDate, endDate);
+                return;
+            }
+
+            // 3. 거래 요약 추출
+            String summary = item.getTransactionSummary(); // 예: "CINEMOA 7814"
+            if (summary == null || summary.isBlank()) {
+                log.warn("[TxnHistory] 거래 요약이 비어있습니다. item={}", item);
+                return;
+            }
+
+            // 4. 인증코드 추출
+            String authCodeOnly = extractAuthCodeFromSummary(summary).orElse("");
+            if (authCodeOnly.isEmpty()) {
+                log.warn("[TxnHistory] 요약에서 인증코드 추출 실패. summary='{}'", summary);
+                return;
+            }
+
+            // 성공 시 인증코드 콘솔에 출력 (디버깅용)
+            log.info("[TxnHistory] 인증코드 추출 성공: authCode='{}'", authCodeOnly);
+
+
+            // TODO: 캐시/이벤트/다음 단계 로직 연결
+            log.debug("[TxnHistory] summary='{}', authCodeOnly='{}'", summary, authCodeOnly);
+
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            // ✅ HTTP 예외(상태/헤더/바디)만 별도 로깅
+            log.error("[TxnHistory][HTTP] 호출 실패 - status:{} headers:{}\nbody:\n{}",
+                    e.getStatusCode(), e.getResponseHeaders(), e.getResponseBodyAsString(), e);
+        } catch (Exception e) {
+            // ✅ 그 외 모든 예외
+            log.error("[TxnHistory] 인증 코드 추출 처리 중 알 수 없는 오류", e);
+        }
+    }
+
+// ------------------- 유틸 -------------------
+
+    // 금액 정규화: 공백/콤마 제거 + 선행 0 제거 → "001"→"1", "1,000"→"1000"
+    private String normalizeAmount(String s) {
+        if (s == null) return "";
+        String digits = s.trim().replaceAll("[^0-9]", "");
+        return digits.replaceFirst("^0+(?!$)", "");
+    }
+
+    // 인증코드 추출: "CINEMOA 7814" → Optional["7814"]
+    private java.util.Optional<String> extractAuthCodeFromSummary(String summary) {
+        if (summary == null) return java.util.Optional.empty();
+        var m = AUTH_CODE_PATTERN.matcher(summary);
+        return m.find() ? java.util.Optional.of(m.group(1)) : java.util.Optional.empty();
+    }
+
 
 
     // ============================ 공통 유틸 ============================
