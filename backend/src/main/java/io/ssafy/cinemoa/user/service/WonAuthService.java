@@ -8,11 +8,21 @@ import io.ssafy.cinemoa.external.finance.dto.WonSendResponse;
 import io.ssafy.cinemoa.external.finance.dto.WonVerifyResponse;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.Drafttttttttt;
+import io.ssafy.cinemoa.global.response.ApiResponse;
+import io.ssafy.cinemoa.user.dto.WonAuthVerifyResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpStatusCodeException;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom; // 암호학적 난수 생성기  // 한국어 주석
+import java.time.Instant;
+import java.util.Base64;           // Base64 인코딩 유틸   // 한국어 주석
+import java.util.UUID;
+
 
 /**
  * ✅ WonAuthService (회원가입 단계 전용)
@@ -38,11 +48,6 @@ public class WonAuthService {
     private final AccountVerifyApiClient accountVerifyApiClient; // 계좌 유효성 검증 전용
     private final WonAuthApiClient wonAuthApiClient;             // 1원 송금 + 1원 검증
 
-    /**
-     * 고정 인증 문구(벤더 스펙에 맞춰 사용)
-     * - 지금은 "SSAFY" 상수로 사용
-     * - 나중에 운영환경/설정파일로 분리 가능
-     */
 //    private static final String AUTH_CODE = "SSAFY";
     private static final String AUTH_TEXT = "CINEMOA";
 
@@ -51,10 +56,10 @@ public class WonAuthService {
     // --------------------------------------------------------------------
     @Transactional(readOnly = true)
     public BaseApiResponse<WonSendResponse> startWonAuth(String accountNo) {
-        // (1) 입력 검증: null/공백 방지
+        // 입력 검증: null/공백 방지
         must(accountNo, "accountNo(계좌번호)는 필수입니다.");
 
-        // (2) 계좌 유효성 검증 호출
+        // 계좌 유효성 검증 호출
         //     있으면 true, 없으면 false
         try {
             boolean verified = accountVerifyApiClient.verifyAccount(accountNo);
@@ -80,30 +85,51 @@ public class WonAuthService {
 
     // --------------------------------------------------------------------
     // 1원 인증 검증
-    // API 호출 → REC.status 확인 → SUCCESS면 secretKey 발급 → secretKey만 data로 반환
+    //      API 호출 → REC.status 확인 → SUCCESS면 secretKey 발급 → secretKey만 data로 반환
     // --------------------------------------------------------------------
     @Transactional(readOnly = true)
-    public BaseApiResponse<WonVerifyResponse> verifyWonAuth(String accountNo, String authCode) {
+    public ApiResponse<WonAuthVerifyResponse> verifyWonAuth(String accountNo, String authCode) {
         // 입력 유효성 검사
         must(accountNo, "accountNo(계좌번호)는 필수입니다.");
         must(authCode,  "authCode(인증코드)는 필수입니다.");
 
         try {
-            // 1원 인증 검증 호출 (계좌번호 + 기업명(CINEMOA) + 인증코드)
-            return wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, authCode);
+            // 외부 API 호출: BaseApiResponse<WonVerifyResponse> 형태로 수신
+            BaseApiResponse<WonVerifyResponse> vendor =
+                    wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, authCode);
+
+            // 널 가드: body 또는 REC가 비어있으면 예외
+            if (vendor == null || vendor.getREC() == null) {
+                log.error("[WonAuthApiClient] 응답 본문이 비어있습니다. vendor={}", vendor);
+                throw new IllegalStateException("1원 인증 응답이 비어있습니다.");
+            }
+
+            // (3) 상태 확인: REC.status ("SUCCESS"/"FAIL")
+            String status = vendor.getREC().getStatus();
+            if (!"SUCCESS".equalsIgnoreCase(status)) {
+                log.warn("[WonAuthApiClient] 인증 실패 status={}", status);
+                throw new IllegalArgumentException("인증 실패: 잘못된 인증 코드입니다.");
+            }
+
+            // (4) SUCCESS → 우리측 secretKey 생성(JDK17 호환 방식)
+            String secretKey = generateDeterministicSecret(accountNo); // 아래 유틸 메서드 사용
+
+            // (5) secretKey만 담아 성공 응답 반환
+            return ApiResponse.ofSuccess(
+                    WonAuthVerifyResponse.builder().secretKey(secretKey).build(),
+                    "1원인증 검증 성공"
+            );
 
         } catch (HttpStatusCodeException e) {
-            // 외부 API 호출 시 HTTP 에러(4xx/5xx) → 상세 로깅
             log.error("[WonAuthApiClient 4xx/5xx] status:{} headers:{}\nbody:\n{}",
                     e.getStatusCode(), e.getResponseHeaders(), e.getResponseBodyAsString(), e);
-
-            throw new IllegalStateException("1원 인증 검증 중 오류가 발생했습니다.", e);
+            throw new IllegalStateException("1원 인증 검증 중 HTTP 오류가 발생했습니다.", e);
 
         } catch (Exception e) {
-            // 그 외 예상치 못한 에러
-            log.error("[WonAuthApiClient ERROR]", e);
+            log.error("[WonAuthApiClient ERROR] 외부 인증 처리 중 알 수 없는 오류", e);
             throw new RuntimeException("알 수 없는 오류가 발생했습니다.", e);
         }
+
     }
 
 
@@ -118,5 +144,23 @@ public class WonAuthService {
             throw new IllegalArgumentException(msg);
         }
         return v;
+    }
+
+    // 시크릿키 생성 (UUID + 시간 + 계좌 → SHA-256 → hex 64자) ---
+    private static String generateDeterministicSecret(String accountNo) throws Exception {
+        // 엔트로피 소스: UUID 2개 + 계좌번호 + 현재시각
+        String material = UUID.randomUUID() + ":" + accountNo + ":" + Instant.now().toEpochMilli() + ":" + UUID.randomUUID();
+        byte[] input = material.getBytes(StandardCharsets.UTF_8);
+
+        MessageDigest md = MessageDigest.getInstance("SHA-256"); // JDK 표준
+        byte[] hash = md.digest(input);
+
+        // 바이트 → 소문자 hex (64자)
+        StringBuilder sb = new StringBuilder(hash.length * 2);
+        for (byte b : hash) {
+            sb.append(Character.forDigit((b >>> 4) & 0xF, 16));
+            sb.append(Character.forDigit(b & 0xF, 16));
+        }
+        return sb.toString(); // 예: "9f2a... (64자)"
     }
 }

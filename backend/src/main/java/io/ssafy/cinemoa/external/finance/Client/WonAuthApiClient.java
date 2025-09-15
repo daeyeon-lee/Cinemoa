@@ -84,7 +84,7 @@ public class WonAuthApiClient {
         WonVerifyRequest request = buildWonVerifyRequest(accountNo, authText, authCode);
         HttpEntity<WonVerifyRequest> entity = new HttpEntity<>(request, createHeaders());
 
-        log.info("1원 인증 검증 API 호출 시작(checkAuthCode) - 계좌: {}, authText: {}, code: {}",
+        log.info("1원 인증 검증 API 호출 시작(checkAuthCode) - 계좌번호: {}, authText: {}, 인증코드: {}",
                 maskAccountNumber(accountNo), authText, authCode);
 
         ResponseEntity<BaseApiResponse<WonVerifyResponse>> response =
@@ -111,7 +111,7 @@ public class WonAuthApiClient {
                 buildTransactionHistoryRequest(accountNo, startDate, endDate, transactionType, orderByType);
         HttpEntity<TransactionHistoryRequest> entity = new HttpEntity<>(request, createHeaders());
 
-        log.info("거래내역 조회 API 호출 시작(inquireTransactionHistoryList) - 계좌: {}, 기간: {}~{}, 구분:{}, 정렬:{}",
+        log.info("거래내역 조회 API 호출 시작 - 계좌번호: {}, 기간: {}~{}, 구분:{}, 정렬:{}",
                 maskAccountNumber(accountNo), startDate, endDate, transactionType, orderByType);
 
         ResponseEntity<BaseApiResponse<TransactionHistoryResponse>> response =
@@ -123,7 +123,7 @@ public class WonAuthApiClient {
                 );
 
         BaseApiResponse<TransactionHistoryResponse> body = response.getBody();
-        log.info("거래내역 조회 API 응답 수신(inquireTransactionHistoryList) - HTTP: {}", response.getStatusCode());
+        log.info("거래내역 조회 API 응답 수신 - HTTP: {}", response.getStatusCode());
 
         return body;
     }

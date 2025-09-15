@@ -17,7 +17,7 @@ public class TransactionHistoryResponse {
     private List<TransactionHistoryItem> list;
 
     /**
-     * 개별 거래 아이템
+     * 개별 거래
      */
     @Data
     public static class TransactionHistoryItem {

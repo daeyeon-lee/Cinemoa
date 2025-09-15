@@ -21,8 +21,8 @@ public class TransactionHistoryRequest {
     private ReqHeader Header;
 
     private String accountNo;
-    private String startDate;       // YYYYMMDD
-    private String endDate;         // YYYYMMDD
+    private String startDate;       // 조회 시작일 (YYYYMMDD)
+    private String endDate;         // 조회 종료일 (YYYYMMDD)
     private String transactionType; // M/D/A
     private String orderByType;     // ASC/DESC
 }
