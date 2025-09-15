@@ -1,13 +1,18 @@
 'use client';
 
-import { CineCardVertical } from '@/components/cards/CineCardVertical';
-import { CineCardHorizontal } from '@/components/cards/CineCardHorizontal';
+import Image from 'next/image';
+import { RecommendedSection } from './sections/RecommendedSection';
+import { ClosingSoonSection } from './sections/ClosingSoonSection';
+import { PopularSection } from './sections/PopularSection';
+import { RecentlyViewedSection } from './sections/RecentlyViewedSection';
+import type { ListCardData } from './types/listCardData';
 
-const sampleCardData = {
+const sampleCardData: ListCardData = {
   funding: {
     fundingId: 1,
-    title: '샘플 영화',
-    bannerUrl: '/api/placeholder/400/600',
+    title: '샘플 영화를 봅시다',
+    videoName: '샘플 영화',
+    bannerUrl: '/images/image.png',
     state: 'ACTIVE',
     progressRate: 75,
     fundingEndsOn: '2024-12-31T23:59:59',
@@ -28,35 +33,39 @@ const sampleCardData = {
 };
 
 export default function Home() {
+  const recommendedItems = Array(10).fill(sampleCardData);
+  const closingSoonItems = Array(10).fill(sampleCardData);
+  const popularItems = Array(8).fill(sampleCardData);
+  const recentlyViewedItems = Array(10).fill(sampleCardData);
+
   return (
-    <div className="min-h-screen">
-      {/* Main Grid Container */}
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Grid Layout */}
-        <div className="grid grid-cols-12 grid-rows-auto gap-6 h-full">
-          {/* Header - Full Width (1) */}
-          <div className="col-span-12 bg-gray-800 rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              {/* Logo */}
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-white font-['Pretendard']">씨네모아</h1>
-              </div>
+    <div className="w-full max-w-[1200px] mx-auto">
+      <main className="grid grid-cols-12 gap-6">
+        {/* 로고+검색+카테고리 - Full Width */}
+        <div className="col-span-12 py-8">
+          {/* Desktop: 로고 + 검색 + 카테고리 */}
+          <div className="hidden md:flex flex-col items-center gap-8">
+            <Image
+              src="/cinemoa_logo_long.png"
+              alt="씨네모아 로고"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
 
-              {/* Search Bar */}
-              <div className="flex-1 max-w-md mx-8">
-                <input
-                  type="text"
-                  placeholder="영화 제목, 장르 검색..."
-                  className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-Brand1-Primary"
-                />
-              </div>
+            <div className="flex flex-col items-center gap-2">
+              <input
+                type="text"
+                placeholder="영화 제목, 장르 검색..."
+                className="w-full max-w-md px-4 py-2 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-Brand1-Primary"
+              />
 
-              {/* Category Buttons */}
               <div className="flex gap-2">
-                {['전체', '영화', '시리즈', '중계', '공연'].map((category) => (
+                {['영화', '시리즈', '공연', '스포츠중계'].map((category) => (
                   <button
                     key={category}
-                    className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-Brand1-Primary transition-colors"
+                    className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-Brand1-Primary transition-colors"
                   >
                     {category}
                   </button>
@@ -65,76 +74,63 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Left Column - Spans 8 columns */}
-          <div className="col-span-8 space-y-6">
-            {/* 추천 상영회 (2) - 8개를 2줄로, 세로 카드 */}
-            <div>
-              <h2 className="mb-4 text-xl font-bold text-white">추천 상영회</h2>
-              <div className="grid grid-cols-4 gap-4">
-                {Array(8)
-                  .fill(0)
-                  .map((_, index) => (
-                    <div key={index} className="w-full">
-                      <CineCardVertical data={sampleCardData} loadingState="loading" />
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* 종료 임박 상영회 (4) - 한 줄만, 세로 카드 */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white font-['Pretendard']">종료 임박 상영회</h2>
-                <button className="text-slate-500 text-sm">더보기 →</button>
-              </div>
-              <div className="grid grid-cols-4 gap-4">
-                {Array(4)
-                  .fill(0)
-                  .map((_, index) => (
-                    <div key={index} className="w-full">
-                      <CineCardVertical data={sampleCardData} loadingState="loading" />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Spans 4 columns, 인기 상영회 (3) - 가로 카드 */}
-          <div className="col-span-4">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white font-['Pretendard']">인기 상영회</h2>
-              </div>
-              <h1></h1>
-              <div className="space-y-3">
-                {Array(8)
-                  .fill(0)
-                  .map((_, index) => (
-                    <div key={index} className="w-full">
-                      <CineCardHorizontal data={sampleCardData} loadingState="loading" />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 최근 본 상영회 (5) - Full Width, 세로 카드 */}
-          <div className="col-span-12">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white font-['Pretendard']">최근 본 상영회</h2>
-            </div>
-            <div className="grid grid-cols-6 gap-4">
-              {Array(6)
-                .fill(0)
-                .map((_, index) => (
-                  <div key={index} className="w-full">
-                    <CineCardVertical data={sampleCardData} loadingState="loading" />
-                  </div>
-                ))}
-            </div>
+          {/* Mobile: 로고만 */}
+          <div className="md:hidden flex justify-center">
+            <Image
+              src="/cinemoa_logo_long.png"
+              alt="씨네모아 로고"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
           </div>
         </div>
-      </div>
+
+        {/* Main Content Area */}
+        <div className="col-span-12">
+          {/* Desktop Layout */}
+          <div className="hidden md:grid grid-cols-12 gap-12">
+            {/* Left Column - Recommended + Closing Soon */}
+            <div className="col-span-8 space-y-12">
+              <RecommendedSection title="추천 상영회" items={recommendedItems} loading={false} />
+
+              <ClosingSoonSection
+                title="종료 임박 상영회"
+                items={closingSoonItems}
+                loading={false}
+                onMoreClick={() => console.log('종료 임박 더보기')}
+              />
+            </div>
+
+            {/* Right Column - Popular */}
+            <aside className="col-span-4 h-fit">
+              <PopularSection title="인기 상영회" items={popularItems} loading={false} />
+            </aside>
+          </div>
+
+          {/* Mobile Layout - Vertical Stack */}
+          <div className="md:hidden space-y-8">
+            <RecommendedSection title="추천 상영회" items={recommendedItems} loading={false} />
+            
+            <ClosingSoonSection
+              title="종료 임박 상영회"
+              items={closingSoonItems}
+              loading={false}
+              onMoreClick={() => console.log('종료 임박 더보기')}
+            />
+            
+            <PopularSection title="인기 상영회" items={popularItems} loading={false} />
+            
+            <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={true} />
+          </div>
+        </div>
+
+        {/* Recently Viewed - Full Width (Desktop Only) */}
+        <section className="hidden md:block col-span-12 mt-4">
+          <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={true} />
+        </section>
+      </main>
     </div>
   );
 }
