@@ -19,15 +19,15 @@ export const viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className="antialiased min-h-screen bg-BG-0 text-white w-full max-xl:px-4 flex flex-col items-center">
-        <div className="sm:w-[1200px]">
+      <body className="antialiased bg-BG-0 text-primary w-full max-xl:px-4 flex flex-col items-center">
+        <div className="sm:w-[1200px] min-h-screen flex flex-col">
           {/* 상단 네비게이션 바 */}
           <Navbar />
           {/* 콘텐츠 영역 */}
           <main className="flex-1">{children}</main>
         </div>
         {/* 하단 footer - 화면 전체 너비 */}
-        <div className="w-full">
+        <div className="w-screen">
           <Footer />
         </div>
       </body>

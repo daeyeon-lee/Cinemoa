@@ -136,12 +136,12 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
       {/* 메인 카드 */}
       <div className="w-full max-w-[1200px] py-5 flex flex-col sm:flex-row gap-5 sm:gap-12">
         {/* 이미지 영역 */}
-        <div className="w-full sm:w-[465px] h-[346px] sm:h-[420px]">
+        <div className="w-full sm:w-[465px] h-auto sm:h-[420px]">
           <Media src={bannerUrl} alt={title} aspect="auto" height={420} loadingState={loadingState} />
         </div>
 
         {/* 정보 영역 */}
-        <div className="flex-1 px-4 py-5 border-b border-slate-700 flex flex-col justify-between">
+        <div className="flex-1 px-4 py-5 border-b border-stroke-3 flex flex-col justify-between">
           {/* 프로젝트 정보 */}
           <ProjectInfoSection
             categoryId={data.metadata.categoryId}
@@ -156,6 +156,7 @@ const CineDetailCard: React.FC<CineDetailCardProps> = ({
             <ProgressInfoSection
               type={type}
               participantCount={participantCount}
+              likeCount={likeCount}
               endDate={endDate}
               progressRate={isFunding ? fundingData!.progressRate : undefined}
               maxPeople={isFunding ? statData!.maxPeople : undefined}

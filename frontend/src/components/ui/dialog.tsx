@@ -3,6 +3,7 @@
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
@@ -30,21 +31,30 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+const dialogContentVariants = cva(
+  'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] focus:outline-none',
+  {
+    variants: {
+      variant: {
+        default:
+          'w-[90vw] max-w-lg px-8 py-8 bg-BG-1 rounded-[16px] inline-flex flex-col justify-start items-start gap-7',
+        share: 'w-[90vw] max-w-lg px-6 py-6 bg-BG-2 rounded-[16px] flex flex-col gap-1',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  },
+);
+
 // 모달 컨텐츠(내용) 영역
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & VariantProps<typeof dialogContentVariants>
+>(({ className, children, variant, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        'fixed left-[50%] top-[50%] z-50 w-full max-w-lg px-4 py-8 translate-x-[-50%] translate-y-[-50%] bg-BG-1 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-[16px] inline-flex flex-col justify-start items-start gap-7 focus:outline-none',
-        className,
-      )}
-      {...props}
-    >
+    <DialogPrimitive.Content ref={ref} className={cn(dialogContentVariants({ variant }), className)} {...props}>
       {children}
     </DialogPrimitive.Content>
   </DialogPortal>
