@@ -81,7 +81,8 @@ public class AccountApiClient {
         // 공통 헤더 생성
         ReqHeader header = FinanceApiUtils.buildCommonHeader(
                 financeApiConfig,
-                "createDemandDepositAccount");
+                "createDemandDepositAccount", 
+                true);
 
         return AccountCreationRequest.builder()
                 .header(header)
