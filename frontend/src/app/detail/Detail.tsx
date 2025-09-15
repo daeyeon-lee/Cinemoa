@@ -229,7 +229,7 @@ export default function Detail() {
       // 현재 페이지 URL 복사
       await navigator.clipboard.writeText(window.location.href);
       console.log('링크 복사', window.location.href);
-      showAlert('링크를 복사했습니다');
+      showAlert('링크를 복사했어요!');
       setShareDialogOpen(false); // 다이얼로그 닫기
     } catch (error) {
       console.error('링크 복사 실패:', error);
@@ -244,22 +244,22 @@ export default function Detail() {
   return (
     <section>
       {/* 펀딩 카드 */}
-      <CineDetailCard
+      {/* <CineDetailCard
         data={sampleDetailFundingData}
         loadingState="ready"
         isLiked={isLiked}
         likeCount={likeCount}
         onPrimaryAction={handleLikeClick}
-      />
+      /> */}
       {/* 투표 카드 */}
-      {/* <CineDetailCard
+      <CineDetailCard
         data={sampleDetailVoteData}
         loadingState="ready"
         isLiked={isLiked}
         likeCount={likeCount}
         onPrimaryAction={handleLikeClick}
         onSecondaryAction={handleShareClick}
-      /> */}
+      />
       {/* navbar : 펀딩 소개, 상영물 소개, 영화관 정보, 환불 및 위약 정보 */}
       <div className="flex flex-col gap-10 mt-10">
         <div className="grid grid-cols-2 sm:flex sm:flex-nowrap w-full px-4 py-2 gap-4 sm:overflow-x-auto">
