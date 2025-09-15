@@ -71,4 +71,25 @@ public class SuggestedProjectItemDto {
      */
     @JsonProperty("metadata")
     private MetadataDto metadata;
+    
+    /**
+     * 극장 정보
+     * 펀딩과 투표 모두에서 사용됩니다.
+     */
+    @JsonProperty("cinema")
+    private BriefCinemaInfo cinema;
+    
+    /**
+     * 극장 기본 정보를 담는 내부 클래스
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BriefCinemaInfo {
+        private Long cinemaId;
+        private String cinemaName;
+        private String city;
+        private String district;
+    }
 }

@@ -19,6 +19,7 @@ import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.VideoInfo;
 import io.ssafy.cinemoa.funding.dto.VoteCreateRequest;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
+import io.ssafy.cinemoa.funding.event.AccountCreationRequestEvent;
 import io.ssafy.cinemoa.funding.exception.SeatLockException;
 import io.ssafy.cinemoa.funding.repository.FundingEstimatedDayRepository;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
@@ -38,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -99,6 +101,8 @@ public class FundingService {
             
             return {1}
             """;
+
+    private final ApplicationEventPublisher eventPublisher;
     private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
     private final FundingRepository fundingRepository;
     private final FundingStatRepository statRepository;
@@ -143,6 +147,7 @@ public class FundingService {
                 .build();
 
         fundingRepository.save(funding);
+        eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
     }
 
     @Transactional
@@ -309,6 +314,14 @@ public class FundingService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void updateViewCount(Long fundingId) {
         statRepository.incrementViewCount(fundingId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateFundingAccount(Long fundingId, String accountNo) {
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+        funding.setFundingAccount(accountNo);
+        fundingRepository.saveAndFlush(funding);
     }
 
 

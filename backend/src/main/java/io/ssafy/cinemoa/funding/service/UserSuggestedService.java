@@ -98,12 +98,17 @@ public class UserSuggestedService {
         Map<Long, FundingStatDto> fundingStats = getFundingStats(fundingIds);
         Set<Long> likedFundingIds = getLikedFundingIds(userId, fundingIds);
 
-        // 8. DTO 변환
+        // 8. 전체 데이터베이스의 합계 조회 (정규화용)
+        int totalFavoriteCount = fundingRepository.findTotalFavoriteCount();
+        int totalViewCount = fundingRepository.findTotalViewCount();
+
+        // 9. DTO 변환
         List<SuggestedProjectItemDto> items = fundingPage.getContent().stream()
                 .map(funding -> convertToSuggestedProjectItemDto(
                         funding, fundingStats.get(funding.getFundingId()),
                         likedFundingIds.contains(funding.getFundingId()),
-                        funding.getCategory().getCategoryId()))
+                        funding.getCategory().getCategoryId(),
+                        totalFavoriteCount, totalViewCount))
                 .collect(Collectors.toList());
 
         // 9. 페이지네이션 정보 생성
@@ -258,10 +263,13 @@ public class UserSuggestedService {
      * @param fundingStat 펀딩 통계 정보
      * @param isLiked     좋아요 여부
      * @param categoryId  카테고리 ID
+     * @param totalFavoriteCount 전체 데이터베이스의 좋아요 수 합계
+     * @param totalViewCount 전체 데이터베이스의 조회수 합계
      * @return 변환된 DTO
      */
     private SuggestedProjectItemDto convertToSuggestedProjectItemDto(
-            Funding funding, FundingStatDto fundingStat, boolean isLiked, Long categoryId) {
+            Funding funding, FundingStatDto fundingStat, boolean isLiked, Long categoryId,
+            int totalFavoriteCount, int totalViewCount) {
 
         // 펀딩/투표 타입 결정
         String type = funding.getFundingType() == FundingType.FUNDING ? "funding" : "vote";
@@ -279,7 +287,10 @@ public class UserSuggestedService {
         ParticipationDto participation = createParticipationDto(funding, fundingStat, isLiked);
 
         // 메타데이터 DTO 생성
-        MetadataDto metadata = createMetadataDto(funding, fundingStat, categoryId);
+        MetadataDto metadata = createMetadataDto(funding, fundingStat, categoryId, totalFavoriteCount, totalViewCount);
+
+        // 극장 정보 DTO 생성
+        SuggestedProjectItemDto.BriefCinemaInfo cinema = createCinemaDto(funding);
 
         return SuggestedProjectItemDto.builder()
                 .type(type)
@@ -289,6 +300,7 @@ public class UserSuggestedService {
                 .screening(screening)
                 .participation(participation)
                 .metadata(metadata)
+                .cinema(cinema)
                 .build();
     }
 
@@ -318,6 +330,7 @@ public class UserSuggestedService {
         return FundingInfoDto.builder()
                 .fundingId(funding.getFundingId())
                 .title(funding.getTitle())
+                .summary(funding.getSummary())
                 .bannerUrl(funding.getBannerUrl())
                 .state(funding.getState().name())
                 .progressRate(progressRate)
@@ -382,25 +395,59 @@ public class UserSuggestedService {
      * @param funding     펀딩 엔티티
      * @param fundingStat 펀딩 통계 정보
      * @param categoryId  카테고리 ID
+     * @param totalFavoriteCount 전체 데이터베이스의 좋아요 수 합계
+     * @param totalViewCount 전체 데이터베이스의 조회수 합계
      * @return 메타데이터 DTO
      */
-    private MetadataDto createMetadataDto(Funding funding, FundingStatDto fundingStat, Long categoryId) {
-        // 추천 점수 계산: 조회수(2점) + 진행률(1점)
-        int recommendationScore = 0;
-        if (fundingStat != null) {
-            recommendationScore += fundingStat.getViewCount() * 2;
-        }
-
-        if (funding.getFundingType() == FundingType.FUNDING && funding.getMaxPeople() > 0) {
-            int participantCount = fundingStat != null ? fundingStat.getParticipantCount() : 0;
-            int progressRate = (participantCount * 100) / funding.getMaxPeople();
-            recommendationScore += progressRate;
-        }
+    private MetadataDto createMetadataDto(Funding funding, FundingStatDto fundingStat, Long categoryId,
+                                        int totalFavoriteCount, int totalViewCount) {
+        // 추천 점수 계산: 성공 가능성 기반 (달성률 0.5 + 보고싶어요 0.3 + 조회수 0.2)
+        Double recommendationScore = calculateRecommendationScore(funding, fundingStat, totalFavoriteCount, totalViewCount);
 
         return MetadataDto.builder()
                 .categoryId(categoryId)
                 .recommendationScore(recommendationScore)
                 .build();
+    }
+
+    /**
+     * 추천 점수를 계산합니다.
+     * 성공 가능성 기반: 달성률(0.5) + 보고싶어요(0.3) + 조회수(0.2)
+     */
+    private Double calculateRecommendationScore(Funding funding, FundingStatDto fundingStat, 
+                                              int totalFavoriteCount, int totalViewCount) {
+        // 추천 점수 계산을 위한 가중치 상수
+        final double PROGRESS_RATE_WEIGHT = 0.5;
+        final double FAVORITE_WEIGHT = 0.3;
+        final double VIEW_WEIGHT = 0.2;
+
+        // 달성률 계산
+        int progressRate = 0;
+        if (funding.getFundingType() == FundingType.FUNDING && funding.getMaxPeople() > 0) {
+            int participantCount = fundingStat != null ? fundingStat.getParticipantCount() : 0;
+            progressRate = (participantCount * 100) / funding.getMaxPeople();
+        }
+
+        // 조회수와 좋아요 수
+        int viewCount = fundingStat != null ? fundingStat.getViewCount() : 0;
+        int favoriteCount = fundingStat != null ? fundingStat.getFavoriteCount() : 0;
+
+        // 달성률 점수 (0-1)
+        double progressScore = Math.min(progressRate / 100.0, 1.0);
+        
+        // 보고싶어요 점수 (0-1) - 전체 데이터베이스 합계 기준으로 정규화
+        double favoriteScore = totalFavoriteCount > 0 ? Math.min(favoriteCount / (double) totalFavoriteCount, 1.0) : 0.0;
+        
+        // 조회수 점수 (0-1) - 전체 데이터베이스 합계 기준으로 정규화
+        double viewScore = totalViewCount > 0 ? Math.min(viewCount / (double) totalViewCount, 1.0) : 0.0;
+        
+        // 가중치 적용
+        double score = (progressScore * PROGRESS_RATE_WEIGHT) + 
+                      (favoriteScore * FAVORITE_WEIGHT) + 
+                      (viewScore * VIEW_WEIGHT);
+        
+        // 소수점 아래 3자리까지만 반올림
+        return Math.round(score * 1000.0) / 1000.0;
     }
 
     /**
@@ -426,6 +473,21 @@ public class UserSuggestedService {
                 .nextCursor(nextCursor)
                 .hasNext(hasNext)
                 .totalCount(totalCount)
+                .build();
+    }
+
+    /**
+     * 극장 정보 DTO 생성
+     *
+     * @param funding 펀딩 엔티티
+     * @return 극장 정보 DTO
+     */
+    private SuggestedProjectItemDto.BriefCinemaInfo createCinemaDto(Funding funding) {
+        return SuggestedProjectItemDto.BriefCinemaInfo.builder()
+                .cinemaId(funding.getCinema().getCinemaId())
+                .cinemaName(funding.getCinema().getCinemaName())
+                .city(funding.getCinema().getCity())
+                .district(funding.getCinema().getDistrict())
                 .build();
     }
 }
