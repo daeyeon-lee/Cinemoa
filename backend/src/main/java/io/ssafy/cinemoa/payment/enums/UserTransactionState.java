@@ -1,5 +1,5 @@
 package io.ssafy.cinemoa.payment.enums;
 
-public enum TransactionState {
+public enum UserTransactionState {
     SUCCESS, REFUNDED, ERROR
 }
