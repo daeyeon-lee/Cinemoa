@@ -43,6 +43,11 @@ public class FinanceApiConfig {
         return baseUrl + "/edu/demandDeposit/updateDemandDepositAccountDeposit";
     }
 
+    // 계좌 이체
+    public String getAccountTransferUrl() {
+        return baseUrl + "/edu/demandDeposit/updateDemandDepositAccountTransfer";
+    }
+
     // 계좌 확인
     public String getAccountVerifyUrl() {
         return baseUrl + "/edu/demandDeposit/inquireDemandDepositAccount";
