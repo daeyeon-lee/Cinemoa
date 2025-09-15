@@ -1,9 +1,9 @@
 package io.ssafy.cinemoa.payment.repository.entity;
 
+import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
-import io.ssafy.cinemoa.payment.enums.TransactionState;
-import io.ssafy.cinemoa.user.repository.entity.User;
+import io.ssafy.cinemoa.payment.enums.FundingTransactionState;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,8 +27,8 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "transactions")
-public class Transaction extends BaseTimeEntity {
+@Table(name = "funding_transactions")
+public class FundingTransaction extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, name = "transaction_id")
@@ -38,8 +38,8 @@ public class Transaction extends BaseTimeEntity {
     private String transactionUniqueNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "cinema_id", nullable = false)
+    private Cinema cinema;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funding_id", nullable = false)
@@ -48,6 +48,6 @@ public class Transaction extends BaseTimeEntity {
     private Integer balance;
 
     @Enumerated(EnumType.STRING)
-    private TransactionState state;
+    private FundingTransactionState state;
 
 }

@@ -11,9 +11,9 @@ import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentRequest;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentResponse;
-import io.ssafy.cinemoa.payment.enums.TransactionState;
+import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 import io.ssafy.cinemoa.payment.repository.PaymentRepository;
-import io.ssafy.cinemoa.payment.repository.entity.Transaction;
+import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
 
@@ -61,14 +61,14 @@ public class PaymentService {
         boolean isSuccess = paymentResult.isSuccess();
 
         // 5. 결제 로그 저장
-        Transaction transaction = Transaction.builder()
+        UserTransaction transaction = UserTransaction.builder()
                 .transactionUniqueNo(apiResponse.getTransactionUniqueNo())
                 .user(user)
                 .funding(funding)
                 .balance(isSuccess ? apiResponse.getPaymentBalance().intValue() : 0)
-                .state(isSuccess ? TransactionState.SUCCESS : TransactionState.ERROR)
+                .state(isSuccess ? UserTransactionState.SUCCESS : UserTransactionState.ERROR)
                 .build();
-        Transaction savedTransaction = paymentRepository.save(transaction);
+        UserTransaction savedTransaction = paymentRepository.save(transaction);
 
         // 카드 결제 성공 시
         if (isSuccess) {
@@ -138,7 +138,7 @@ public class PaymentService {
     private FundingPaymentResponse buildPaymentResponse(
             FundingPaymentRequest request,
             CreditCardTransactionResponse apiResponse,
-            Transaction savedTransaction,
+            UserTransaction savedTransaction,
             Long userId,
             PaymentErrorCode paymentResult,
             boolean isSuccess) {
