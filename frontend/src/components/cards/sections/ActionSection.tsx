@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import Payment from '@/app/payment/Payment';
-import HeartIcon from '@/component/icon/heartIcon';
+import { HeartIcon } from '@/component/icon/heartIcon';
 import LinkIcon from '@/component/icon/linkIcon';
 
 type ActionSectionProps = {
@@ -105,7 +105,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({
               }`}
             >
               <HeartIcon stroke={isLiked ? '#71E5DE' : '#94A3B8'} />
-              보고싶어요
+              보고 싶어요
             </Button>
 
             {/* 공유 버튼 */}

@@ -15,6 +15,16 @@
     scrollbar-gutter: stable;
   }
 
+  /* 스크롤바 숨기기 */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

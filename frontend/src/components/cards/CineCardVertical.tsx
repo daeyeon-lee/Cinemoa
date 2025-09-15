@@ -4,7 +4,7 @@ import { BarcodeDecor } from './primitives/BarcodeDecor';
 import { PerforationLine } from './primitives/PerforationLine';
 import { VoteInfo } from './blocks/VoteInfo';
 import { FundingInfo } from './blocks/FundingInfo';
-import { HeartIcon } from '../icons/HeartIcon';
+import { HeartIcon } from '@/component/icon/heartIcon';
 
 // 목록 API에 맞춘 데이터 타입 정의 (펀딩/투표 공통)
 type ListCardData = {

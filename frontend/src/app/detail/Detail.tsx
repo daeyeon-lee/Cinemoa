@@ -252,14 +252,14 @@ export default function Detail() {
         onPrimaryAction={handleLikeClick}
       />
       {/* 투표 카드 */}
-      {/* <CineDetailCard
+      <CineDetailCard
         data={sampleDetailVoteData}
         loadingState="ready"
         isLiked={isLiked}
         likeCount={likeCount}
         onPrimaryAction={handleLikeClick}
         onSecondaryAction={handleShareClick}
-      /> */}
+      />
       {/* navbar : 펀딩 소개, 상영물 소개, 영화관 정보, 환불 및 위약 정보 */}
       <div className="flex flex-col gap-10 mt-10">
         <div className="grid grid-cols-2 sm:flex sm:flex-nowrap w-full px-4 py-2 gap-4 sm:overflow-x-auto">
