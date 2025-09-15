@@ -1,5 +1,7 @@
 package io.ssafy.cinemoa.payment.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +23,6 @@ public class FundingPaymentResponse {
         private Long amount;
         private String cardNumber;
         private String merchantName;
-        private String transactionDate;
-        private String transactionTime;
+        private LocalDateTime transactionDateTime;
     }
 }

@@ -1,5 +1,7 @@
 package io.ssafy.cinemoa.payment.repository.entity;
 
+import java.time.LocalDateTime;
+
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
@@ -49,5 +51,8 @@ public class FundingTransaction extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private FundingTransactionState state;
+
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
 
 }

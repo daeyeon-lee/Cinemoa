@@ -3,6 +3,8 @@ package io.ssafy.cinemoa.payment.controller;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentRequest;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentResponse;
+import io.ssafy.cinemoa.payment.dto.FundingRefundRequest;
+import io.ssafy.cinemoa.payment.dto.FundingRefundResponse;
 import io.ssafy.cinemoa.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,25 +24,31 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    /* 펀딩 참여 (펀딩 참여금 결제) */
     @PostMapping
     public ResponseEntity<ApiResponse<?>> processFundingPayment(@Valid @RequestBody FundingPaymentRequest request) {
         // 향후 스프링 시큐리티 구현 후 추가
         // log.info("펀딩 결제 요청 - 사용자: {}, 펀딩ID: {}, 금액: {}", userDetails.getUsername(),
         // request.getFundingId(), request.getAmount());
         // Long userId = Long.valueOf(userDetails.getUsername());
-        Long userId = 1L;
-        FundingPaymentResponse response = paymentService.processFundingPayment(userId, request);
+        Long currentUserId = 1L;
+        FundingPaymentResponse response = paymentService.processFundingPayment(currentUserId, request);
 
-        return ResponseEntity.ok(ApiResponse.ofSuccess(response));
+        return ResponseEntity.ok(ApiResponse.ofSuccess(response, "펀딩 참여 결제가 완료되었습니다."));
     }
 
-    // 펀딩금 환불
-    // @PostMapping("/{fundingId}/hold")
-    // public ResponseEntity<ApiResponse<?>>
-    // holdSeatOfFunding(@PathVariable("/fundingId") Long fundingId,
-    // @RequestBody FundingHoldRequest request) {
-    // paymentService.holdSeatOf(request.getUserId(), fundingId);
-    // return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 성공"));
-    // }
+    /* 펀딩 취소 (펀딩 참여금 환불) */
+    @PostMapping("/refund")
+    public ResponseEntity<ApiResponse<?>> processFundingRefund(@Valid @RequestBody FundingRefundRequest request) {
+        // 향후 스프링 시큐리티 구현 후 추가
+        // log.info("펀딩 환불 요청 - 사용자: {}, 펀딩ID: {}", userDetails.getUsername(),
+        // request.getFundingId());
+        // Long userId = Long.valueOf(userDetails.getUsername());
+        Long currentUserId = 1L;
+
+        FundingRefundResponse response = paymentService.processFundingRefund(currentUserId, request);
+
+        return ResponseEntity.ok(ApiResponse.ofSuccess(response, "펀딩 참여금 환불이 완료되었습니다."));
+    }
 
 }

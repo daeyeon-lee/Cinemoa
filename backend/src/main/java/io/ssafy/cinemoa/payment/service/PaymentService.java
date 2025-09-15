@@ -8,9 +8,13 @@ import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
+import io.ssafy.cinemoa.global.exception.BadRequestException;
+import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentRequest;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentResponse;
+import io.ssafy.cinemoa.payment.dto.FundingRefundRequest;
+import io.ssafy.cinemoa.payment.dto.FundingRefundResponse;
 import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 import io.ssafy.cinemoa.payment.repository.PaymentRepository;
 import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
@@ -21,6 +25,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
@@ -34,23 +41,23 @@ public class PaymentService {
     private final AccountDepositApiClient accountDepositApiClient;
 
     @Transactional
-    public FundingPaymentResponse processFundingPayment(Long userId, FundingPaymentRequest request) {
+    public FundingPaymentResponse processFundingPayment(Long currentUserId, FundingPaymentRequest request) {
 
-        // 1. 요청 데이터 검증 및 가져오기
         Long fundingId = request.getFundingId();
-        // Long amount = request.getAmount();
-        // String cardNumber = request.getCardNumber();
-        // String cardCvc = request.getCardCvc();
+        Long userId = request.getUserId();
+
+        // 1. 사용자 정보 검증
+        // if (!currentUserId.equals(targetUserId)) {
+        // throw NoAuthorityException.ofUser();
+        // }
+        User user = userRepository.findById(userId)
+                .orElseThrow(ResourceNotFoundException::ofUser);
 
         // 2. 펀딩 존재 확인 및 조회
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(ResourceNotFoundException::ofFunding);
 
-        // 3. 사용자 정보 검증
-        User user = userRepository.findById(userId)
-                .orElseThrow(ResourceNotFoundException::ofUser);
-
-        // 4. 카드결제 실행 (카드 결제 API 호출)
+        // 3. 카드결제 실행 (카드 결제 API 호출)
         CreditCardTransactionResponse apiResponse = cardApiClient.createCreditCardTransaction(
                 request.getCardNumber(),
                 request.getCardCvc(),
@@ -60,20 +67,24 @@ public class PaymentService {
         PaymentErrorCode paymentResult = PaymentErrorCode.fromCode(apiResponse.getResponseCode());
         boolean isSuccess = paymentResult.isSuccess();
 
-        // 5. 결제 로그 저장
+        // 4. 결제 로그 저장
+        LocalDateTime processedDateTime = parseTransactionDateTime(apiResponse.getTransactionDate(),
+                apiResponse.getTransactionTime());
+
         UserTransaction transaction = UserTransaction.builder()
                 .transactionUniqueNo(apiResponse.getTransactionUniqueNo())
                 .user(user)
                 .funding(funding)
                 .balance(isSuccess ? apiResponse.getPaymentBalance().intValue() : 0)
                 .state(isSuccess ? UserTransactionState.SUCCESS : UserTransactionState.ERROR)
+                .processedAt(processedDateTime)
                 .build();
         UserTransaction savedTransaction = paymentRepository.save(transaction);
 
         // 카드 결제 성공 시
         if (isSuccess) {
             try {
-                // 6. 펀딩별 계좌로 입금 처리
+                // 5. 펀딩별 계좌로 입금 처리
                 // 씨네모아 가맹점으로 카드결제가 실행되고 -> 성공하면 -> 펀딩별 계좌로 입금
                 processAccountDeposit(fundingId, userId, request.getAmount());
 
@@ -84,7 +95,7 @@ public class PaymentService {
                 throw new RuntimeException("계좌 입금 처리 실패", e);
             }
 
-            // 7. 펀딩 상태 업데이트(참가자 수 +1)
+            // 6. 펀딩 상태 업데이트(참가자 수 +1)
             fundingStatRepository.incrementParticipantCount(fundingId);
 
         } // 결제 실패 시 로깅
@@ -93,8 +104,49 @@ public class PaymentService {
                     userId, fundingId, paymentResult.getCode(), paymentResult.getMessage());
         }
 
-        // 8. 응답 데이터 구성
         return buildPaymentResponse(request, apiResponse, savedTransaction, userId, paymentResult, isSuccess);
+    }
+
+    /**
+     * 펀딩 참여금 환불 처리
+     */
+    @Transactional
+    public FundingRefundResponse processFundingRefund(Long currentUserId, FundingRefundRequest request) {
+        Long fundingId = request.getFundingId();
+        Long targetUserId = request.getUserId();
+
+        // 1. 사용자 정보 검증
+        // if (!currentUserId.equals(targetUserId)) {
+        // throw NoAuthorityException.ofUser();
+        // }
+
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(ResourceNotFoundException::ofUser);
+
+        // 2. 펀딩 존재 확인 및 조회
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+
+        // 3. 해당 사용자의 가장 최근 성공한 거래 조회
+        UserTransaction successTransaction = paymentRepository
+                .findTopByUserAndFundingAndStateOrderByProcessedAtDesc(user, funding, UserTransactionState.SUCCESS)
+                .orElseThrow(() -> BadRequestException.ofFunding("참여하지 않은 펀딩입니다."));
+
+        try {
+            // 4-1. 거래 상태를 환불로 변경
+            // successTransaction.setState(UserTransactionState.REFUNDED);
+            // paymentRepository.save(successTransaction);
+
+            // // 4-2. 펀딩 참여자 수 감소
+            // fundingStatRepository.decrementParticipantCount(fundingId);
+
+            return buildRefundResponse(successTransaction, fundingId, targetUserId, user);
+
+        } catch (Exception e) {
+            log.error("환불 처리 중 오류 발생 - 사용자ID: {}, 펀딩ID: {}, 오류: {}",
+                    targetUserId, fundingId, e.getMessage(), e);
+            throw InternalServerException.ofRefund();
+        }
     }
 
     /**
@@ -133,7 +185,7 @@ public class PaymentService {
     }
 
     /**
-     * 결제 응답 데이터 구성
+     * 펀딩 참여금 결제 api 응답 데이터 구성
      */
     private FundingPaymentResponse buildPaymentResponse(
             FundingPaymentRequest request,
@@ -143,27 +195,45 @@ public class PaymentService {
             PaymentErrorCode paymentResult,
             boolean isSuccess) {
 
+        // 결제 정보 구성
+        FundingPaymentResponse.PaymentInfo paymentInfo = FundingPaymentResponse.PaymentInfo.builder()
+                .amount(request.getAmount())
+                .cardNumber(maskCardNumber(request.getCardNumber()))
+                .merchantName(apiResponse.getMerchantName())
+                .transactionDateTime(LocalDateTime.now())
+                .build();
+
         return FundingPaymentResponse.builder()
                 .transactionUniqueNo(savedTransaction.getTransactionId().toString())
                 .fundingId(request.getFundingId())
                 .userId(userId)
-                .paymentInfo(buildPaymentInfo(request, apiResponse))
+                .paymentInfo(paymentInfo)
                 .build();
     }
 
     /**
-     * 결제 정보 구성
+     * 펀딩 참여금 환불 api 응답 데이터 구성
      */
-    private FundingPaymentResponse.PaymentInfo buildPaymentInfo(
-            FundingPaymentRequest request,
-            CreditCardTransactionResponse apiResponse) {
+    private FundingRefundResponse buildRefundResponse(
+            UserTransaction latestTransaction,
+            Long fundingId,
+            Long targetUserId,
+            User user) {
 
-        return FundingPaymentResponse.PaymentInfo.builder()
-                .amount(request.getAmount())
-                .cardNumber(maskCardNumber(request.getCardNumber()))
-                .merchantName(apiResponse.getMerchantName())
-                .transactionDate(apiResponse.getTransactionDate())
-                .transactionTime(apiResponse.getTransactionTime())
+        // 사용자 계좌 정보 조회 (환불 계좌)
+        String userAccount = user.getRefundAccountNumber();
+
+        FundingRefundResponse.RefundInfo refundInfo = FundingRefundResponse.RefundInfo.builder()
+                .refundAmount(latestTransaction.getBalance())
+                .refundAccountNo(userAccount)
+                .refundDateTime(LocalDateTime.now())
+                .build();
+
+        return FundingRefundResponse.builder()
+                .transactionUniqueNo(latestTransaction.getTransactionUniqueNo())
+                .fundingId(fundingId)
+                .userId(targetUserId)
+                .refundInfo(refundInfo)
                 .build();
     }
 
@@ -175,6 +245,21 @@ public class PaymentService {
             return "**** **** **** ****";
         }
         return cardNo.substring(0, 4) + "-****-****-" + cardNo.substring(cardNo.length() - 4);
+    }
+
+    /**
+     * API 응답의 날짜/시간을 LocalDateTime으로 변환
+     */
+    private LocalDateTime parseTransactionDateTime(String transactionDate, String transactionTime) {
+        try {
+            // 날짜 형식: "20250115", 시간 형식: "143025" 가정
+            String dateTimeString = transactionDate + transactionTime;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            return LocalDateTime.parse(dateTimeString, formatter);
+        } catch (Exception e) {
+            log.warn("거래 날짜/시간 파싱 실패 - date: {}, time: {}, 현재 시간으로 대체", transactionDate, transactionTime, e);
+            return LocalDateTime.now();
+        }
     }
 
 }
