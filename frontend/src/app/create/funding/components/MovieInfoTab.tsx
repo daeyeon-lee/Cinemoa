@@ -188,7 +188,7 @@ export default function MovieInfoTab() {
               <div key={key}>
                 <div className="flex items-center mb-2">
                   <category.icon className="w-4 h-4 mr-1" />
-                  <h3 className="text-sm sm:text-p2-b text-Brand1-Primary">{category.title}</h3>
+                  <h3 className="text-sm sm:text-p2-b text-Brand1-Strong">{category.title}</h3>
                 </div>
                 <div className="w-full flex flex-nowrap gap-2">
                   {category.items.map((item) => {
@@ -229,16 +229,15 @@ export default function MovieInfoTab() {
             <h4 className="h5-b text-primary">
               상영물 제목 <span className="text-Brand1-Primary">*</span>
             </h4>
-            <p className="p3 text-tertiary">상영물 제목을 검색해주세요.</p>
+            <p className="p3 text-tertiary">상영물 제목을 직접 입력하거나 검색해주세요.</p>
           </div>
           <div className="space-y-2">
             <div className="flex gap-2">
               <Input
-                placeholder="상영물 제목"
+                placeholder="상영물 제목을 입력하거나 검색해주세요"
                 value={movieTitle}
                 onChange={(e) => setMovieTitle(e.target.value)}
                 className="flex-1"
-                readOnly
               />
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
