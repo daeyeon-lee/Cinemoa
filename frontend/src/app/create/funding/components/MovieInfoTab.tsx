@@ -415,6 +415,7 @@ export default function MovieInfoTab() {
           </Card>
         </div>
       </div>
+      {/* 이전 다음 바튼 */}
       <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
         <Link href="/create" className="w-full">
           <Button variant="tertiary" size="lg" className="w-full">

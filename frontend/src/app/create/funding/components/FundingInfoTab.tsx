@@ -104,14 +104,18 @@ export default function FundingInfoTab({ onNext }: FundingInfoTabProps) {
                 </FormLabel>
                 <div className="flex-1">
                   <FormControl>
-                    <Textarea placeholder="생성할 펀딩에 대해 자세히 설명해주세요" {...field} />
+                    <Textarea
+                      placeholder="생성할 펀딩에 대해 자세히 설명해주세요"
+                      {...field}
+                      className="min-h-[135px] resize-none"
+                    />
                   </FormControl>
-                  <FormMessage className="mt-1" />
+                  <FormMessage className="mt-1 " />
                 </div>
               </FormItem>
             )}
           />
-
+          {/* 이전 다음 바튼 */}
           <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
             <Link href="/create" className="w-full">
               <Button variant="tertiary" size="lg" className="w-full">
