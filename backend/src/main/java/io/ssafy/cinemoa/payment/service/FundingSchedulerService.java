@@ -273,4 +273,66 @@ public class FundingSchedulerService {
             return otherAccountNo;
         }
     }
+
+    // ========== 테스트용 메서드들 ==========
+
+    /**
+     * 테스트용: 펀딩 성공/실패 판단 수동 실행
+     * 
+     * @param targetDate 확인할 날짜 (예: "2025-01-15")
+     */
+    public void testCheckFundingResults(String targetDate) {
+        log.info("■■■■■■■■테스트: 펀딩 성공/실패 판단 실행 - 대상일: {}■■■■■■■■", targetDate);
+        
+        try {
+            LocalDate date = LocalDate.parse(targetDate);
+            List<Funding> expiredFundings = fundingRepository.findByEndsOnAndState(date, FundingState.ON_PROGRESS);
+            
+            if (expiredFundings.isEmpty()) {
+                log.info("해당 날짜에 마감된 펀딩이 없습니다: {}", targetDate);
+                return;
+            }
+
+            log.info("해당 날짜에 마감된 펀딩 {}개를 확인합니다.", expiredFundings.size());
+
+            for (Funding funding : expiredFundings) {
+                processFundingResult(funding);
+            }
+
+            log.info("■■■■■■■■테스트: 펀딩 성공/실패 판단 완료■■■■■■■■");
+
+        } catch (Exception e) {
+            log.error("테스트 중 오류 발생: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 테스트용: 영화관 송금 수동 실행
+     * 
+     * @param targetDate 확인할 날짜 (예: "2025-01-15")
+     */
+    public void testTransferToCinemaAccounts(String targetDate) {
+        log.info("■■■■■■■■테스트: 영화관 송금 실행 - 대상일: {}■■■■■■■■", targetDate);
+        
+        try {
+            LocalDate date = LocalDate.parse(targetDate);
+            List<Funding> successfulFundings = fundingRepository.findByEndsOnAndStateWithCinemaAndScreen(date, FundingState.SUCCESS);
+            
+            if (successfulFundings.isEmpty()) {
+                log.info("해당 날짜에 성공한 펀딩이 없습니다: {}", targetDate);
+                return;
+            }
+
+            log.info("해당 날짜에 성공한 펀딩 {}개에 대해 영화관 송금을 시작합니다.", successfulFundings.size());
+
+            for (Funding funding : successfulFundings) {
+                processCinemaTransfer(funding);
+            }
+
+            log.info("■■■■■■■■테스트: 영화관 송금 완료■■■■■■■■");
+
+        } catch (Exception e) {
+            log.error("테스트 중 오류 발생: {}", e.getMessage(), e);
+        }
+    }
 }
