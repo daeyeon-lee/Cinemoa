@@ -50,7 +50,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick 
                 </div>
               ))}
             </div>
-            
+
             {/* 두 번째 그룹 (나머지 절반) */}
             <div className="flex gap-2">
               {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
