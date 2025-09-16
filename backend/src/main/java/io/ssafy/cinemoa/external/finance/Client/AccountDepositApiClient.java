@@ -68,7 +68,7 @@ public class AccountDepositApiClient {
         PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
         // REC 데이터 추출 (실제 거래 정보)
-        AccountDepositResponse result = responseBody.getREC();
+        AccountDepositResponse result = responseBody.getRec();
         if (result == null) {
           log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
           result = new AccountDepositResponse();

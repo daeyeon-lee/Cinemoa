@@ -42,7 +42,7 @@ public class AccountApiClient {
                 PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
                 // REC 데이터 추출 (실제 거래 정보)
-                AccountCreationResponse result = responseBody.getREC();
+                AccountCreationResponse result = responseBody.getRec();
                 if (result == null) {
                     log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
                     result = new AccountCreationResponse();
@@ -76,12 +76,11 @@ public class AccountApiClient {
         return errorResponse;
     }
 
-
     private AccountCreationRequest buildAccountCreationRequest() {
         // 공통 헤더 생성
         ReqHeader header = FinanceApiUtils.buildCommonHeader(
                 financeApiConfig,
-                "createDemandDepositAccount", 
+                "createDemandDepositAccount",
                 true);
 
         return AccountCreationRequest.builder()
