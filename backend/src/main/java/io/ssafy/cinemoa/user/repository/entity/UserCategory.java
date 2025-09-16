@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,9 @@ import org.hibernate.proxy.HibernateProxy;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user_categories")
+@Table(name = "user_categories", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "category_id"})
+})
 public class UserCategory {
 
     @EmbeddedId
