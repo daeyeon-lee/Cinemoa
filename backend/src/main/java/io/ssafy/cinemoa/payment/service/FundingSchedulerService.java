@@ -1,6 +1,7 @@
 package io.ssafy.cinemoa.payment.service;
 
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
+import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.external.finance.Client.AccountTransferApiClient;
 import io.ssafy.cinemoa.external.finance.dto.AccountTransferResponse;
 import io.ssafy.cinemoa.funding.enums.FundingState;
@@ -10,11 +11,11 @@ import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
 import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.payment.repository.FundingTransactionRepository;
-import io.ssafy.cinemoa.payment.repository.TransactionRepository;
+// import io.ssafy.cinemoa.payment.repository.TransactionRepository;
 import io.ssafy.cinemoa.payment.repository.entity.FundingTransaction;
-import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
+// import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import io.ssafy.cinemoa.payment.enums.FundingTransactionState;
-import io.ssafy.cinemoa.payment.enums.UserTransactionState;
+// import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class FundingSchedulerService {
 
     private final FundingRepository fundingRepository;
     private final FundingStatRepository fundingStatRepository;
-    private final TransactionRepository transactionRepository;
+    // private final TransactionRepository transactionRepository;
     private final FundingTransactionRepository fundingTransactionRepository;
     private final AccountTransferApiClient accountTransferApiClient;
 
@@ -105,9 +106,11 @@ public class FundingSchedulerService {
         log.info("■■■■■■■■영화관 송금 스케줄러 시작■■■■■■■■");
         
         try {
-            // 1. 어제 성공한 펀딩들 조회 (Cinema 정보 포함)
+            // 1. 어제 성공한 펀딩들 조회 (Cinema, Screen 정보 포함)
+            // LazyInitializationException 해결을 위해 Cinema, Screen 정보 포함하여 조회
             LocalDate yesterday = LocalDate.now().minusDays(1);
-            List<Funding> successfulFundings = fundingRepository.findByEndsOnAndStateWithCinema(yesterday, FundingState.SUCCESS);
+            // List<Funding> successfulFundings = fundingRepository.findByEndsOnAndStateWithCinema(yesterday, FundingState.SUCCESS);
+            List<Funding> successfulFundings = fundingRepository.findByEndsOnAndStateWithCinemaAndScreen(yesterday, FundingState.SUCCESS);
             
             if (successfulFundings.isEmpty()) {
                 log.info("어제 성공한 펀딩이 없습니다.");
@@ -178,17 +181,29 @@ public class FundingSchedulerService {
             }
 
             // 2. 펀딩에 모인 총 금액 계산 (성공한 거래들의 합계)
-            List<UserTransaction> successfulTransactions = transactionRepository
-                .findByFunding_FundingIdAndState(fundingId, UserTransactionState.SUCCESS);
+            // List<UserTransaction> successfulTransactions = transactionRepository
+            //     .findByFunding_FundingIdAndState(fundingId, UserTransactionState.SUCCESS);
             
-            if (successfulTransactions.isEmpty()) {
-                log.warn("성공한 거래가 없습니다. 펀딩ID: {}", fundingId);
+            // if (successfulTransactions.isEmpty()) {
+            //     log.warn("성공한 거래가 없습니다. 펀딩ID: {}", fundingId);
+            // 2. 펀딩에 모인 총 금액 계산 (Screen의 price 값 사용)
+            Screen screen = funding.getScreen();
+            if (screen == null) {
+                log.warn("펀딩에 연결된 상영관 정보가 없습니다. 펀딩ID: {}", fundingId);
                 return;
             }
 
-            int totalAmount = successfulTransactions.stream()
-                .mapToInt(UserTransaction::getBalance)
-                .sum();
+            Integer screenPrice = screen.getPrice();
+            if (screenPrice == null) {
+                log.warn("상영관 가격 정보가 없습니다. 펀딩ID: {}, 상영관ID: {}", fundingId, screen.getScreenId());
+                return;
+            }
+
+            // int totalAmount = successfulTransactions.stream()
+            //     .mapToInt(UserTransaction::getBalance)
+            //     .sum();
+            int totalAmount = screenPrice;
+
 
             // 3. 영화관 계좌 정보 조회
             Cinema cinema = funding.getCinema();
@@ -258,5 +273,4 @@ public class FundingSchedulerService {
             return otherAccountNo;
         }
     }
-
 }
