@@ -12,7 +12,7 @@ import SeriesIcon from '@/component/icon/seriesIcon';
 import ConcertIcon from '@/component/icon/concertIcon';
 import SportsIcon from '@/component/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
-import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/plugins/tmdb';
+import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
 import Link from 'next/link';
 
 // 카테고리 데이터
