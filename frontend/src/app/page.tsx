@@ -1,9 +1,5 @@
-// 메인페이지(홈 화면)
+import Home from '@/app/home/Home';
 
-export default function MainPage() {
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <h2 className="text-2xl font-bold">Home</h2>
-    </div>
-  );
+export default function HomePage() {
+  return <Home />;
 }
