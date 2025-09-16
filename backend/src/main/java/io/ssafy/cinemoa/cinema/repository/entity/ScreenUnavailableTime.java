@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,9 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "screen_unavailable_time")
+@Table(name = "screen_unavailable_time", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"screen_id", "target_date", "hour_block"})
+})
 public class ScreenUnavailableTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

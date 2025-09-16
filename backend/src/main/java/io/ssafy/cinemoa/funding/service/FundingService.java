@@ -4,6 +4,7 @@ import io.ssafy.cinemoa.category.repository.CategoryRepository;
 import io.ssafy.cinemoa.category.repository.entity.Category;
 import io.ssafy.cinemoa.cinema.repository.CinemaRepository;
 import io.ssafy.cinemoa.cinema.repository.ScreenRepository;
+import io.ssafy.cinemoa.cinema.repository.ScreenUnavailableTImeBatchRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
@@ -28,6 +29,7 @@ import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.funding.repository.entity.FundingEstimatedDay;
 import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
+import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
@@ -114,6 +116,7 @@ public class FundingService {
     private final UserRepository userRepository;
     private final UserFavoriteRepository userFavoriteRepository;
     private final RedisService redisService;
+    private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
 
 
     @Transactional
@@ -129,6 +132,11 @@ public class FundingService {
 
         Screen screen = screenRepository.findById(request.getScreenId())
                 .orElseThrow(ResourceNotFoundException::ofScreen);
+
+        if (!unavailableTImeBatchRepository.insertRangeIfAvailable(screen.getScreenId(), request.getScreenDay(),
+                request.getScreenStartsOn(), request.getScreenEndsOn())) {
+            throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
+        }
 
         Funding funding = Funding.builder()
                 .fundingType(FundingType.FUNDING)
