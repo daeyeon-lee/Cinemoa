@@ -20,6 +20,7 @@ import io.ssafy.cinemoa.funding.dto.VoteCreateRequest;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.funding.event.AccountCreationRequestEvent;
+import io.ssafy.cinemoa.funding.event.FundingScoreUpdateEvent;
 import io.ssafy.cinemoa.funding.exception.SeatLockException;
 import io.ssafy.cinemoa.funding.repository.FundingEstimatedDayRepository;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
@@ -114,6 +115,7 @@ public class FundingService {
     private final UserFavoriteRepository userFavoriteRepository;
     private final RedisService redisService;
 
+
     @Transactional
     public void createFunding(FundingCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -147,16 +149,17 @@ public class FundingService {
                 .build();
 
         fundingRepository.save(funding);
+
+        FundingStat fundingStat = FundingStat.builder()
+                .funding(funding)
+                .build();
+        statRepository.save(fundingStat);
         eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
     }
 
     @Transactional
     public void holdSeatOf(Long userId, Long fundingId) {
         //put seat info on redis, then reduce remaining seats.
-        if (!fundingRepository.existsById(fundingId)) {
-            throw ResourceNotFoundException.ofFunding();
-        }
-
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(ResourceNotFoundException::ofFunding);
 
@@ -219,7 +222,11 @@ public class FundingService {
 
         fundingRepository.save(vote);
 
+        FundingStat fundingStat = FundingStat.builder()
+                .funding(vote)
+                .build();
         fundingEstimatedDayRepository.save(estimatedDay);
+        statRepository.save(fundingStat);
     }
 
     @Transactional
@@ -308,6 +315,7 @@ public class FundingService {
 
         updateViewCount(fundingId);
 
+        eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
         return response;
     }
 
@@ -324,5 +332,36 @@ public class FundingService {
         fundingRepository.saveAndFlush(funding);
     }
 
+    //wilson-score 기반 점수 계산
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recalculateScore(Long fundingId) {
+        FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
+                .orElseThrow(InternalServerException::ofUnknown);
 
+        int views = fundingStat.getViewCount();
+        int likes = fundingStat.getFavoriteCount();
+
+        double engagementRate = views > 0 ? (double) likes / views : 0;
+
+        double confidence = calculateWilsonScore(likes, views - likes);
+
+        double viewScore = Math.log(1 + views) / Math.log(1000);
+
+        double finalScore = (confidence * 0.6 + engagementRate * 0.4) * viewScore * 100;
+
+        fundingStat.setRecommendScore(finalScore);
+    }
+
+    private double calculateWilsonScore(int positive, int negative) {
+        int total = positive + negative;
+        if (total == 0) {
+            return 0;
+        }
+
+        double p = (double) positive / total;
+        double z = 1.96; // 95% 신뢰구간
+
+        return (p + z * z / (2 * total) - z * Math.sqrt((p * (1 - p) + z * z / (4 * total)) / total))
+                / (1 + z * z / total);
+    }
 }
