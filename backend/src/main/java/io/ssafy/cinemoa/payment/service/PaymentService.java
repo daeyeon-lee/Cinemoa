@@ -1,9 +1,11 @@
 package io.ssafy.cinemoa.payment.service;
 
 import io.ssafy.cinemoa.external.finance.Client.AccountDepositApiClient;
+import io.ssafy.cinemoa.external.finance.Client.AccountTransferApiClient;
 import io.ssafy.cinemoa.external.finance.Client.CardApiClient;
 import io.ssafy.cinemoa.external.finance.dto.CreditCardTransactionResponse;
 import io.ssafy.cinemoa.external.finance.dto.AccountDepositResponse;
+import io.ssafy.cinemoa.external.finance.dto.AccountTransferResponse;
 import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
@@ -16,6 +18,7 @@ import io.ssafy.cinemoa.payment.dto.FundingPaymentResponse;
 import io.ssafy.cinemoa.payment.dto.FundingRefundRequest;
 import io.ssafy.cinemoa.payment.dto.FundingRefundResponse;
 import io.ssafy.cinemoa.payment.enums.UserTransactionState;
+import io.ssafy.cinemoa.payment.enums.FundingOperationContext;
 import io.ssafy.cinemoa.payment.repository.PaymentRepository;
 import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import io.ssafy.cinemoa.user.repository.UserRepository;
@@ -26,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -39,7 +43,19 @@ public class PaymentService {
     private final FundingStatRepository fundingStatRepository;
     private final CardApiClient cardApiClient;
     private final AccountDepositApiClient accountDepositApiClient;
+    private final AccountTransferApiClient accountTransferApiClient;
 
+    /**
+     * 펀딩 참여금 결제 처리
+     * 
+     * @param currentUserId 현재 사용자 ID
+     * @param request       펀딩 결제 요청 데이터
+     * @return FundingPaymentResponse 결제 처리 결과
+     * 
+     * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
+     * @throws RuntimeException          카드 결제 실패 OR 계좌 입금 실패 시
+     * @author HG
+     */
     @Transactional
     public FundingPaymentResponse processFundingPayment(Long currentUserId, FundingPaymentRequest request) {
 
@@ -57,7 +73,10 @@ public class PaymentService {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(ResourceNotFoundException::ofFunding);
 
-        // 3. 카드결제 실행 (카드 결제 API 호출)
+        // 2-1. 현재가 펀딩 종료일 이전인지 검증
+        validateFundingNotExpired(funding, FundingOperationContext.PAYMENT);
+
+        // 3. 카드결제 실행 (금융망 API 호출)
         CreditCardTransactionResponse apiResponse = cardApiClient.createCreditCardTransaction(
                 request.getCardNumber(),
                 request.getCardCvc(),
@@ -95,13 +114,14 @@ public class PaymentService {
                 throw new RuntimeException("계좌 입금 처리 실패", e);
             }
 
-            // 6. 펀딩 상태 업데이트(참가자 수 +1)
+            // 6. 펀딩 상태 업데이트(참여자 수 +1)
             fundingStatRepository.incrementParticipantCount(fundingId);
 
         } // 결제 실패 시 로깅
         else {
             log.warn("결제 실패 - 사용자: {}, 펀딩: {}, 에러코드: {}, 메시지: {}",
                     userId, fundingId, paymentResult.getCode(), paymentResult.getMessage());
+            throw InternalServerException.ofPayment();
         }
 
         return buildPaymentResponse(request, apiResponse, savedTransaction, userId, paymentResult, isSuccess);
@@ -109,6 +129,16 @@ public class PaymentService {
 
     /**
      * 펀딩 참여금 환불 처리
+     * 
+     * @param currentUserId 현재 사용자 ID (권한 검증용)
+     * @param request       펀딩 환불 요청 데이터 (펀딩 ID, 대상 사용자 ID 포함)
+     * @return FundingRefundResponse 환불 처리 결과
+     * 
+     * @throws NoAuthorityException      현재 사용자가 대상 사용자와 다른 경우
+     * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
+     * @throws BadRequestException       참여하지 않은 펀딩에 대한 환불 요청 시
+     * @throws InternalServerException   환불 처리 중 오류 발생 시
+     * @author HG
      */
     @Transactional
     public FundingRefundResponse processFundingRefund(Long currentUserId, FundingRefundRequest request) {
@@ -127,18 +157,56 @@ public class PaymentService {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(ResourceNotFoundException::ofFunding);
 
+        // 2-1. 현재가 펀딩 종료일 이전인지 검증
+        validateFundingNotExpired(funding, FundingOperationContext.REFUND);
+
         // 3. 해당 사용자의 가장 최근 성공한 거래 조회
         UserTransaction successTransaction = paymentRepository
-                .findTopByUserAndFundingAndStateOrderByProcessedAtDesc(user, funding, UserTransactionState.SUCCESS)
+                .findTopByUserAndFundingAndStateOrderByProcessedAtDesc(user, funding,
+                        UserTransactionState.SUCCESS)
                 .orElseThrow(() -> BadRequestException.ofFunding("참여하지 않은 펀딩입니다."));
 
         try {
-            // 4-1. 거래 상태를 환불로 변경
-            // successTransaction.setState(UserTransactionState.REFUNDED);
-            // paymentRepository.save(successTransaction);
+            // 4-1. 사용자 환불계좌 조회 및 검증
+            String refundAccountNo = user.getRefundAccountNumber();
+            if (refundAccountNo == null || refundAccountNo.trim().isEmpty()) {
+                log.error("사용자 환불 계좌 정보 없음 - 사용자ID: {}", targetUserId);
+                throw BadRequestException.ofFunding("사용자 환불 계좌 정보 없음");
 
-            // // 4-2. 펀딩 참여자 수 감소
-            // fundingStatRepository.decrementParticipantCount(fundingId);
+            }
+
+            // 4-2. 실제 환불 처리 (금융망 API 호출. 펀딩용 계좌 -> 사용자 환불 계좌로 계좌이체)
+            // 계좌이체 실행 (금융망 API 호출)
+            AccountTransferResponse apiResponse = accountTransferApiClient
+                    .processRefundTransfer(funding.getFundingAccount(), refundAccountNo,
+                            successTransaction.getBalance().toString(), fundingId);
+
+            // 계좌이체 결과 성공 여부 확인
+            PaymentErrorCode paymentResult = PaymentErrorCode.fromCode(apiResponse.getResponseCode());
+            boolean isSuccess = paymentResult.isSuccess();
+
+            // 계좌이체 성공 시
+            if (isSuccess) {
+
+                // 4-3. 거래 상태를 환불로 UPDATE
+                successTransaction.setState(UserTransactionState.REFUNDED);
+                successTransaction.setProcessedAt(LocalDateTime.now());
+                successTransaction.setTransactionUniqueNo(apiResponse.getTransactionUniqueNo());
+                paymentRepository.save(successTransaction);
+
+                // 4-4. 펀딩 상태 업데이트(참여자 수 -1)
+                fundingStatRepository.decrementParticipantCount(fundingId);
+
+                log.info("환불 처리 완료 - 환불 대상 사용자ID: {}, 펀딩ID: {}, 환불금액: {}, 환불계좌: {}",
+                        targetUserId, fundingId, successTransaction.getBalance(),
+                        maskAccountNumber(refundAccountNo));
+
+            } // 계좌이체 실패 시 로깅
+            else {
+                log.warn("환불 처리 실패 - 환불 대상 사용자ID: {}, 펀딩: {}, 에러코드: {}, 메시지: {}",
+                        targetUserId, fundingId, paymentResult.getCode(), paymentResult.getMessage());
+                throw InternalServerException.ofRefund();
+            }
 
             return buildRefundResponse(successTransaction, fundingId, targetUserId, user);
 
@@ -173,7 +241,8 @@ public class PaymentService {
 
         if (isDepositSuccess) {
             log.info("펀딩 계좌 입금 성공 - 사용자ID: {}, 펀딩ID: {}, 계좌: {}, 금액: {}, 거래번호: {}",
-                    userId, fundingId, fundingAccount, amount, depositResponse.getTransactionUniqueNo());
+                    userId, fundingId, fundingAccount, amount,
+                    depositResponse.getTransactionUniqueNo());
         } else {
             log.error("펀딩 계좌 입금 실패 - 사용자ID: {}, 펀딩ID: {}, 계좌: {}, 금액: {}, 에러코드: {}, 메시지: {}",
                     userId, fundingId, fundingAccount, amount,
@@ -214,18 +283,12 @@ public class PaymentService {
     /**
      * 펀딩 참여금 환불 api 응답 데이터 구성
      */
-    private FundingRefundResponse buildRefundResponse(
-            UserTransaction latestTransaction,
-            Long fundingId,
-            Long targetUserId,
-            User user) {
-
-        // 사용자 계좌 정보 조회 (환불 계좌)
-        String userAccount = user.getRefundAccountNumber();
+    private FundingRefundResponse buildRefundResponse(UserTransaction latestTransaction, Long fundingId,
+            Long targetUserId, User user) {
 
         FundingRefundResponse.RefundInfo refundInfo = FundingRefundResponse.RefundInfo.builder()
                 .refundAmount(latestTransaction.getBalance())
-                .refundAccountNo(userAccount)
+                .refundAccountNo(user.getRefundAccountNumber()) // 사용자 계좌 정보 조회 (환불 계좌)
                 .refundDateTime(LocalDateTime.now())
                 .build();
 
@@ -248,6 +311,16 @@ public class PaymentService {
     }
 
     /**
+     * 계좌번호 마스킹 (1234-****-****-5678 형식)
+     */
+    private String maskAccountNumber(String accountNo) {
+        if (accountNo == null || accountNo.length() < 8) {
+            return "****-****-****-****";
+        }
+        return accountNo.substring(0, 4) + "-****-****-" + accountNo.substring(accountNo.length() - 4);
+    }
+
+    /**
      * API 응답의 날짜/시간을 LocalDateTime으로 변환
      */
     private LocalDateTime parseTransactionDateTime(String transactionDate, String transactionTime) {
@@ -257,8 +330,33 @@ public class PaymentService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             return LocalDateTime.parse(dateTimeString, formatter);
         } catch (Exception e) {
-            log.warn("거래 날짜/시간 파싱 실패 - date: {}, time: {}, 현재 시간으로 대체", transactionDate, transactionTime, e);
+            log.warn("거래 날짜/시간 파싱 실패 - date: {}, time: {}, 현재 시간으로 대체", transactionDate, transactionTime,
+                    e);
             return LocalDateTime.now();
+        }
+    }
+
+    /**
+     * 펀딩 종료 시간 검증
+     * 
+     * 현재 시간이 펀딩 종료 시간(endsOn) 이후인지 확인하고,
+     * 종료된 펀딩에 대한 요청을 차단합니다.
+     * 
+     * @param funding 검증할 펀딩 객체
+     * @param context 호출 컨텍스트 (PAYMENT 또는 REFUND)
+     * @throws BadRequestException 펀딩이 종료된 경우
+     */
+    private void validateFundingNotExpired(Funding funding, FundingOperationContext context) {
+        LocalDate currentDate = LocalDate.now();
+        LocalDate fundingEndDate = funding.getEndsOn();
+
+        // 종료된 펀딩인 경우
+        if (fundingEndDate != null && currentDate.isAfter(fundingEndDate)) {
+            log.warn("종료된 펀딩에 대한 {} 시도 - 펀딩ID: {}, 종료일: {}, 현재일: {}",
+                    context.getOperationType(), funding.getFundingId(), fundingEndDate, currentDate);
+
+            String errorMessage = context.getValidationErrorMessage() + " 종료일: " + fundingEndDate;
+            throw BadRequestException.ofFunding(errorMessage);
         }
     }
 

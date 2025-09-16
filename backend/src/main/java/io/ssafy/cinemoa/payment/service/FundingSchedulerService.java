@@ -30,8 +30,8 @@ import java.util.Optional;
 
 /**
  * 펀딩 스케줄러 서비스
- * 
- * - 매일 자정(00:00)에 펀딩 마감일이 지난 펀딩들의 성공/실패 여부를 확인
+ *
+ * - 매일 자정(00:00)에 펀딩 마감일이 지난 펀딩들의 성공/실패 여부를 확인 
  * - 매일 오전 7시(07:00)에 성공한 펀딩의 계좌에서 영화관 계좌로 송금
  */
 @Slf4j
@@ -59,7 +59,7 @@ public class FundingSchedulerService {
 
     /**
      * 매일 자정(00:00)에 실행되는 펀딩 성공/실패 판단 스케줄러
-     * 
+     *
      * 1. 어제 마감된 펀딩들을 조회
      * 2. 각 펀딩의 참여자 수와 목표 인원을 비교하여 성공/실패 판단
      * 3. 펀딩 상태를 SUCCESS 또는 FAILED로 업데이트
@@ -68,12 +68,12 @@ public class FundingSchedulerService {
     @Transactional
     public void checkFundingResults() {
         log.info("■■■■■■■■펀딩 성공/실패 판단 스케줄러 시작■■■■■■■■");
-        
+
         try {
             // 1. 어제 마감된 펀딩들 조회 (ON_PROGRESS 상태인 것들만)
             LocalDate yesterday = LocalDate.now().minusDays(1);
             List<Funding> expiredFundings = fundingRepository.findByEndsOnAndState(yesterday, FundingState.ON_PROGRESS);
-            
+
             if (expiredFundings.isEmpty()) {
                 log.info("어제 마감된 펀딩이 없습니다.");
                 return;
@@ -104,14 +104,14 @@ public class FundingSchedulerService {
     @Transactional
     public void transferToCinemaAccounts() {
         log.info("■■■■■■■■영화관 송금 스케줄러 시작■■■■■■■■");
-        
+
         try {
             // 1. 어제 성공한 펀딩들 조회 (Cinema, Screen 정보 포함)
             // LazyInitializationException 해결을 위해 Cinema, Screen 정보 포함하여 조회
             LocalDate yesterday = LocalDate.now().minusDays(1);
             // List<Funding> successfulFundings = fundingRepository.findByEndsOnAndStateWithCinema(yesterday, FundingState.SUCCESS);
             List<Funding> successfulFundings = fundingRepository.findByEndsOnAndStateWithCinemaAndScreen(yesterday, FundingState.SUCCESS);
-            
+
             if (successfulFundings.isEmpty()) {
                 log.info("어제 성공한 펀딩이 없습니다.");
                 return;
@@ -137,7 +137,7 @@ public class FundingSchedulerService {
     private void processFundingResult(Funding funding) {
         try {
             Long fundingId = funding.getFundingId();
-            
+
             // 1. 펀딩 통계 정보 조회
             Optional<FundingStat> statOpt = fundingStatRepository.findByFunding_FundingId(fundingId);
             if (statOpt.isEmpty()) {
@@ -158,11 +158,11 @@ public class FundingSchedulerService {
             fundingRepository.save(funding);
 
             log.info("펀딩 결과 업데이트 - 펀딩ID: {}, 제목: {}, 참여자수: {}/{}, 결과: {}",
-                fundingId, funding.getTitle(), participantCount, maxPeople, newState);
+                    fundingId, funding.getTitle(), participantCount, maxPeople, newState);
 
         } catch (Exception e) {
-            log.error("펀딩 결과 처리 중 오류 발생 - 펀딩ID: {}, 오류: {}", 
-                funding.getFundingId(), e.getMessage(), e);
+            log.error("펀딩 결과 처리 중 오류 발생 - 펀딩ID: {}, 오류: {}",
+                    funding.getFundingId(), e.getMessage(), e);
         }
     }
 
@@ -172,7 +172,7 @@ public class FundingSchedulerService {
     private void processCinemaTransfer(Funding funding) {
         try {
             Long fundingId = funding.getFundingId();
-            
+
             // 1. 펀딩 계좌 정보 확인
             String fundingAccount = funding.getFundingAccount();
             if (fundingAccount == null || fundingAccount.trim().isEmpty()) {
@@ -183,7 +183,7 @@ public class FundingSchedulerService {
             // 2. 펀딩에 모인 총 금액 계산 (성공한 거래들의 합계)
             // List<UserTransaction> successfulTransactions = transactionRepository
             //     .findByFunding_FundingIdAndState(fundingId, UserTransactionState.SUCCESS);
-            
+
             // if (successfulTransactions.isEmpty()) {
             //     log.warn("성공한 거래가 없습니다. 펀딩ID: {}", fundingId);
             // 2. 펀딩에 모인 총 금액 계산 (Screen의 price 값 사용)
@@ -208,18 +208,18 @@ public class FundingSchedulerService {
             // 3. 영화관 계좌 정보 조회
             Cinema cinema = funding.getCinema();
             String cinemaAccountNo = getCinemaAccountNo(cinema.getCinemaName());
-            
+
             if (cinemaAccountNo == null) {
                 log.warn("영화관 계좌 정보를 찾을 수 없습니다. 영화관: {}", cinema.getCinemaName());
                 return;
             }
 
             // 4. 계좌 이체 API 호출
-            AccountTransferResponse transferResponse = accountTransferApiClient.processAccountTransfer(
-                fundingAccount,
-                cinemaAccountNo,
-                String.valueOf(totalAmount),
-                fundingId
+            AccountTransferResponse transferResponse = accountTransferApiClient.processCinemaTransfer(
+                    fundingAccount,
+                    cinemaAccountNo,
+                    String.valueOf(totalAmount),
+                    fundingId
             );
 
             // 5. 이체 결과 확인 및 로깅
@@ -229,27 +229,27 @@ public class FundingSchedulerService {
             if (isTransferSuccess) {
                 // 6. 성공 시 funding_transactions 테이블에 기록
                 FundingTransaction fundingTransaction = FundingTransaction.builder()
-                    .transactionUniqueNo(transferResponse.getTransactionUniqueNo())
-                    .cinema(cinema)
-                    .funding(funding)
-                    .balance(totalAmount)
-                    .state(FundingTransactionState.SUCCESS)
-                    .build();
-                
+                        .transactionUniqueNo(transferResponse.getTransactionUniqueNo())
+                        .cinema(cinema)
+                        .funding(funding)
+                        .balance(totalAmount)
+                        .state(FundingTransactionState.SUCCESS)
+                        .build();
+
                 fundingTransactionRepository.save(fundingTransaction);
 
                 log.info("영화관 송금 성공 - 펀딩ID: {}, 영화관: {}, 금액: {}, 거래번호: {}",
-                    fundingId, cinema.getCinemaName(), totalAmount, transferResponse.getTransactionUniqueNo());
+                        fundingId, cinema.getCinemaName(), totalAmount, transferResponse.getTransactionUniqueNo());
             } else {
                 // 7. 실패 시 에러 로깅
                 log.error("영화관 송금 실패 - 펀딩ID: {}, 영화관: {}, 금액: {}, 에러코드: {}, 메시지: {}",
-                    fundingId, cinema.getCinemaName(), totalAmount, 
-                    transferResult.getCode(), transferResult.getMessage());
+                        fundingId, cinema.getCinemaName(), totalAmount,
+                        transferResult.getCode(), transferResult.getMessage());
             }
 
         } catch (Exception e) {
-            log.error("영화관 송금 처리 중 오류 발생 - 펀딩ID: {}, 오류: {}", 
-                funding.getFundingId(), e.getMessage(), e);
+            log.error("영화관 송금 처리 중 오류 발생 - 펀딩ID: {}, 오류: {}",
+                    funding.getFundingId(), e.getMessage(), e);
         }
     }
 
@@ -262,7 +262,7 @@ public class FundingSchedulerService {
         }
 
         String upperCinemaName = cinemaName.toUpperCase();
-        
+
         if (upperCinemaName.startsWith("CGV")) {
             return cgvAccountNo;
         } else if (upperCinemaName.startsWith("롯데") || upperCinemaName.startsWith("LOTTE")) {
