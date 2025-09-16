@@ -32,7 +32,7 @@ export default function Navbar() {
       <div className="border-b border-1 border-[#1E293B] lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
         <div className="flex items-center justify-between mb-4">
-          <Link href="/home" className="cursor-pointer">
+          <Link href="/" className="cursor-pointer">
             <img src="/cinemoa_logo_long.png" alt="씨네모아" className="h-8" />
           </Link>
           <div className="flex items-center space-x-4">
@@ -66,7 +66,7 @@ export default function Navbar() {
         <div className="flex items-start justify-center gap-16 h-full">
           {/* 로고-홈으로 이동 */}
           {/* 홈 주소로 변경함 */}
-          <Link href="/home" className="cursor-pointer">
+          <Link href="/" className="cursor-pointer">
             <img src="/cinemoa_logo_long.png" alt="씨네모아" className="w-[119px] h-full pb-1" />
           </Link>
           {/* navbar */}
