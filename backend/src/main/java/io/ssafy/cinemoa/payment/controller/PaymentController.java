@@ -26,13 +26,13 @@ public class PaymentController {
 
     /* 펀딩 참여 (펀딩 참여금 결제) */
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> processFundingPayment(@Valid @RequestBody FundingPaymentRequest request) {
+    public ResponseEntity<ApiResponse<?>> participateInFunding(@Valid @RequestBody FundingPaymentRequest request) {
         // 향후 스프링 시큐리티 구현 후 추가
         // log.info("펀딩 결제 요청 - 사용자: {}, 펀딩ID: {}, 금액: {}", userDetails.getUsername(),
         // request.getFundingId(), request.getAmount());
         // Long userId = Long.valueOf(userDetails.getUsername());
         Long currentUserId = 1L;
-        FundingPaymentResponse response = paymentService.processFundingPayment(currentUserId, request);
+        FundingPaymentResponse response = paymentService.participateInFunding(currentUserId, request);
 
         return ResponseEntity.ok(ApiResponse.ofSuccess(response, "펀딩 참여 결제가 완료되었습니다."));
     }

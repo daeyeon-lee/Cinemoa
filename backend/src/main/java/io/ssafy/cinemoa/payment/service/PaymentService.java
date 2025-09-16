@@ -10,6 +10,7 @@ import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
+import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
@@ -46,18 +47,18 @@ public class PaymentService {
     private final AccountTransferApiClient accountTransferApiClient;
 
     /**
-     * 펀딩 참여금 결제 처리
+     * 펀딩 참여 처리
      * 
      * @param currentUserId 현재 사용자 ID
-     * @param request       펀딩 결제 요청 데이터
-     * @return FundingPaymentResponse 결제 처리 결과
+     * @param request       펀딩 참여 요청 데이터
+     * @return FundingPaymentResponse 펀딩 참여 처리 결과
      * 
      * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
      * @throws RuntimeException          카드 결제 실패 OR 계좌 입금 실패 시
      * @author HG
      */
     @Transactional
-    public FundingPaymentResponse processFundingPayment(Long currentUserId, FundingPaymentRequest request) {
+    public FundingPaymentResponse participateInFunding(Long currentUserId, FundingPaymentRequest request) {
 
         Long fundingId = request.getFundingId();
         Long userId = request.getUserId();
@@ -75,6 +76,12 @@ public class PaymentService {
 
         // 2-1. 현재가 펀딩 종료일 이전인지 검증
         validateFundingNotExpired(funding, FundingOperationContext.PAYMENT);
+
+        // 2-2. 펀딩 참여자 수 검증 (최대 인원 초과 여부 확인)
+        validateFundingCapacity(fundingId, funding.getMaxPeople());
+
+        // 2-3. 중복 참여 검증 (이미 참여한 사용자인지 확인)
+        validateDuplicateParticipation(user, funding);
 
         // 3. 카드결제 실행 (금융망 API 호출)
         CreditCardTransactionResponse apiResponse = cardApiClient.createCreditCardTransaction(
@@ -357,6 +364,57 @@ public class PaymentService {
 
             String errorMessage = context.getValidationErrorMessage() + " 종료일: " + fundingEndDate;
             throw BadRequestException.ofFunding(errorMessage);
+        }
+    }
+
+    /**
+     * 펀딩 참여 인원 검증
+     * 
+     * 현재 참여자 수가 최대 인원에 도달했는지 확인하고,
+     * 초과된 경우 참여를 차단합니다.
+     * 
+     * @param fundingId 펀딩 ID
+     * @param maxPeople 최대 참여 인원
+     * @throws BadRequestException 참여 인원이 가득 찬 경우
+     */
+    private void validateFundingCapacity(Long fundingId, Integer maxPeople) {
+        // 펀딩 통계 정보 조회
+        FundingStat fundingStat = fundingStatRepository.findByFunding_FundingId(fundingId)
+                .orElseThrow(() -> BadRequestException.ofFunding("펀딩 통계 정보를 찾을 수 없습니다."));
+
+        Integer currentParticipants = fundingStat.getParticipantCount();
+
+        // 참여 인원이 최대 인원에 도달한 경우
+        if (currentParticipants >= maxPeople) {
+            log.warn("펀딩 참여 인원 초과 - 펀딩ID: {}, 현재 참여자: {}, 최대 인원: {}",
+                    fundingId, currentParticipants, maxPeople);
+
+            throw BadRequestException.ofFunding(
+                    String.format("펀딩 참여 인원이 가득 찼습니다. (현재: %d/%d명)", currentParticipants, maxPeople));
+        }
+    }
+
+    /**
+     * 중복 참여 검증
+     * 
+     * 현재 사용자가 해당 펀딩에 이미 참여했는지 확인하고,
+     * 이미 참여한 경우 중복 참여를 차단합니다.
+     * 
+     * @param user    현재 사용자
+     * @param funding 펀딩 객체
+     * @throws BadRequestException 이미 참여한 펀딩인 경우
+     */
+    private void validateDuplicateParticipation(User user, Funding funding) {
+        // 해당 사용자의 성공한 거래 내역이 있는지 확인
+        boolean hasParticipated = paymentRepository
+                .findTopByUserAndFundingAndStateOrderByProcessedAtDesc(user, funding, UserTransactionState.SUCCESS)
+                .isPresent();
+
+        if (hasParticipated) {
+            log.warn("중복 참여 시도 - 사용자ID: {}, 펀딩ID: {}",
+                    user.getId(), funding.getFundingId());
+
+            throw BadRequestException.ofFunding("이미 참여한 펀딩입니다.");
         }
     }
 
