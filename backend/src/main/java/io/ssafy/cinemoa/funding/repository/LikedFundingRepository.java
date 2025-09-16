@@ -1,23 +1,29 @@
 package io.ssafy.cinemoa.funding.repository;
 
-import io.ssafy.cinemoa.funding.dto.LikedFundingRequestDto;
-import io.ssafy.cinemoa.funding.dto.LikedFundingItemDto;
+import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
+import io.ssafy.cinemoa.funding.dto.CursorRequestDto;
+import io.ssafy.cinemoa.funding.dto.TimestampCursorInfo;
+import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
+import io.ssafy.cinemoa.global.enums.ResourceCode;
+import io.ssafy.cinemoa.global.exception.BadRequestException;
+import io.ssafy.cinemoa.global.response.CursorResponse;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 /**
  * 보고싶어요 한 목록 조회를 위한 Repository
- * 
+ * <p>
  * API 경로: GET /api/user/{userId}/like
  */
 @Repository
@@ -28,99 +34,86 @@ public class LikedFundingRepository {
 
     /**
      * 보고싶어요 한 펀딩/투표 목록을 조회합니다.
-     * 
-     * @param userId 사용자 ID
+     *
+     * @param userId  사용자 ID
      * @param request 보고싶어요 목록 조회 요청
-     * @param typeStr 타입 필터 문자열 (funding, vote)
      * @return 보고싶어요 한 펀딩/투표 목록
      */
-    public Page<LikedFundingItemDto> findLikedFundings(Long userId, LikedFundingRequestDto request, String typeStr) {
+    public CursorResponse<CardTypeFundingInfoDto> findLikedFundings(Long userId, CursorRequestDto request) {
         // 1. 기본 쿼리 구성
         LikedQueryBuilder queryBuilder = new LikedQueryBuilder();
         queryBuilder.buildBaseQuery(userId);
 
         // 2. 동적 조건 추가 (커서와 타입 필터)
-        addLikedDynamicConditions(queryBuilder, request, typeStr);
+        if (request.getCursor() != null) {
+            addCursor(queryBuilder, request.getCursor());
+        }
 
         // 3. 정렬 및 페이징 (커서 기반)
-        queryBuilder.addOrderAndPaging(request.getLimit());
+        queryBuilder.addOrderAndLimit(request.getLimit() + 1);
 
         // 4. 쿼리 실행
-        List<LikedFundingItemDto> results = jdbcTemplate.query(
+
+        List<CardTypeFundingInfoDto> result = jdbcTemplate.query(
                 queryBuilder.getSql(),
-                this::mapToLikedFundingItemDto,
+                this::mapToCardTypeFundingInfoDto,
                 queryBuilder.getParams().toArray()
         );
 
-        long total = countLikedFundings(userId, request, typeStr);
-        
-        // Pageable 생성 (커서 기반이지만 Spring Data 호환성을 위해)
-        PageRequest pageable = PageRequest.of(0, request.getLimit());
-        return new PageImpl<>(results, pageable, total);
-    }
+        boolean hasNext = result.size() > request.getLimit();
 
-    /**
-     * 보고싶어요 한 펀딩/투표 목록의 총 개수를 조회합니다.
-     * 
-     * @param userId 사용자 ID
-     * @param request 보고싶어요 목록 조회 요청
-     * @param typeStr 타입 필터 문자열
-     * @return 총 개수
-     */
-    private Long countLikedFundings(Long userId, LikedFundingRequestDto request, String typeStr) {
-        LikedQueryBuilder queryBuilder = new LikedQueryBuilder();
-        queryBuilder.buildCountQuery(userId);
-        
-        // 타입 필터만 적용 (커서는 카운트에 영향 없음)
-        addTypeFilterToBuilder(queryBuilder, typeStr);
+        if (hasNext) {
+            result.remove(result.size() - 1);
+        }
 
-        return jdbcTemplate.queryForObject(
-                queryBuilder.getSql(),
-                Long.class,
-                queryBuilder.getParams().toArray()
-        );
+        String nextCursor = null;
+
+        if (hasNext && !result.isEmpty()) {
+            CardTypeFundingInfoDto last = result.get(result.size() - 1);
+            nextCursor = createCursor(last.getTimestamp(), last.getFunding().getFundingId());
+        }
+
+        return CursorResponse.<CardTypeFundingInfoDto>builder()
+                .hasNextPage(hasNext)
+                .content(result)
+                .nextCursor(nextCursor)
+                .build();
     }
 
     /**
      * 보고싶어요 목록 조회를 위한 동적 조건을 추가합니다.
      */
-    private void addLikedDynamicConditions(LikedQueryBuilder queryBuilder, LikedFundingRequestDto request, String typeStr) {
-        // 펀딩 타입 필터
-        addTypeFilterToBuilder(queryBuilder, typeStr);
-
+    private void addCursor(LikedQueryBuilder queryBuilder, String cursor) {
         // 커서 조건 추가
-        if (request.getCursor() != null) {
-            queryBuilder.addCursorCondition(request.getCursor());
-        }
+        queryBuilder.addCursorCondition(parseCursor(cursor));
     }
 
-    /**
-     * 타입 필터를 추가합니다.
-     * - null 또는 "all": 전체 (FUNDING + VOTE)
-     * - "funding": FUNDING만
-     * - "vote": VOTE만
-     */
-    private void addTypeFilterToBuilder(LikedQueryBuilder queryBuilder, String typeStr) {
-        if (typeStr == null || "all".equalsIgnoreCase(typeStr)) {
-            // 전체: FUNDING + VOTE
-            queryBuilder.addFundingTypeFilter(FundingType.FUNDING, FundingType.VOTE);
-        } else if ("funding".equalsIgnoreCase(typeStr)) {
-            queryBuilder.addFundingTypeFilter(FundingType.FUNDING);
-        } else if ("vote".equalsIgnoreCase(typeStr)) {
-            queryBuilder.addFundingTypeFilter(FundingType.VOTE);
-        } else {
-            // 지원하지 않는 타입
-            throw new IllegalArgumentException("지원하지 않는 type 값입니다: " + typeStr);
+    private String createCursor(LocalDateTime createdAt, Long id) {
+        String cursorData = createdAt + "_" + id;
+        return Base64.getEncoder().encodeToString(cursorData.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private TimestampCursorInfo parseCursor(String cursor) {
+        String decoded = new String(Base64.getDecoder().decode(cursor));
+        String[] parts = decoded.split("_");
+
+        if (parts.length < 2) {
+            throw new BadRequestException("커서가 잘못되었습니다.", ResourceCode.INPUT);
         }
+
+        LocalDateTime timestamp = LocalDateTime.parse(parts[0]);
+        Long fundingId = Long.parseLong(parts[1]);
+
+        return new TimestampCursorInfo(timestamp, fundingId);
     }
 
     /**
      * 보고싶어요 한 펀딩 아이템 DTO로 매핑합니다.
      */
-    private LikedFundingItemDto mapToLikedFundingItemDto(ResultSet rs, int rowNum) throws SQLException {
+    private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
         String fundingType = rs.getString("funding_type");
         FundingType type = FundingType.valueOf(fundingType);
-        
+
         int participantCount = rs.getInt("participant_count");
         int maxPeople = rs.getInt("max_people");
         int progressRate = maxPeople > 0 ? (participantCount * 100 / maxPeople) : 0;
@@ -131,17 +124,17 @@ public class LikedFundingRepository {
         // 좋아요 여부 (항상 true)
         boolean isLiked = true;
 
-        LikedFundingItemDto.BriefFundingInfo funding = LikedFundingItemDto.BriefFundingInfo.builder()
+        CardTypeFundingInfoDto.BriefFundingInfo funding = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
                 .title(rs.getString("title"))
-                .summary(rs.getString("summary"))
                 .bannerUrl(rs.getString("banner_url"))
-                .state(rs.getString("state"))
+                .state(FundingState.valueOf(rs.getString("state")))
                 .progressRate(progressRate)
-                .fundingEndsOn(rs.getString("ends_on"))
-                .screenDate(rs.getString("screen_day"))
-                .screenMinDate(rs.getString("screen_min_date"))
-                .screenMaxDate(rs.getString("screen_max_date"))
+                .videoName(rs.getString("video_name"))
+                .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
+                .screenDate(LocalDate.parse(rs.getString("screen_day")))
+                .screenMaxDate(LocalDate.parse(rs.getString("screen_max_date")))
+                .screenMinDate(LocalDate.parse(rs.getString("screen_min_date")))
                 .price(perPersonPrice)
                 .maxPeople(maxPeople)
                 .participantCount(participantCount)
@@ -149,17 +142,17 @@ public class LikedFundingRepository {
                 .favoriteCount(favoriteCount)
                 .build();
 
-        LikedFundingItemDto.BriefCinemaInfo cinema = LikedFundingItemDto.BriefCinemaInfo.builder()
+        CardTypeFundingInfoDto.BriefCinemaInfo cinema = CardTypeFundingInfoDto.BriefCinemaInfo.builder()
                 .cinemaId(rs.getLong("cinema_id"))
                 .cinemaName(rs.getString("cinema_name"))
                 .city(rs.getString("city"))
                 .district(rs.getString("district"))
                 .build();
 
-        return LikedFundingItemDto.builder()
-                .type(type)
+        return CardTypeFundingInfoDto.builder()
                 .funding(funding)
                 .cinema(cinema)
+                .timestamp(rs.getTimestamp("created_at").toLocalDateTime())
                 .build();
     }
 
@@ -172,60 +165,37 @@ public class LikedFundingRepository {
         public void buildBaseQuery(Long userId) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, s.price,
+                           f.funding_type, f.max_people,f.video_name, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
                            fed.min_date as screen_min_date,
-                           fed.max_date as screen_max_date
+                           fed.max_date as screen_max_date,
+                           uf.created_at
                     FROM fundings f
                     LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
-                    LEFT JOIN funding_estimate_days fed ON fed.funding_id = f.funding_id
+                    LEFT JOIN funding_estimate_days fed ON fed.funding_id = f.funding_id AND f.funding_type = 'VOTE'
                     INNER JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    WHERE f.leader_id != ?
+                    WHERE 1 = 1
                     """);
 
-            // userId를 파라미터로 추가 (좋아요 조회용, 생성자 제외용)
-            params.add(userId);
+            // userId를 파라미터로 추가 (좋아요 조회용)
             params.add(userId);
         }
 
-        public void buildCountQuery(Long userId) {
+        public void addCursorCondition(TimestampCursorInfo cursorInfo) {
             sql.append("""
-                    SELECT COUNT(DISTINCT f.funding_id)
-                    FROM fundings f
-                    INNER JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    WHERE f.leader_id != ?
+                    AND (uf.created_at < ? OR (uf.created_at = ? AND f.funding_id < ?))
                     """);
-
-            // userId를 파라미터로 추가
-            params.add(userId);
-            params.add(userId);
+            params.add(cursorInfo.getCreatedAt());
+            params.add(cursorInfo.getCreatedAt());
+            params.add(cursorInfo.getFundingId());
         }
 
-        public void addFundingTypeFilter(FundingType... fundingTypes) {
-            if (fundingTypes != null && fundingTypes.length > 0) {
-                sql.append(" AND f.funding_type IN (");
-                for (int i = 0; i < fundingTypes.length; i++) {
-                    sql.append("?");
-                    if (i < fundingTypes.length - 1) {
-                        sql.append(",");
-                    }
-                    params.add(fundingTypes[i].name());
-                }
-                sql.append(")");
-            }
-        }
-
-        public void addCursorCondition(Long cursor) {
-            sql.append(" AND f.funding_id < ?");
-            params.add(cursor);
-        }
-
-        public void addOrderAndPaging(Integer limit) {
-            sql.append(" ORDER BY f.funding_id DESC LIMIT ?");
+        public void addOrderAndLimit(Integer limit) {
+            sql.append(" ORDER BY uf.created_at DESC, f.funding_id DESC LIMIT ?");
             params.add(limit);
         }
 
