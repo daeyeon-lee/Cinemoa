@@ -41,7 +41,7 @@ public class AccountVerifyApiClient {
             BaseApiResponse<AccountVerifyResponse> responseBody = httpClientUtil.post(
                     financeApiConfig.getAccountVerifyUrl(),
                     request,
-                    new ParameterizedTypeReference<BaseApiResponse<AccountVerifyResponse>>() {},
+                    new ParameterizedTypeReference<>() {},
                     "계좌 존재 여부 확인"
             );
 
