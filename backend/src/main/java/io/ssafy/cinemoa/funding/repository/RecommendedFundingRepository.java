@@ -2,7 +2,6 @@ package io.ssafy.cinemoa.funding.repository;
 
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.enums.FundingState;
-import io.ssafy.cinemoa.funding.enums.FundingType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 @RequiredArgsConstructor
-public class RecommendedFundingListRepository {
+public class RecommendedFundingRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -33,7 +32,12 @@ public class RecommendedFundingListRepository {
     public List<CardTypeFundingInfoDto> findRecommendedFundings(Long userId) {
         // 1. 기본 쿼리 구성
         RecommendedQueryBuilder queryBuilder = new RecommendedQueryBuilder();
-        queryBuilder.buildBaseQuery(userId);
+
+        if (userId != null) {
+            queryBuilder.buildUserSpecificBaseQuery(userId);
+        } else {
+            queryBuilder.buildBaseQuery();
+        }
 
         // 4. 쿼리 실행
         return jdbcTemplate.query(
@@ -48,7 +52,6 @@ public class RecommendedFundingListRepository {
      */
     private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
         String fundingType = rs.getString("funding_type");
-        FundingType type = FundingType.valueOf(fundingType);
 
         int participantCount = rs.getInt("participant_count");
         int maxPeople = rs.getInt("max_people");
@@ -74,6 +77,7 @@ public class RecommendedFundingListRepository {
                 .maxPeople(maxPeople)
                 .participantCount(participantCount)
                 .isLiked(isLiked)
+                .fundingType(fundingType)
                 .favoriteCount(favoriteCount)
                 .viewCount(viewCount)
                 .build();
@@ -96,7 +100,7 @@ public class RecommendedFundingListRepository {
         @Getter
         private final List<Object> params = new ArrayList<>();
 
-        public void buildBaseQuery(Long userId) {
+        public void buildUserSpecificBaseQuery(Long userId) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
                            f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
@@ -110,13 +114,34 @@ public class RecommendedFundingListRepository {
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
+                    LEFT JOIN user_categories uc ON uc.category_id = f.category_id AND uc.user_id = ?
                     WHERE f.leader_id != ? AND f.funding_type = 'FUNDING'
                     ORDER BY fs.recommend_score
-                    LIMIT 8
+                    LIMIT 10
                     """);
             // userId를 파라미터로 추가 (좋아요 조회용, 생성자 제외용)
             params.add(userId);
             params.add(userId);
+            params.add(userId);
+        }
+
+        public void buildBaseQuery() {
+            sql.append("""
+                    SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
+                           f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
+                           c.cinema_id, c.cinema_name, c.city, c.district,
+                           COALESCE(fs.participant_count, 0) as participant_count,
+                           COALESCE(fs.favorite_count, 0) as favorite_count,
+                           COALESCE(fs.view_count, 0) as view_count,
+                           false as is_liked
+                    FROM fundings f
+                    LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
+                    LEFT JOIN screens s ON f.screen_id = s.screen_id
+                    LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                    WHERE f.funding_type = 'FUNDING'
+                    ORDER BY fs.recommend_score
+                    LIMIT 10
+                    """);
         }
 
         public String getSql() {
