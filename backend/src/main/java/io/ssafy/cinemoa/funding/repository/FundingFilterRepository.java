@@ -2,8 +2,8 @@ package io.ssafy.cinemoa.funding.repository;
 
 import io.ssafy.cinemoa.category.repository.CategoryRepository;
 import io.ssafy.cinemoa.cinema.enums.CinemaFeature;
+import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.SearchRequest;
-import io.ssafy.cinemoa.funding.dto.SearchResultDto;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
 import java.sql.Date;
@@ -28,7 +28,7 @@ public class FundingFilterRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CategoryRepository categoryRepository;
 
-    public Page<SearchResultDto> findWithFilters(SearchRequest request, Pageable pageable) {
+    public Page<CardTypeFundingInfoDto> findWithFilters(SearchRequest request, Pageable pageable) {
         // 1. 기본 쿼리 구성 (userId를 먼저 추가)
         QueryBuilder queryBuilder = new QueryBuilder();
         queryBuilder.buildBaseQuery(request.getUserId()); // userId를 먼저 전달
@@ -40,7 +40,7 @@ public class FundingFilterRepository {
         queryBuilder.addOrderAndPaging(pageable);
 
         // 4. 쿼리 실행
-        List<SearchResultDto> results = jdbcTemplate.query(
+        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
                 queryBuilder.getParams().toArray()
@@ -88,14 +88,14 @@ public class FundingFilterRepository {
         );
     }
 
-    public Page<SearchResultDto> findFundingWithFilters(SearchRequest request, Pageable pageable) {
+    public Page<CardTypeFundingInfoDto> findFundingWithFilters(SearchRequest request, Pageable pageable) {
         QueryBuilder queryBuilder = new QueryBuilder();
         queryBuilder.buildBaseQuery(request.getUserId());
         queryBuilder.addFundingTypeFilter(FundingType.FUNDING);  // INSTANT 고정
         addAllFiltersFromRequest(queryBuilder, request);  // 기존 필터들 모두 적용
         queryBuilder.addOrderAndPaging(pageable);
 
-        List<SearchResultDto> results = jdbcTemplate.query(
+        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
                 queryBuilder.getParams().toArray()
@@ -105,14 +105,14 @@ public class FundingFilterRepository {
         return new PageImpl<>(results, pageable, total);
     }
 
-    public Page<SearchResultDto> findVotesWithFilters(SearchRequest request, Pageable pageable) {
+    public Page<CardTypeFundingInfoDto> findVotesWithFilters(SearchRequest request, Pageable pageable) {
         QueryBuilder queryBuilder = new QueryBuilder();
         queryBuilder.buildBaseQuery(request.getUserId());
         queryBuilder.addFundingTypeFilter(FundingType.VOTE);  // VOTE 고정
         addAllFiltersFromRequest(queryBuilder, request);  // 기존 필터들 모두 적용
         queryBuilder.addOrderAndPaging(pageable);
 
-        List<SearchResultDto> results = jdbcTemplate.query(
+        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
                 queryBuilder.getParams().toArray()
@@ -174,7 +174,7 @@ public class FundingFilterRepository {
         );
     }
 
-    private SearchResultDto mapToSearchResultDto(ResultSet rs, int rowNum) throws SQLException {
+    private CardTypeFundingInfoDto mapToSearchResultDto(ResultSet rs, int rowNum) throws SQLException {
         int participantCount = rs.getInt("participant_count");
         int maxPeople = rs.getInt("max_people");
         int progressRate = maxPeople > 0 ? (participantCount * 100 / maxPeople) : 0;
@@ -186,7 +186,7 @@ public class FundingFilterRepository {
         // 좋아요 여부 추가
         boolean isLiked = rs.getBoolean("is_liked");
 
-        SearchResultDto.BriefFundingInfo funding = SearchResultDto.BriefFundingInfo.builder()
+        CardTypeFundingInfoDto.BriefFundingInfo funding = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
                 .title(rs.getString("title"))
                 .bannerUrl(rs.getString("banner_url"))
@@ -195,6 +195,7 @@ public class FundingFilterRepository {
                 .fundingEndsOn(toLocalDate(rs.getDate("ends_on")))
                 .screenDate(toLocalDate(rs.getDate("screen_day")))
                 .price(perPersonPrice)
+                .videoName(rs.getString("video_name"))
                 .maxPeople(maxPeople)
                 .participantCount(participantCount)
                 .isLiked(isLiked)
@@ -202,14 +203,18 @@ public class FundingFilterRepository {
                 .fundingType(fundingType)
                 .build();
 
-        SearchResultDto.BriefCinemaInfo cinema = SearchResultDto.BriefCinemaInfo.builder()
+        CardTypeFundingInfoDto.BriefCinemaInfo cinema = CardTypeFundingInfoDto.BriefCinemaInfo.builder()
                 .cinemaId(rs.getLong("cinema_id"))
                 .cinemaName(rs.getString("cinema_name"))
                 .city(rs.getString("city"))
                 .district(rs.getString("district"))
                 .build();
 
-        return new SearchResultDto(funding, cinema);
+        return CardTypeFundingInfoDto.builder()
+                .cinema(cinema)
+                .funding(funding)
+                .timestamp(rs.getTimestamp("created_at").toLocalDateTime())
+                .build();
     }
 
     // === Helper Methods ===
@@ -234,11 +239,12 @@ public class FundingFilterRepository {
         public void buildBaseQuery(Long userId) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type,f.max_people, s.price,
+                           f.funding_type,f.max_people, f.video_name, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
-                           CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked
+                           CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
+                           f.created_at
                     FROM fundings f
                     LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                     LEFT JOIN screens s ON f.screen_id = s.screen_id

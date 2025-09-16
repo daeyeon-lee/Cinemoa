@@ -153,20 +153,15 @@ public class HttpClientUtil {
 
         // Header 정보 상세 로깅
         if (responseBody.getHeader() != null) {
-          log.info("=== API 응답 Header 상세 ===");
-          log.info("응답 코드: {}", responseBody.getHeader().getResponseCode());
-          log.info("응답 메시지: {}", responseBody.getHeader().getResponseMessage());
-          log.info("API 이름: {}", responseBody.getHeader().getApiName());
-          log.info("전송 일자: {}", responseBody.getHeader().getTransmissionDate());
-          log.info("전송 시간: {}", responseBody.getHeader().getTransmissionTime());
-          log.info("기관 거래 고유번호: {}", responseBody.getHeader().getInstitutionTransactionUniqueNo());
+
+          log.info("API 응답 Header: {}", responseBody.getHeader());
         }
 
         // REC 데이터 상세 로깅
-        if (responseBody.getREC() != null) {
-          String recDataJson = objectMapper.writeValueAsString(responseBody.getREC());
-          log.info("REC 데이터 (JSON): {}", recDataJson);
-        }
+        // if (responseBody.getRec() != null) {
+        // String recDataJson = objectMapper.writeValueAsString(responseBody.getRec());
+        // log.info("REC 데이터 (JSON): {}", recDataJson);
+        // }
 
       } else {
         log.info("응답 Body: null");

@@ -1,14 +1,18 @@
 package io.ssafy.cinemoa.funding.controller;
 
 import io.ssafy.cinemoa.favorite.service.FundingFavoriteService;
+import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
 import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
 import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
 import io.ssafy.cinemoa.funding.dto.SearchRequest;
+import io.ssafy.cinemoa.funding.service.ExpiringFundingService;
 import io.ssafy.cinemoa.funding.service.FundingService;
+import io.ssafy.cinemoa.funding.service.RecommendedFundingListService;
 import io.ssafy.cinemoa.funding.service.SearchService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +36,9 @@ public class FundingController {
     private final FundingService fundingService;
     private final SearchService searchService;
     private final FundingFavoriteService fundingFavoriteService;
+
+    private final ExpiringFundingService expiringFundingService;
+    private final RecommendedFundingListService recommendedFundingListService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createFunding(@RequestBody FundingCreateRequest request) {
@@ -81,6 +88,22 @@ public class FundingController {
                                                               @RequestParam Long userId) {
         fundingService.unholdSeatOf(userId, fundingId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 해제 성공"));
+    }
+
+    @GetMapping("/expiring")
+    public ResponseEntity<ApiResponse<?>> getExpiringFunding(
+            @RequestParam(value = "userId", required = false) Long userId) {
+        List<CardTypeFundingInfoDto> result = expiringFundingService.getExpiringFundings(userId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
+    }
+
+    @GetMapping("/recommended-funding")
+    public ResponseEntity<ApiResponse<List<?>>> getRecommendedFundings(
+            @RequestParam("userId") Long userId) {
+
+        List<CardTypeFundingInfoDto> result = recommendedFundingListService.getRecommendedFundings(userId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
+
     }
 
 }
