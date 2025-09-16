@@ -1,12 +1,21 @@
 package io.ssafy.cinemoa.external.finance.dto;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 계좌 유효성 검증 응답 DTO (REC 영역)
  */
 @Data
+@Getter
+@Setter
 public class AccountVerifyResponse {
+    // 응답 헤더 정보
+    private String responseCode;
+    private String responseMessage;
+    
+    // 계좌조회(단건) 응답 정보
     private String bankCode;             // 은행 코드
     private String bankName;             // 은행 이름
     private String userName;             // 예금주 이름

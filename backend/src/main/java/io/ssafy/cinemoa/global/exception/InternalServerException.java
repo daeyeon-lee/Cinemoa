@@ -19,4 +19,8 @@ public class InternalServerException extends BaseException {
     public static InternalServerException ofUnknown() {
         return new InternalServerException("알 수 없는 오류가 발생하였습니다.", ResourceCode.ERROR);
     }
+
+    public static InternalServerException ofWonAuth() {
+        return new InternalServerException("1원 인증 중 오류가 발생했습니다.", ResourceCode.WONAUTH);
+    }
 }

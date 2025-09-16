@@ -3,6 +3,7 @@ package io.ssafy.cinemoa.external.finance.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 /**
  * 1원 인증 검증 응답 REC

@@ -35,4 +35,8 @@ public class ResourceNotFoundException extends BaseException {
     public static ResourceNotFoundException ofCategory() {
         return new ResourceNotFoundException("존재하지 않는 카테고리입니다.", ResourceCode.CATEGORY);
     }
+
+    public static ResourceNotFoundException ofWonAuth(String message) {
+        return new ResourceNotFoundException(message, ResourceCode.WONAUTH);
+    }
 }

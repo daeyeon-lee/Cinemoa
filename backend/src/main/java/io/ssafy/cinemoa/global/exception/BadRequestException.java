@@ -31,4 +31,8 @@ public class BadRequestException extends BaseException {
     public static BadRequestException ofFunding(String message) {
         return new BadRequestException(message, ResourceCode.FUNDING);
     }
+
+    public static BadRequestException ofWonAuth(String message) {
+        return new BadRequestException(message, ResourceCode.WONAUTH);
+    }
 }

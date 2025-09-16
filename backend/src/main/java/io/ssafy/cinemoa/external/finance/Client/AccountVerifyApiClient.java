@@ -1,21 +1,22 @@
 package io.ssafy.cinemoa.external.finance.Client;
 
+import io.ssafy.cinemoa.external.finance.common.FinanceApiUtils;
+import io.ssafy.cinemoa.external.finance.common.HttpClientUtil;
 import io.ssafy.cinemoa.external.finance.config.FinanceApiConfig;
-import io.ssafy.cinemoa.external.finance.dto.BaseApiResponse;
-import io.ssafy.cinemoa.external.finance.dto.ReqHeader;
-import io.ssafy.cinemoa.external.finance.dto.AccountVerifyRequest;
-import io.ssafy.cinemoa.external.finance.dto.AccountVerifyResponse;
+import io.ssafy.cinemoa.external.finance.dto.*;
 
 // 공통헤더, 기관거래고유번호 생성용 유틸들
 import static io.ssafy.cinemoa.external.finance.support.FinanceHttp.createHeaders;
 import static io.ssafy.cinemoa.external.finance.support.TransactionNoGenerator.generateTransactionUniqueNo;
 
+import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -31,68 +32,91 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class AccountVerifyApiClient {
 
-    private final RestTemplate restTemplate;
+    private final HttpClientUtil httpClientUtil;
     private final FinanceApiConfig financeApiConfig;
 
     /**
      * 계좌 유효성 검증 호출
      */
 
-    public boolean verifyAccount(String accountNo) {
-        AccountVerifyRequest request = buildAccountVerifyRequest(accountNo);
-        HttpEntity<AccountVerifyRequest> entity = new HttpEntity<>(request, createHeaders());
+    public AccountVerifyResponse verifyAccount(String accountNo) {
+        try {
+            // 금융망 API (계좌 조회) 요청 객체 생성
+            AccountVerifyRequest request = buildAccountVerifyRequest(accountNo);
+            log.info("계좌 조회 (단건) API 호출 시작 - 계좌번호: {}", FinanceApiUtils.maskAccountNumber(accountNo)) ;
+            
+            // 계좌 조회 API 호출
+            BaseApiResponse<AccountVerifyResponse> responseBody = httpClientUtil.post(
+                    financeApiConfig.getAccountVerifyUrl(),
+                    request,
+                    new ParameterizedTypeReference<BaseApiResponse<AccountVerifyResponse>>() {},
+                    "계좌 존재 여부 확인"
+            );
 
-        ResponseEntity<BaseApiResponse<AccountVerifyResponse>> response =
-                restTemplate.exchange(
-                        financeApiConfig.getAccountVerifyUrl(),
-                        HttpMethod.POST,
-                        entity,
-                        new ParameterizedTypeReference<BaseApiResponse<AccountVerifyResponse>>() {}
-                );
+            if (responseBody != null) {
+                // 응답 코드를 프로젝트 내부 코드로 매핑
+                String apiCode = responseBody.getHeader().getResponseCode(); // "H0000"
+                String apiMsg = responseBody.getHeader().getResponseMessage();
+                PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
-        BaseApiResponse<AccountVerifyResponse> body = response.getBody();
-        String code = (body != null && body.getHeader() != null)
-                ? body.getHeader().getResponseCode()
-                : null;
+                // REC 데이터 추출 (실제 응답 정보)
+                AccountVerifyResponse result = responseBody.getREC();
+                if (result == null) {
+                    log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
+                    result = new AccountVerifyResponse();
+                }
 
-        return "H0000".equals(code); // 👈 성공 코드일 때 true 반환
+                // 응답 객체에 프로젝트 내부 코드 설정
+                result.setResponseCode(errorCode.getCode()); // PAY_XXXX
+                result.setResponseMessage(errorCode.getMessage());
+
+                // 로깅
+                if (errorCode.isSuccess()) {
+                    log.info("계좌 있음 - 계좌번호: {}", FinanceApiUtils.maskAccountNumber(result.getAccountNo()));
+                } else {
+                    log.warn("계좌 없음 - 금융망API코드: {}, 금융망API메시지: {} 계좌번호: {}",
+                            apiCode,
+                            apiMsg,
+                            FinanceApiUtils.maskAccountNumber(result.getAccountNo())
+                    );
+                }
+
+                return result;
+            } else {
+                log.error("응답 데이터가 null입니다.");
+                return createErrorResponse("응답 데이터가 없습니다.");
+            }
+        } catch (RestClientException e) {
+            // 네트워크 오류, 타임아웃 등 API 호출 자체가 실패한 경우
+            log.error("계좌 조회 (단건) API 호출 실패: {}", e.getMessage(), e);
+            return createErrorResponse(e.getMessage());
+        }
     }
 
 
-    // ----------------------------- 빌더/유틸 -----------------------------
+    // ======================================= 빌더 =======================================
+    // 계좌 조회 API 요청 객체 생성
     private AccountVerifyRequest buildAccountVerifyRequest(String accountNo) {
-        ReqHeader header = buildReqHeader("inquireDemandDepositAccount", "inquireDemandDepositAccount");
+        // 공통 헤더 생성
+        ReqHeader header = FinanceApiUtils.buildCommonHeader(
+                financeApiConfig,
+                "inquireDemandDepositAccount", false);
         return AccountVerifyRequest.builder()
                 .Header(header)
                 .accountNo(accountNo)
                 .build();
     }
 
-    private ReqHeader buildReqHeader(String apiName, String apiServiceCode) {
-        LocalDateTime now = LocalDateTime.now();
-        String transmissionDate = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String transmissionTime = now.format(DateTimeFormatter.ofPattern("HHmmss"));
-        // 기관고유거래번호 생성
-        String uniqueNo = generateTransactionUniqueNo();
+    // 계좌 조회 오류 응답 생성
+    private AccountVerifyResponse createErrorResponse(String errorMessage) {
+        AccountVerifyResponse errorResponse = new AccountVerifyResponse();
 
-        return ReqHeader.builder()
-                .apiName(apiName)
-                .transmissionDate(transmissionDate)
-                .transmissionTime(transmissionTime)
-                .institutionCode(financeApiConfig.getInstitutionCode())
-                .fintechAppNo(financeApiConfig.getFintechAppNo())
-                .apiServiceCode(apiServiceCode)
-                .institutionTransactionUniqueNo(uniqueNo)
-                .apiKey(financeApiConfig.getApiKey())
-                .userKey(financeApiConfig.getUserKey())
-                .build();
-    }
+        // 모든 시스템 오류를 PAY_9999로 통일
+        PaymentErrorCode systemError = PaymentErrorCode.SYSTEM_ERROR;
+        errorResponse.setResponseCode(systemError.getCode()); // PAY_9999
+        errorResponse.setResponseMessage(systemError.getMessage() + ": " + errorMessage);
 
-    // 계좌 번호 마스킹
-    private String maskAccountNumber(String accountNo) {
-        if (accountNo == null || accountNo.length() < 4) return "****";
-        int len = accountNo.length();
-        return accountNo.substring(0, Math.min(3, len)) + "****" + accountNo.substring(len - 4);
+        return errorResponse;
     }
 }
 

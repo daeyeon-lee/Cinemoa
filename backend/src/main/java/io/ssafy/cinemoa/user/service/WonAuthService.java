@@ -3,8 +3,12 @@ package io.ssafy.cinemoa.user.service;
 import io.ssafy.cinemoa.external.finance.Client.AccountVerifyApiClient;
 import io.ssafy.cinemoa.external.finance.Client.WonAuthApiClient;
 import io.ssafy.cinemoa.external.finance.dto.*;
+import io.ssafy.cinemoa.funding.exception.SeatLockException;
+import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.Drafttttttttt;
+import io.ssafy.cinemoa.global.exception.InternalServerException;
+import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import io.ssafy.cinemoa.user.dto.WonAuthVerifyResponse;
 import jakarta.mail.internet.MimeMessage;
@@ -21,12 +25,10 @@ import org.springframework.web.client.HttpStatusCodeException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.SecureRandom; // 암호학적 난수 생성기  // 한국어 주석
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;           // Base64 인코딩 유틸   // 한국어 주석
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -71,9 +73,8 @@ public class WonAuthService {
         // 1. 계좌 검증
         //     있으면 true, 없으면 false
         try {
-            boolean verified = accountVerifyApiClient.verifyAccount(accountNo);
-            if (!verified) throw BadRequestException.ofAccount();
-            log.info("계좌가 있나요?: {}", verified);
+            // 계좌검증 클라이언트 호출
+            accountVerifyApiClient.verifyAccount(accountNo);
         } catch (HttpStatusCodeException e) {
             log.error("[AccountVerify 4xx/5xx] status:{} headers:{}\nbody:\n{}",
                     e.getStatusCode(), e.getResponseHeaders(), e.getResponseBodyAsString(), e);
@@ -82,7 +83,7 @@ public class WonAuthService {
 
         // 2. 1원 송금 (검증 성공시에만)
         try {
-            wonAuthApiClient.openAccountAuth(accountNo, AUTH_TEXT);
+            wonAuthApiClient.sendOneWon(accountNo, AUTH_TEXT);
         } catch (HttpStatusCodeException e) {
             // 벤더 에러 원문 남기기 (중요!)
             log.error("원화 1원인증 송금 호출 실패 - status:{} headers:{}\nbody:\n{}",
@@ -91,7 +92,7 @@ public class WonAuthService {
         }
 
         // 3. 인증코드 추출
-        Optional<String> authCode;
+        String authCode;
         try {
             String today = LocalDate.now(KST).format(YMD); // "yyyyMMdd"
             authCode = extractAuthCode(accountNo, today, today);
@@ -130,41 +131,40 @@ public class WonAuthService {
 
         try {
             // 1. 외부 API 호출
-            BaseApiResponse<WonVerifyResponse> vendor =
-                    wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, authCode);
+            WonVerifyResponse res = wonAuthApiClient.checkAuthCode(accountNo, AUTH_TEXT, authCode);
 
-            // body 또는 REC가 비어있으면 예외
-            if (vendor == null || vendor.getREC() == null) {
-                log.error("[WonAuthApiClient] 응답 본문이 비어있습니다. vendor={}", vendor);
-                throw new IllegalStateException("1원 인증 응답이 비어있습니다.");
+            if (res == null) {
+                return ApiResponse.ofError("외부 인증 응답이 없습니다.");
             }
+
+            String code = res.getResponseCode();    // 내부 표준코드: PAY_0000 / PAY_1088 …
+            String msg  = res.getResponseMessage(); // 내부 표준메시지
 
             // 2. 상태(REC.status) 확인 : ("SUCCESS"/"FAIL")
-            String status = vendor.getREC().getStatus();
-            if (!"SUCCESS".equalsIgnoreCase(status)) {
-                log.warn("[WonAuthApiClient] 인증 실패 status={}", status);
-                throw new IllegalArgumentException("인증 실패: 잘못된 인증 코드입니다.");
+            if ("PAY_0000".equals(code)) {
+                // 성공
+                String secretKey = generateDeterministicSecret(accountNo);
+                return ApiResponse.ofSuccess(
+                        WonAuthVerifyResponse.builder().secretKey(secretKey).build(),
+                        "1원 인증 검증이 완료되었습니다."
+                );
+            } else if ("PAY_4001".equals(code)) {
+                // 인증코드 불일치
+                throw BadRequestException.ofWonAuth(msg);
+            } else if ("PAY_4002".equals(code)) {
+                // 인증시간 만료
+                throw BadRequestException.ofWonAuth(msg);
+            } else if ("PAY_4003".equals(code)) {
+                // 인증코드 유효하지않음
+                throw ResourceNotFoundException.ofWonAuth(msg);
+            } else {
+                throw InternalServerException.ofWonAuth();
             }
 
-            // 3. secretKey 생성 (SUCCESS 일 때만)(JDK17 호환 방식)
-            String secretKey = generateDeterministicSecret(accountNo); // 아래 유틸 메서드 사용
-
-            // 4. secretKey만 담아 성공 응답 반환
-            return ApiResponse.ofSuccess(
-                    WonAuthVerifyResponse.builder().secretKey(secretKey).build(),
-                    "1원인증 검증 성공"
-            );
-
-        } catch (HttpStatusCodeException e) {
-            log.error("[WonAuthApiClient 4xx/5xx] status:{} headers:{}\nbody:\n{}",
-                    e.getStatusCode(), e.getResponseHeaders(), e.getResponseBodyAsString(), e);
-            throw new IllegalStateException("1원 인증 검증 중 HTTP 오류가 발생했습니다.", e);
-
         } catch (Exception e) {
-            log.error("[WonAuthApiClient ERROR] 외부 인증 처리 중 알 수 없는 오류", e);
-            throw new RuntimeException("알 수 없는 오류가 발생했습니다.", e);
+            log.error("1원 인증 처리 중 알 수 없는 오류", e);
+            throw InternalServerException.ofWonAuth();
         }
-
     }
 
 
@@ -176,7 +176,7 @@ public class WonAuthService {
     // 인증코드 정규식: "CINEMOA 7814" → 7814
     private static final Pattern AUTH_CODE_PATTERN =
             Pattern.compile("CINEMOA\\s*(\\d{4})");
-    private Optional<String> extractAuthCode(String accountNo, String startDate, String endDate) {
+    private String extractAuthCode(String accountNo, String startDate, String endDate) {
 
         // 입력 필수
         must(accountNo, "accountNo(계좌번호)는 필수입니다.");
@@ -184,68 +184,62 @@ public class WonAuthService {
         must(endDate, "endDate(조회 종료일, YYYYMMDD)는 필수입니다.");
 
         try {
-            // 1. 외부 API 호출 (입금 "M", 내림차순 "DESC")
-            BaseApiResponse<TransactionHistoryResponse> vendor =
-                    wonAuthApiClient.inquireTransactionHistoryList(accountNo, startDate, endDate, "M", "DESC");
+            // 1. 계좌 내역 조회 API 호출
+            TransactionHistoryResponse res = wonAuthApiClient.inquireTransactionHistoryList(
+                    accountNo, startDate, endDate, "M", "DESC");
 
-            // 응답 기본 검증
-            if (vendor == null || vendor.getHeader() == null) {
-                log.warn("[TxnHistory] 응답 본문/헤더가 null입니다. vendor={}", vendor);
-                return Optional.empty();
-            }
-            if (!"H0000".equals(vendor.getHeader().getResponseCode())) {
-                log.warn("[TxnHistory] 실패 코드 수신: code={}, message={}",
-                        vendor.getHeader().getResponseCode(), vendor.getHeader().getResponseMessage());
-                return Optional.empty();
+            String code = res.getResponseCode();    // 내부 표준코드: PAY_0000 / PAY_1088 …
+            String msg  = res.getResponseMessage(); // 내부 표준메시지
+
+            if ("PAY_3001".equals(code)) {
+                // 유효하지않은계좌
+                throw ResourceNotFoundException.ofWonAuth(msg);
+            } else if ("PAY_4001".equals(code)) {
+                // 나머지 전부
+                throw InternalServerException.ofWonAuth();
             }
 
-            var rec = vendor.getREC();
-            if (rec == null || rec.getList() == null || rec.getList().isEmpty()) {
-                log.info("[TxnHistory] 해당 기간 거래내역 없음. accountNo={}, {}~{}", accountNo, startDate, endDate);
-                return Optional.empty();
-            }
+
+//            if (rec == null || rec.getList() == null || rec.getList().isEmpty()) {
+//                log.info("[TxnHistory] 해당 기간 거래내역 없음. accountNo={}, {}~{}", accountNo, startDate, endDate);
+//                return Optional.empty();
+//            }
 
             // 2. 내림차순 리스트에서 '1원 입금' 첫 건 선택
-            var item = rec.getList().stream()
+            var item = res.getList().stream()
                     .filter(i -> "1".equals(i.getTransactionType()))                    // 1=입금
                     .filter(i -> "1".equals(normalizeAmount(i.getTransactionBalance()))) // 금액 == "1"
                     .findFirst()
                     .orElse(null);
 
             if (item == null) {
-                log.info("[TxnHistory] 1원 입금 매칭 없음. accountNo={}, {}~{}", accountNo, startDate, endDate);
-                return Optional.empty();
+                log.warn("1원 입금 내역 없음. accountNo={}, {}~{}", accountNo, startDate, endDate);
+                throw ResourceNotFoundException.ofWonAuth("1원 입금 내역이 없습니다.");
             }
 
             // 3. 거래 요약 추출
             String summary = item.getTransactionSummary(); // 예: "CINEMOA 7814"
             if (summary == null || summary.isBlank()) {
-                log.warn("[TxnHistory] 거래 요약이 비어있습니다. item={}", item);
-                return Optional.empty();
+                log.warn("거래 요약이 비어있습니다. item={}", item);
+                throw ResourceNotFoundException.ofWonAuth("발급된 인증 코드가 없습니다.");
             }
 
             // 4. 인증코드 추출
             String authCodeOnly = extractAuthCodeFromSummary(summary).orElse("");
             if (authCodeOnly.isEmpty()) {
-                log.warn("[TxnHistory] 요약에서 인증코드 추출 실패. summary='{}'", summary);
-                return Optional.empty();
+                log.warn("거래 요약에서 인증코드 추출 실패. summary='{}'", summary);
+                throw ResourceNotFoundException.ofWonAuth("발급된 인증 코드가 없습니다.");
             }
 
             // 성공 시 인증코드 콘솔에 출력 (디버깅용)
-            log.info("[TxnHistory] 인증코드 추출 성공: summary='{}' authCode='{}'", summary, authCodeOnly);
+            log.info("인증코드 추출 성공: summary='{}' authCode='{}'", summary, authCodeOnly);
 
             // ✅ 최종 반환
-            return Optional.of(authCodeOnly);
+            return authCodeOnly;
 
-        } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            // HTTP 예외(상태/헤더/바디)만 별도 로깅
-            log.error("[TxnHistory][HTTP] 호출 실패 - status:{} headers:{}\nbody:\n{}",
-                    e.getStatusCode(), e.getResponseHeaders(), e.getResponseBodyAsString(), e);
-            return Optional.empty();
         } catch (Exception e) {
-            // 그 외 모든 예외
-            log.error("[TxnHistory] 인증 코드 추출 처리 중 알 수 없는 오류", e);
-            return Optional.empty();
+            log.error("인증 코드 추출 중 알 수 없는 오류", e);
+            throw InternalServerException.ofWonAuth();
         }
     }
 

@@ -1,6 +1,8 @@
 package io.ssafy.cinemoa.external.finance.dto;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -12,15 +14,20 @@ import java.util.List;
  * list: 거래 내역 리스트
  */
 @Data
+@Getter
+@Setter
 public class TransactionHistoryResponse {
+    // 응답 헤더 정보
+    private String responseCode;
+    private String responseMessage;
+
     private String totalCount;
     private List<TransactionHistoryItem> list;
 
-    /**
-     * 개별 거래
-     */
+    // 개별 거래
     @Data
     public static class TransactionHistoryItem {
+        // 각 거래 내역 조회 응답 정보
         private String transactionUniqueNo;     // 거래 고유번호
         private String transactionDate;         // YYYYMMDD
         private String transactionTime;         // HHmmss
