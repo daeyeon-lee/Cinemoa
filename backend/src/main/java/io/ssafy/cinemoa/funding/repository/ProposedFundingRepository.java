@@ -20,28 +20,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-/**
- * 내가 참여한 목록 조회를 위한 Repository
- * <p>
- * API 경로: GET /api/user/{userId}/participated-funding
- */
 @Repository
 @RequiredArgsConstructor
-public class ParticipatedFundingRepository {
+public class ProposedFundingRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
     /**
-     * 내가 참여한 펀딩 목록을 조회합니다.
+     * 내가 제안한 펀딩 목록을 조회합니다.
      *
      * @param userId  사용자 ID
-     * @param request 참여한 목록 조회 요청
-     * @return 참여한 펀딩 목록
+     * @param request 제안한 목록 조회 요청
+     * @return 제안한 펀딩 목록
      */
-    public CursorResponse<CardTypeFundingInfoDto> findParticipatedFundings(Long userId,
-                                                                           CursorRequestDto request) {
+    public CursorResponse<CardTypeFundingInfoDto> findProposedFundings(Long userId, CursorRequestDto request) {
         // 1. 기본 쿼리 구성
-        ParticipatedQueryBuilder queryBuilder = new ParticipatedQueryBuilder();
+        ProposedQueryBuilder queryBuilder = new ProposedQueryBuilder();
         queryBuilder.buildBaseQuery(userId);
 
         // 2. 동적 조건 추가 (커서와 상태 필터)
@@ -78,9 +72,9 @@ public class ParticipatedFundingRepository {
     }
 
     /**
-     * 보고싶어요 목록 조회를 위한 동적 조건을 추가합니다.
+     * 제안 목록 조회를 위한 커서 조건을 추가합니다.
      */
-    private void addCursor(ParticipatedQueryBuilder queryBuilder, String cursor) {
+    private void addCursor(ProposedQueryBuilder queryBuilder, String cursor) {
         // 커서 조건 추가
         queryBuilder.addCursorCondition(parseCursor(cursor));
     }
@@ -105,7 +99,7 @@ public class ParticipatedFundingRepository {
     }
 
     /**
-     * 참여한 펀딩 아이템 DTO로 매핑합니다.
+     * 제안한 펀딩 아이템 DTO로 매핑합니다.
      */
     private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
         int participantCount = rs.getInt("participant_count");
@@ -144,14 +138,14 @@ public class ParticipatedFundingRepository {
 
         return CardTypeFundingInfoDto
                 .builder()
-                .timestamp(rs.getTimestamp("participated_at").toLocalDateTime())
+                .timestamp(rs.getTimestamp("timestamp").toLocalDateTime())
                 .funding(funding)
                 .cinema(cinema)
                 .build();
     }
 
-    // === Inner Class: ParticipatedQueryBuilder ===
-    private static class ParticipatedQueryBuilder {
+    // === Inner Class: ProposedQueryBuilder ===
+    private static class ProposedQueryBuilder {
         private final StringBuilder sql = new StringBuilder();
         @Getter
         private final List<Object> params = new ArrayList<>();
@@ -164,25 +158,23 @@ public class ParticipatedFundingRepository {
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
                            CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
-                           t.created_at as participated_at
+                           f.created_at as timestamp
                     FROM fundings f
                     LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    INNER JOIN user_transactions t ON t.funding_id = f.funding_id AND t.user_id = ? AND t.state = 'SUCCESS'
-                    WHERE f.leader_id != ? AND f.funding_type = 'FUNDING'
+                    WHERE f.leader_id = ? AND f.funding_type = 'FUNDING'
                     """);
 
-            // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용, 생성자 제외용)
-            params.add(userId);
+            // userId를 파라미터로 추가 (좋아요 조회용, 제안자 조회용)
             params.add(userId);
             params.add(userId);
         }
 
         public void addCursorCondition(TimestampCursorInfo cursorInfo) {
             sql.append("""
-                    AND (t.created_at < ? OR (t.created_at = ? AND f.funding_id < ?))
+                    AND (f.created_at < ? OR (f.created_at = ? AND f.funding_id < ?))
                     """);
             params.add(cursorInfo.getCreatedAt());
             params.add(cursorInfo.getCreatedAt());
@@ -190,7 +182,7 @@ public class ParticipatedFundingRepository {
         }
 
         public void addOrderAndLimit(Integer limit) {
-            sql.append(" ORDER BY t.created_at DESC, f.funding_id DESC LIMIT ?");
+            sql.append(" ORDER BY f.created_at DESC, f.funding_id DESC LIMIT ?");
             params.add(limit);
         }
 

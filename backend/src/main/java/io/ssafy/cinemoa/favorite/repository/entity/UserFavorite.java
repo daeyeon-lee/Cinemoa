@@ -1,6 +1,7 @@
 package io.ssafy.cinemoa.favorite.repository.entity;
 
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
+import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -24,7 +25,7 @@ import org.hibernate.proxy.HibernateProxy;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_favorites")
-public class UserFavorite {
+public class UserFavorite extends BaseTimeEntity {
 
     @EmbeddedId
     private UserFavoriteId id;
