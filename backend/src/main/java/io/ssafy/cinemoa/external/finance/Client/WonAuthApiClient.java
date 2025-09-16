@@ -3,23 +3,21 @@ package io.ssafy.cinemoa.external.finance.Client;
 import io.ssafy.cinemoa.external.finance.common.FinanceApiUtils;
 import io.ssafy.cinemoa.external.finance.common.HttpClientUtil;
 import io.ssafy.cinemoa.external.finance.config.FinanceApiConfig;
-import io.ssafy.cinemoa.external.finance.dto.*;
-
-// 공통헤더, 기관거래고유번호 생성용 유틸들
-import static io.ssafy.cinemoa.external.finance.support.FinanceHttp.createHeaders;
-
-// --- 우리가 만든 DTO들 import ---
-
+import io.ssafy.cinemoa.external.finance.dto.BaseApiResponse;
+import io.ssafy.cinemoa.external.finance.dto.ReqHeader;
+import io.ssafy.cinemoa.external.finance.dto.TransactionHistoryRequest;
+import io.ssafy.cinemoa.external.finance.dto.TransactionHistoryResponse;
+import io.ssafy.cinemoa.external.finance.dto.WonSendRequest;
+import io.ssafy.cinemoa.external.finance.dto.WonSendResponse;
+import io.ssafy.cinemoa.external.finance.dto.WonVerifyRequest;
+import io.ssafy.cinemoa.external.finance.dto.WonVerifyResponse;
 import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
-import jakarta.mail.Header;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-
-import java.util.Objects;
 
 /**
  * ✅ WonAuthApiClient
@@ -65,7 +63,7 @@ public class WonAuthApiClient {
                 PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
                 // REC 데이터 추출 (실제 거래 정보)
-                WonSendResponse result = responseBody.getREC();
+                WonSendResponse result = responseBody.getRec();
                 if (result == null) {
                     log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
                     result = new WonSendResponse();
@@ -122,7 +120,7 @@ public class WonAuthApiClient {
                 PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
                 // REC 데이터 추출 (실제 응답 정보)
-                WonVerifyResponse result = responseBody.getREC();
+                WonVerifyResponse result = responseBody.getRec();
                 if (result == null) {
                     log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
                     result = new WonVerifyResponse();
@@ -204,7 +202,7 @@ public class WonAuthApiClient {
                 PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
                 // REC 데이터 추출 (실제 응답 정보)
-                TransactionHistoryResponse result = responseBody.getREC();
+                TransactionHistoryResponse result = responseBody.getRec();
                 if (result == null) {
                     log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
                     result = new TransactionHistoryResponse();
@@ -257,7 +255,7 @@ public class WonAuthApiClient {
                 .authText(authText)
                 .build();
     }
-    
+
     // 1원 인증 검증 API 요청 객체 생성
     private WonVerifyRequest buildWonVerifyRequest(String accountNo, String authText, String authCode) {
         // 공통 헤더 생성

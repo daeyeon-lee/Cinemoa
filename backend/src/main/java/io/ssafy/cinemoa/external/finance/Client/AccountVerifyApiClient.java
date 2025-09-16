@@ -3,24 +3,16 @@ package io.ssafy.cinemoa.external.finance.Client;
 import io.ssafy.cinemoa.external.finance.common.FinanceApiUtils;
 import io.ssafy.cinemoa.external.finance.common.HttpClientUtil;
 import io.ssafy.cinemoa.external.finance.config.FinanceApiConfig;
-import io.ssafy.cinemoa.external.finance.dto.*;
-
-// 공통헤더, 기관거래고유번호 생성용 유틸들
-import static io.ssafy.cinemoa.external.finance.support.FinanceHttp.createHeaders;
-import static io.ssafy.cinemoa.external.finance.support.TransactionNoGenerator.generateTransactionUniqueNo;
-
+import io.ssafy.cinemoa.external.finance.dto.AccountVerifyRequest;
+import io.ssafy.cinemoa.external.finance.dto.AccountVerifyResponse;
+import io.ssafy.cinemoa.external.finance.dto.BaseApiResponse;
+import io.ssafy.cinemoa.external.finance.dto.ReqHeader;
 import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * ✅ AccountVerifyApiClient
@@ -43,8 +35,8 @@ public class AccountVerifyApiClient {
         try {
             // 금융망 API (계좌 조회) 요청 객체 생성
             AccountVerifyRequest request = buildAccountVerifyRequest(accountNo);
-            log.info("계좌 조회 (단건) API 호출 시작 - 계좌번호: {}", FinanceApiUtils.maskAccountNumber(accountNo)) ;
-            
+            log.info("계좌 조회 (단건) API 호출 시작 - 계좌번호: {}", FinanceApiUtils.maskAccountNumber(accountNo));
+
             // 계좌 조회 API 호출
             BaseApiResponse<AccountVerifyResponse> responseBody = httpClientUtil.post(
                     financeApiConfig.getAccountVerifyUrl(),
@@ -60,7 +52,7 @@ public class AccountVerifyApiClient {
                 PaymentErrorCode errorCode = PaymentErrorCode.fromApiCode(apiCode); // "PAY_0000"
 
                 // REC 데이터 추출 (실제 응답 정보)
-                AccountVerifyResponse result = responseBody.getREC();
+                AccountVerifyResponse result = responseBody.getRec();
                 if (result == null) {
                     log.warn("REC 데이터가 null입니다. 빈 응답 객체를 생성합니다.");
                     result = new AccountVerifyResponse();
