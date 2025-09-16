@@ -25,6 +25,33 @@
     display: none; /* Chrome, Safari and Opera */
   }
 
+  /* 스크롤바 스타일 커스터마이징 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-1); /* BG-1 색상 사용 */
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--bg-3); /* BG-3 색상 사용 */
+    border-radius: 4px;
+    border: 1px solid var(--bg-1);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-4); /* 호버 시 BG-4 색상 */
+  }
+
+  /* Firefox용 스크롤바 스타일 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-3) var(--bg-1);
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

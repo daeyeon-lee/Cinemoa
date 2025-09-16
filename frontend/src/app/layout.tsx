@@ -27,7 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <main className="flex-1">{children}</main>
         </div>
         {/* 하단 footer - 화면 전체 너비 */}
-        <div className="w-screen">
+        <div className="w-full">
           <Footer />
         </div>
       </body>
