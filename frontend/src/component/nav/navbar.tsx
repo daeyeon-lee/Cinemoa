@@ -82,6 +82,7 @@ export default function Navbar() {
               이거어때
               {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
+            {/* 임시로 결제창 붙여놓음 나중에 /create로 변경해야함함 */}
             <Link href="/create" className={getLinkClasses('/create')}>
               만들기
               {isActive('/create') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}

@@ -2,27 +2,31 @@
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import Link from 'next/link';
+import MovieIcon from '@/component/icon/movieIcon';
+import SeriesIcon from '@/component/icon/seriesIcon';
+import ConcertIcon from '@/component/icon/concertIcon';
+import SportsIcon from '@/component/icon/sportsIcon';
 
 // 카테고리 데이터(더미데이터)
 const categories = {
   movie: {
     title: '영화',
-    icon: '🎬',
+    icon: MovieIcon,
     items: ['액션', '음악', '판타지/SF', '애니메이션', '기타'],
   },
   series: {
     title: '시리즈',
-    icon: '▶️',
+    icon: SeriesIcon,
     items: ['액션', '음악', '판타지/SF', '애니메이션', '기타'],
   },
   performance: {
     title: '공연',
-    icon: '🎤',
+    icon: ConcertIcon,
     items: ['K-POP', 'POP', '클래식', '뮤지컬', '기타'],
   },
   sports: {
     title: '스포츠중계',
-    icon: '⚽',
+    icon: SportsIcon,
     items: ['축구', '야구', 'F1', 'E-스포츠', '기타'],
   },
 };
@@ -79,7 +83,7 @@ export default function Step1Page() {
         {Object.entries(categories).map(([key, category]) => (
           <div key={key}>
             <div className="flex items-center mb-2">
-              <span className="text-sm sm:text-p3-b mr-1">{category.icon}</span>
+              <category.icon className="w-4 h-4 mr-1" />
               <h3 className="text-sm sm:text-p2-b text-Brand1-Primary">{category.title}</h3>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-1">
