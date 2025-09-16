@@ -40,9 +40,18 @@ type CineCardProps = {
   loadingState?: 'ready' | 'loading' | 'error';
   onCardClick?: (id: number) => void;
   onVoteClick?: (id: number) => void;
+  showStateTag?: boolean;
+  stateTagClassName?: string;
 };
 
-const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick }) => {
+const CineCardVertical: React.FC<CineCardProps> = ({ 
+  data, 
+  loadingState = 'ready', 
+  onVoteClick, 
+  onCardClick, 
+  showStateTag = false, 
+  stateTagClassName = '' 
+}) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
   const formatDate = (dateString: string) => {
@@ -94,7 +103,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
     >
       <div className="p-[11px] space-y-[7px] h-full flex flex-col">
         <div className="flex gap-[5px]">
-          <div className="flex-1 h-24">
+          <div className="flex-1 h-24 relative">
             <Media
               src={data.funding.bannerUrl}
               alt={data.funding.title}
@@ -102,6 +111,17 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               height={96}
               loadingState={loadingState}
             />
+            {/* 상태 태그 오버레이 */}
+            {showStateTag && (
+              <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] bg-amber-300 rounded-md ${stateTagClassName}`}>
+                <div className="text-inverse text-[10px] font-medium leading-3">
+                  {data.funding.state === 'ACTIVE' ? '진행중' : 
+                   data.funding.state === 'PENDING' ? '심사 중' : 
+                   data.funding.state === 'COMPLETED' ? '완료' : 
+                   data.funding.state === 'CANCELLED' ? '취소' : '종료'}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-center justify-between p-0 gap-2 h-24">
             {isFunding ? (
