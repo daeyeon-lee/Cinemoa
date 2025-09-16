@@ -17,7 +17,7 @@ import lombok.Data;
 public class AccountTransferRequest {
 
   @JsonProperty("Header")
-  private ReqHeader Header;
+  private ReqHeader header;
 
   private String depositAccountNo; // 입금받을 계좌번호 (영화관 계좌)
   private String depositTransactionSummary; // 입금 거래 요약 설명
