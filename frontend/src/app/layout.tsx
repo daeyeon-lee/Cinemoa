@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/component/nav/navbar';
 import Footer from '@/component/footer/footer';
+import QueryProvider from '@/providers/QueryProvider';
 
 export const metadata: Metadata = {
   title: '씨네모아',
@@ -20,16 +21,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ko">
       <body className="antialiased bg-BG-0 text-primary w-full max-xl:px-4 flex flex-col items-center">
-        <div className="sm:w-[1200px] min-h-screen flex flex-col">
-          {/* 상단 네비게이션 바 */}
-          <Navbar />
-          {/* 콘텐츠 영역 */}
-          <main className="flex-1">{children}</main>
-        </div>
-        {/* 하단 footer - 화면 전체 너비 */}
-        <div className="w-full">
-          <Footer />
-        </div>
+        <QueryProvider>
+          <div className="sm:w-[1200px] min-h-screen flex flex-col">
+            {/* 상단 네비게이션 바 */}
+            <Navbar />
+            {/* 콘텐츠 영역 */}
+            <main className="flex-1">{children}</main>
+          </div>
+          {/* 하단 footer - 화면 전체 너비 */}
+          <div className="w-full">
+            <Footer />
+          </div>
+        </QueryProvider>
       </body>
     </html>
   );
