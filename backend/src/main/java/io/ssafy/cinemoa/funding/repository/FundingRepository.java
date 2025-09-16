@@ -153,4 +153,16 @@ public interface FundingRepository extends JpaRepository<Funding, Long> {
      */
     @Query("SELECT f FROM Funding f JOIN FETCH f.cinema WHERE f.endsOn = :endsOn AND f.state = :state")
     List<Funding> findByEndsOnAndStateWithCinema(@Param("endsOn") LocalDate endsOn, @Param("state") FundingState state);
+
+    /**
+     * 특정 날짜에 마감되고 특정 상태인 펀딩들을 Cinema와 Screen과 함께 조회합니다.
+     * N+1 문제를 방지하기 위해 JOIN FETCH를 사용합니다.
+     * 
+     * @param endsOn 마감일
+     * @param state 펀딩 상태
+     * @return 펀딩 목록 (Cinema, Screen 정보 포함)
+     * @author HG
+     */
+    @Query("SELECT f FROM Funding f JOIN FETCH f.cinema JOIN FETCH f.screen WHERE f.endsOn = :endsOn AND f.state = :state")
+    List<Funding> findByEndsOnAndStateWithCinemaAndScreen(@Param("endsOn") LocalDate endsOn, @Param("state") FundingState state);
 }
