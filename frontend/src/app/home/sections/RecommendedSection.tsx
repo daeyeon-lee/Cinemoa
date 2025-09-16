@@ -38,18 +38,27 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick 
         )}
       </div>
 
-      {/* Desktop: 2줄 그리드 + 가로 스크롤 */}
+      {/* Desktop: 카드를 절반씩 나누어 세로로 쌓기 - 동시 스크롤 */}
       <div className="hidden md:block">
         <HorizontalScroller className="">
-          <div
-            className="grid grid-rows-2 gap-2"
-            style={{ gridTemplateColumns: `repeat(${Math.ceil(items.length / 2)}, 180px)` }}
-          >
-            {items.map((item, index) => (
-              <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
-              </div>
-            ))}
+          <div className="flex flex-col gap-4">
+            {/* 첫 번째 그룹 (절반) */}
+            <div className="flex gap-2">
+              {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
+                <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
+                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+                </div>
+              ))}
+            </div>
+            
+            {/* 두 번째 그룹 (나머지 절반) */}
+            <div className="flex gap-2">
+              {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
+                <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
+                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+                </div>
+              ))}
+            </div>
           </div>
         </HorizontalScroller>
       </div>

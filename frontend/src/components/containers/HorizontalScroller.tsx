@@ -44,7 +44,7 @@ export default function HorizontalScroller({ children, className = '' }: Horizon
         ref={scrollRef}
         role="listbox"
         tabIndex={0}
-        className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide focus:outline-none"
+        className="flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide focus:outline-none"
         onKeyDown={handleKeyDown}
         style={{
           scrollbarWidth: 'none',
