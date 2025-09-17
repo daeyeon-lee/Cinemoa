@@ -1,6 +1,7 @@
 package io.ssafy.cinemoa.user.repository.entity;
 
 import io.ssafy.cinemoa.global.repository.entity.BaseTimeEntity;
+import io.ssafy.cinemoa.security.enums.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,7 +30,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, name = "user_id")
     private Long id;
 
-    @Column(columnDefinition = "varchar(20)", nullable = false)
+    @Column(columnDefinition = "varchar(40)", nullable = false)
     private String username;
 
     @Column(nullable = false)
@@ -53,6 +54,8 @@ public class User extends BaseTimeEntity {
 
     @Column(columnDefinition = "varchar(11)", name = "bank_code")
     private String bankCode;
+
+    private Role role;
 
     @Override
     public final boolean equals(Object o) {

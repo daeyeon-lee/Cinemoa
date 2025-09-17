@@ -1,25 +1,22 @@
 package io.ssafy.cinemoa.user.service;
 
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
-import io.ssafy.cinemoa.user.dto.RefundAccountResponseDto;
+import io.ssafy.cinemoa.security.dto.AnonymousUserInfo;
 import io.ssafy.cinemoa.user.dto.RefundAccountDto;
-
+import io.ssafy.cinemoa.user.dto.RefundAccountResponseDto;
 import io.ssafy.cinemoa.user.dto.UserResponseDto;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
-import lombok.RequiredArgsConstructor; // 생성자 주입
-import org.springframework.stereotype.Service; // 서비스 어노테이션 -> 비즈니스 로직 처리
-import org.springframework.transaction.annotation.Transactional; // 트랜잭션 어노테이션 -> 데이터베이스 조회 시 사용
-import org.springframework.util.StringUtils; // 문자열 유틸리티 클래스
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
-@RequiredArgsConstructor 
+@RequiredArgsConstructor
 public class UserService {
-
-    private final UserRepository userRepository; // 데이터베이스 조회
 
     // Bank Code와 Bank Name을 매핑하기 위한 Map (static으로 관리)
     private static final Map<String, String> BANK_CODE_MAP = new ConcurrentHashMap<>();
@@ -45,6 +42,8 @@ public class UserService {
         BANK_CODE_MAP.put("090", "카카오뱅크");
         BANK_CODE_MAP.put("999", "싸피은행");
     }
+
+    private final UserRepository userRepository; // 데이터베이스 조회
 
     @Transactional(readOnly = true) // 읽기 전용(닉네임, 프로필 이미지 정보 조회) 
     public UserResponseDto getUserInfo(Long userId) {
@@ -90,11 +89,23 @@ public class UserService {
                     .refundAccount(accountDto)
                     .build();
         }
-    //     "userId": 1,
-    //     "refundAccount": {
-    //          "accountNo": "110123456789",        // 계좌번호 (users.refund_account_number)
-    //          "bankName": "국민은행",                  // 은행명 (계좌번호 기반 추론)
-    //          "bankCode": "004",                        // 은행코드 (users.bank_code)
-    //     }
+        //     "userId": 1,
+        //     "refundAccount": {
+        //          "accountNo": "110123456789",        // 계좌번호 (users.refund_account_number)
+        //          "bankName": "국민은행",                  // 은행명 (계좌번호 기반 추론)
+        //          "bankCode": "004",                        // 은행코드 (users.bank_code)
+        //     }
+    }
+
+    @Transactional
+    public User getOrSave(AnonymousUserInfo userInfo) {
+        User user = userRepository.findByUsername(userInfo.getEmail());
+
+        if (user == null) {
+            user = userInfo.toUser();
+            user = userRepository.save(user);
+        }
+
+        return user;
     }
 }
