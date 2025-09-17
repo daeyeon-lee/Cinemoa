@@ -1,5 +1,5 @@
 import { ComponentType } from 'react';
-import HeartIcon from '@/component/icon/heartIcon';
+import { HeartIcon } from '@/component/icon/heartIcon';
 
 export const CATEGORY_VALUES = {
   ALL: 'all',
@@ -148,7 +148,7 @@ export const findCategoryValueById = (categoryId: number): CategoryValue | null 
 // categoryId로 서브카테고리 찾기
 export const findSubCategoryById = (categoryId: number): SubCategoryItem | null => {
   for (const categoryInfo of Object.values(CATEGORIES_INFO)) {
-    const subCategory = categoryInfo.items.find(item => item.categoryId === categoryId);
+    const subCategory = categoryInfo.items.find((item) => item.categoryId === categoryId);
     if (subCategory) {
       return subCategory;
     }
