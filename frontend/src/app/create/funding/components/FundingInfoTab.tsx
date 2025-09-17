@@ -11,21 +11,17 @@ import * as z from 'zod';
 import Link from 'next/link';
 import { useFundingStore } from '@/stores/fundingStore';
 
+import { fundinginfo } from '@/types/funding';
+
 const formSchema = z.object({
   title: z.string().min(1, '펀딩 제목을 입력해주세요'),
-  summary: z.string().min(1, '한 줄 소개를 입력해주세요'),
-  description: z.string().min(1, '상세 소개를 입력해주세요'),
+  content: z.string().min(1, '상세 소개를 입력해주세요'),
 });
 
 // 명시적으로 펀딩 데이터 타입 정의
-export interface FundingData {
-  title: string;
-  summary: string;
-  description: string;
-}
 
 interface FundingInfoTabProps {
-  onNext: (data: FundingData) => void;
+  onNext: (data: fundinginfo) => void;
   onPrev?: () => void;
 }
 
@@ -37,8 +33,7 @@ export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) 
     mode: 'onChange',
     defaultValues: {
       title: '',
-      summary: '',
-      description: '',
+      content: '',
     },
   });
 
@@ -52,14 +47,13 @@ export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) 
       // Store에 저장
       setFundingInfo({
         title: values.title,
-        description: values.description, // summary를 description으로 사용
+        content: values.content,
       });
 
       // 명시적으로 FundingData 타입으로 변환
-      const fundingData: FundingData = {
+      const fundingData: fundinginfo = {
         title: values.title,
-        summary: values.summary,
-        description: values.description,
+        content: values.content,
       };
 
       onNext(fundingData);
@@ -91,26 +85,7 @@ export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) 
 
           <FormField
             control={form.control}
-            name="summary"
-            render={({ field }) => (
-              <FormItem className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <FormLabel className="h5-b text-primary min-w-[200px] sm:pt-2">
-                  한 줄 소개 <span className="text-Brand1-Primary">*</span>
-                  <p className="text-p3 text-tertiary">상영회 소개를 간단히 적어주세요.</p>
-                </FormLabel>
-                <div className="flex-1">
-                  <FormControl>
-                    <Input placeholder="프로젝트를 한 줄로 요약해주세요" {...field} />
-                  </FormControl>
-                  <FormMessage className="mt-1" />
-                </div>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
+            name="content"
             render={({ field }) => (
               <FormItem className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
                 <FormLabel className="h5-b text-primary min-w-[200px] sm:pt-2">

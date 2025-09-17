@@ -1,83 +1,77 @@
 import { create } from 'zustand';
-import { CreateFundingParams } from '@/types/funding';
+import { fundinginfo, movieinfo, theaterinfo } from '@/types/funding';
 
 interface FundingStore {
   // 펀딩 정보
-  title: string;
-  description: string;
+  fundinginfo: fundinginfo;
 
   // 영화 정보
-  category: string;
-  movieTitle: string;
-  movieImage: string;
+  movieinfo: movieinfo;
 
   // 상영관 정보
-  cinemaId: number | null;
-  screenday: string;
-  scrrenStartsOn: number | null;
-  scrrenEndsOn: number | null;
-  participant: number;
+  theaterinfo: theaterinfo;
 
   // Actions
-  setFundingInfo: (data: { title: string; description: string }) => void;
-  setMovieInfo: (data: { category: string; movieTitle: string; movieImage: string }) => void;
-  setTheaterInfo: (data: {
-    cinemaId: number;
-    screenday: string;
-    scrrenStartsOn: number;
-    scrrenEndsOn: number;
-    participant: number;
-  }) => void;
+  setFundingInfo: (data: fundinginfo) => void;
+  setMovieInfo: (data: movieinfo) => void;
+  setTheaterInfo: (data: theaterinfo) => void;
   reset: () => void;
 }
 
 export const useFundingStore = create<FundingStore>((set) => ({
   // 초기값
-  title: '',
-  description: '',
-  category: '',
-  movieTitle: '',
-  movieImage: '',
-  cinemaId: null,
-  screenday: '',
-  scrrenStartsOn: null,
-  scrrenEndsOn: null,
-  participant: 1,
+  fundinginfo: {
+    title: '',
+    content: '',
+  },
+  movieinfo: {
+    categoryId: 0,
+    videoName: '',
+    posterUrl: '',
+  },
+  theaterinfo: {
+    cinemaId: 0,
+    screenId: 0,
+    screenday: '',
+    scrrenStartsOn: 0,
+    scrrenEndsOn: 0,
+    maxPeople: 0,
+  },
 
   // Actions
-  setFundingInfo: (data) =>
+  setFundingInfo: (data: fundinginfo) =>
     set({
-      title: data.title,
-      description: data.description,
+      fundinginfo: data,
     }),
 
-  setMovieInfo: (data) =>
+  setMovieInfo: (data: movieinfo) =>
     set({
-      category: data.category,
-      movieTitle: data.movieTitle,
-      movieImage: data.movieImage,
+      movieinfo: data,
     }),
 
-  setTheaterInfo: (data) =>
+  setTheaterInfo: (data: theaterinfo) =>
     set({
-      cinemaId: data.cinemaId,
-      screenday: data.screenday,
-      scrrenStartsOn: data.scrrenStartsOn,
-      scrrenEndsOn: data.scrrenEndsOn,
-      participant: data.participant,
+      theaterinfo: data,
     }),
 
   reset: () =>
     set({
-      title: '',
-      description: '',
-      category: '',
-      movieTitle: '',
-      movieImage: '',
-      cinemaId: null,
-      screenday: '',
-      scrrenStartsOn: null,
-      scrrenEndsOn: null,
-      participant: 1,
+      fundinginfo: {
+        title: '',
+        content: '',
+      },
+      movieinfo: {
+        categoryId: 0,
+        videoName: '',
+        posterUrl: '',
+      },
+      theaterinfo: {
+        cinemaId: 0,
+        screenId: 0,
+        screenday: '',
+        scrrenStartsOn: 0,
+        scrrenEndsOn: 0,
+        maxPeople: 0,
+      },
     }),
 }));

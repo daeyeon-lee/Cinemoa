@@ -1,23 +1,33 @@
 // 펀딩 생성
 // 파라미터
+export interface fundinginfo {
+  title?: string;
+  content?: string;
+}
+
+export interface movieinfo {
+  categoryId?: number;
+  videoName?: string;
+  posterUrl?: string;
+}
+
+export interface theaterinfo {
+  cinemaId?: number;
+  screenId?: number;
+  screenday?: string;
+  scrrenStartsOn?: number;
+  scrrenEndsOn?: number;
+  maxPeople?: number;
+}
 
 export interface CreateFundingParams {
   userId?: number;
   // 펀딩 정보
-  title?: string;
-  description?: string;
-
+  fundinginfo?: fundinginfo;
   // 영화 정보
-  category?: string; // 추후에 cateoryid:number로 변경
-  movieTitle?: string;
-  movieImage: string;
-
+  movieinfo?: movieinfo;
   // 상영 정보
-  cinemaId?: number;
-  screenday?: string;
-  scrrenStartsOn?: number;
-  scrrenEndsOn?: number;
-  participant?: number;
+  theaterinfo?: theaterinfo;
 }
 
 // 응답

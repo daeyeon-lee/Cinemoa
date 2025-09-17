@@ -4,14 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Upload, Search, Image } from 'lucide-react';
 import MovieIcon from '@/component/icon/movieIcon';
 import SeriesIcon from '@/component/icon/seriesIcon';
@@ -23,9 +16,10 @@ import { useFundingStore } from '@/stores/fundingStore';
 import { useState, useRef, useEffect } from 'react';
 import { useGetCategories } from '@/api/hooks/useCategoryQueries';
 import { CategoryResponse } from '@/types/category';
+import { movieinfo } from '@/types/funding';
 
 interface MovieInfoTabProps {
-  onNext: (data: any) => void;
+  onNext: (data: movieinfo) => void;
   onPrev?: () => void;
 }
 
@@ -34,7 +28,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const { data: getCategories } = useGetCategories();
 
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [movieTitle, setMovieTitle] = useState('');
   const [movieDescription, setMovieDescription] = useState('');
   const [searchResults, setSearchResults] = useState<TMDBMultiItem[]>([]);
@@ -58,17 +52,24 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     }
   }, [getCategories]);
 
-  const handleCategorySelect = (categoryId: string, categoryName: string) => {
+  const handleCategorySelect = (categoryId: string) => {
     // 카테고리 에러 메시지 초기화
     setCategoryError('');
 
-    if (selectedCategory === categoryId) {
+    console.log('=== 카테고리 선택 ===');
+    console.log('클릭된 카테고리 ID:', categoryId);
+    console.log('현재 선택된 카테고리 ID:', selectedCategoryId);
+
+    if (selectedCategoryId === categoryId) {
       // 이미 선택된 경우 제거
-      setSelectedCategory('');
+      setSelectedCategoryId('');
+      console.log('카테고리 선택 해제');
     } else {
       // 새로운 카테고리 선택 (전체에서 1개만 선택 가능)
-      setSelectedCategory(categoryId);
+      setSelectedCategoryId(categoryId);
+      console.log('새로운 카테고리 선택됨:', categoryId);
     }
+    console.log('===================');
   };
 
   // TMDB Multi API 검색 함수
@@ -181,7 +182,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
   // 유효성 검사 함수
   const isFormValid = () => {
-    return selectedCategory && movieTitle.trim() && selectedImage;
+    return selectedCategoryId && movieTitle.trim() && selectedImage;
   };
 
   // 다음 단계로 넘어가는 핸들러
@@ -194,7 +195,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     let hasError = false;
 
     // 유효성 검사
-    if (!selectedCategory) {
+    if (!selectedCategoryId) {
       setCategoryError('카테고리를 1개 선택해주세요.');
       hasError = true;
     }
@@ -215,21 +216,26 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
     // Store에 저장
     setMovieInfo({
-      category: selectedCategory,
-      movieTitle: movieTitle,
-      movieImage: selectedImage,
+      categoryId: parseInt(selectedCategoryId),
+      videoName: movieTitle,
+      posterUrl: selectedImage,
     });
 
-    const movieData = {
-      selectedCategory, // 선택한 카테고리
-      movieTitle, // 상영물 제목
-      selectedImage, // 상영물 이미지
-      selectedMovieId,
-      // movieDescription,
+    const movieData: movieinfo = {
+      categoryId: parseInt(selectedCategoryId), // 선택한 카테고리
+      videoName: movieTitle, // 상영물 제목
+      posterUrl: selectedImage, // 상영물 이미지
     };
 
     console.log('=== MovieInfoTab 제출 ===');
+    console.log('선택된 카테고리 ID (문자열):', selectedCategoryId);
+    console.log('선택된 카테고리 ID (숫자):', parseInt(selectedCategoryId));
     console.log('입력된 값:', movieData);
+    console.log('Store에 저장된 값:', {
+      categoryId: parseInt(selectedCategoryId),
+      videoName: movieTitle,
+      posterUrl: selectedImage,
+    });
     console.log('========================');
 
     onNext(movieData);
@@ -275,15 +281,15 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                 <div className="w-full flex flex-nowrap gap-2">
                   {category.childCategories.map((item) => {
                     const categoryValue = item.categoryId.toString();
-                    const isSelected = selectedCategory === categoryValue;
-                    const isDisabled = selectedCategory !== '' && selectedCategory !== categoryValue;
+                    const isSelected = selectedCategoryId === categoryValue;
+                    const isDisabled = selectedCategoryId !== '' && selectedCategoryId !== categoryValue;
                     return (
                       <Button
                         variant="outline"
                         key={item.categoryId}
                         size="sm"
                         textSize="sm"
-                        onClick={() => handleCategorySelect(item.categoryId.toString(), item.categoryName)}
+                        onClick={() => handleCategorySelect(item.categoryId.toString())}
                         disabled={isDisabled}
                         className={`flex-1 rounded-[6px] text-xs ${
                           isSelected
@@ -365,11 +371,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                             onClick={() => handleMovieSelect(item.id.toString())}
                           >
                             {item.poster_path ? (
-                              <img
-                                src={`https://image.tmdb.org/t/p/w185${item.poster_path}`}
-                                alt={getMediaTitle(item)}
-                                className="w-12 h-16 object-cover rounded flex-shrink-0"
-                              />
+                              <img src={`https://image.tmdb.org/t/p/w185${item.poster_path}`} alt={getMediaTitle(item)} className="w-12 h-16 object-cover rounded flex-shrink-0" />
                             ) : (
                               <div className="w-12 h-16 bg-BG-2 rounded-[6px] flex items-center justify-center flex-shrink-0">
                                 <Image className="w-6 h-6 text-tertiary" />
@@ -381,9 +383,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                                 {getMediaDate(item) ? ` (${getMediaDate(item)?.split('-')[0]})` : ''}
                               </div>
                               <div className="p3 text-primary">{getMediaTypeKorean(item.media_type)}</div>
-                              {item.overview && (
-                                <div className="p3 text-tertiary mt-1 line-clamp-2">{item.overview}</div>
-                              )}
+                              {item.overview && <div className="p3 text-tertiary mt-1 line-clamp-2">{item.overview}</div>}
                             </div>
                           </div>
                         ))}
@@ -418,11 +418,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
             <div className="mt-4 p-3 bg-BG-1 rounded-[6px]">
               <div className="flex items-center gap-3">
                 {selectedMovie.poster_path ? (
-                  <img
-                    src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
-                    alt={getMediaTitle(selectedMovie)}
-                    className="w-12 h-16 object-cover rounded-[6px]"
-                  />
+                  <img src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`} alt={getMediaTitle(selectedMovie)} className="w-12 h-16 object-cover rounded-[6px]" />
                 ) : (
                   <div className="w-12 h-16 bg-BG-2 rounded-[6px] flex items-center justify-center">
                     <Image className="w-6 h-6 text-tertiary" />
@@ -459,12 +455,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               <h4 className="h5-b text-primary">상영물 소개</h4>
               <p className="p3 text-tertiary">상영물에 대한 소개를 입력해주세요.</p>
             </div>
-            <Textarea
-              placeholder="상영물에 대한 소개를 입력해주세요."
-              value={movieDescription}
-              onChange={(e) => setMovieDescription(e.target.value)}
-              className="min-h-[135px] resize-none"
-            />
+            <Textarea placeholder="상영물에 대한 소개를 입력해주세요." value={movieDescription} onChange={(e) => setMovieDescription(e.target.value)} className="min-h-[135px] resize-none" />
           </div>
         </div>
 
@@ -482,11 +473,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               {selectedImage ? (
                 <div className="flex justify-between gap-3">
                   <div className="flex flex-col gap-2">
-                    <img
-                      src={selectedImage}
-                      alt="선택된 상영물 이미지"
-                      className="w-[200px] h-[280px] object-cover rounded-[6px]"
-                    />
+                    <img src={selectedImage} alt="선택된 상영물 이미지" className="w-[200px] h-[280px] object-cover rounded-[6px]" />
                     <div className="flex gap-2">
                       <Button variant="outline" size="md" onClick={handleUploadClick} className="flex-1">
                         변경
@@ -524,10 +511,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   </div>
                 </div>
               ) : (
-                <div
-                  className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-BG-2 rounded-[6px] transition-colors"
-                  onClick={handleUploadClick}
-                >
+                <div className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-BG-2 rounded-[6px] transition-colors" onClick={handleUploadClick}>
                   <Upload className="w-11 h-11 text-tertiary mb-3" size={44} />
                   <p className="p2-b text-tertiary text-center mb-1">이미지를 업로드하거나 드래그하세요</p>
                   <p className="p2 text-subtle text-center">JPG, PNG 파일을 지원합니다</p>
