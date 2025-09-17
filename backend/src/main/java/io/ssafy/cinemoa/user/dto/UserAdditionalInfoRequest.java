@@ -24,5 +24,9 @@ public class UserAdditionalInfoRequest {
     // 계좌번호
     @JsonProperty("accountNo")
     private String accountNo;
+    
+    // 1원 인증 해시값 (보안 검증용)
+    @JsonProperty("hashValue")
+    private String hashValue;
         
 }
