@@ -3,7 +3,7 @@ export const googleLogin = async (idToken: string) => {
   try {
     // 서버로 Google OAuth 토큰 전송
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/oauth/google`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}auth/oauth/google`,
       {
         method: "POST",
         headers: {
