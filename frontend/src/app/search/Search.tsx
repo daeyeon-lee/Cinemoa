@@ -20,7 +20,7 @@ export default function Search() {
   // TODO: 실제 데이터 연결 필요
   // 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
-  const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([]);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>('latest');
