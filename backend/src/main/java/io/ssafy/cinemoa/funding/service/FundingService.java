@@ -9,6 +9,7 @@ import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
+import io.ssafy.cinemoa.funding.dto.FundingCreationResult;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.CategoryInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.CinemaInfo;
@@ -120,7 +121,7 @@ public class FundingService {
 
 
     @Transactional
-    public void createFunding(FundingCreateRequest request) {
+    public FundingCreationResult createFunding(FundingCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
@@ -163,6 +164,8 @@ public class FundingService {
                 .build();
         statRepository.save(fundingStat);
         eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
+
+        return new FundingCreationResult(funding.getFundingId());
     }
 
     @Transactional
