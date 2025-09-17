@@ -5,8 +5,10 @@ import lombok.Data;
 
 @Data
 public class BaseApiResponse<T> {
-  @JsonProperty("Header")
-  private ResHeader header; // 공통 헤더
-  @JsonProperty("REC")
-  private T rec; // API별 고유 데이터
+
+    @JsonProperty("Header")
+    private ResHeader header; // 공통 헤더
+
+    @JsonProperty("REC")
+    private T rec; // API별 고유 데이터
 }

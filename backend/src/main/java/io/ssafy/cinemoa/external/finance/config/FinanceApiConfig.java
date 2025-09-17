@@ -48,4 +48,23 @@ public class FinanceApiConfig {
         return baseUrl + "/edu/demandDeposit/updateDemandDepositAccountTransfer";
     }
 
+    // 계좌 확인
+    public String getAccountVerifyUrl() {
+        return baseUrl + "/edu/demandDeposit/inquireDemandDepositAccount";
+    }
+
+    // 1원 송금
+    public String getWonSendUrl() {
+        return baseUrl + "/edu/accountAuth/openAccountAuth";
+    }
+
+    // 1원 검증
+    public String getWonVerifyUrl() {
+        return baseUrl + "/edu/accountAuth/checkAuthCode";
+    }
+
+    // 결제내역 조회
+    public String getTransactionHistoryUrl() {
+        return baseUrl + "/edu/demandDeposit/inquireTransactionHistoryList";
+    }
 }

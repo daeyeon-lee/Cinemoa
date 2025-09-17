@@ -20,8 +20,12 @@ public class BadRequestException extends BaseException {
         return new BadRequestException("잘못된 입력값입니다.", ResourceCode.INPUT);
     }
 
+    public static BadRequestException ofInput(String message) {
+        return new BadRequestException(message, ResourceCode.INPUT);
+    }
+
     public static BadRequestException ofAccount() {
-        return new BadRequestException("유효하지 않은 통장입니다.", ResourceCode.ACCOUNT);
+        return new BadRequestException("유효하지 않은 계좌입니다.", ResourceCode.ACCOUNT);
     }
 
     public static BadRequestException ofCard() {
@@ -30,5 +34,9 @@ public class BadRequestException extends BaseException {
 
     public static BadRequestException ofFunding(String message) {
         return new BadRequestException(message, ResourceCode.FUNDING);
+    }
+
+    public static BadRequestException ofWonAuth(String message) {
+        return new BadRequestException(message, ResourceCode.WONAUTH);
     }
 }
