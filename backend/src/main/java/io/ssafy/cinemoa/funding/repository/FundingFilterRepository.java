@@ -4,20 +4,24 @@ import io.ssafy.cinemoa.category.repository.CategoryRepository;
 import io.ssafy.cinemoa.cinema.enums.CinemaFeature;
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.SearchRequest;
+import io.ssafy.cinemoa.funding.dto.TimestampCursorInfo;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
+import io.ssafy.cinemoa.global.enums.ResourceCode;
+import io.ssafy.cinemoa.global.exception.BadRequestException;
+import io.ssafy.cinemoa.global.response.CursorResponse;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -28,29 +32,89 @@ public class FundingFilterRepository {
     private final JdbcTemplate jdbcTemplate;
     private final CategoryRepository categoryRepository;
 
-    public Page<CardTypeFundingInfoDto> findWithFilters(SearchRequest request, Pageable pageable) {
-        // 1. 기본 쿼리 구성 (userId를 먼저 추가)
+    public CursorResponse<CardTypeFundingInfoDto> findLatestWithFilters(SearchRequest request) {
         QueryBuilder queryBuilder = new QueryBuilder();
-        queryBuilder.buildBaseQuery(request.getUserId()); // userId를 먼저 전달
+        queryBuilder.buildBaseQuery(request.getUserId());
+        addAllFiltersFromRequest(queryBuilder, request);
 
-        // 2. 동적 조건 추가
-        addDynamicConditions(queryBuilder, request);
+        // 커서 조건 추가
+        if (request.getNextCursor() != null) {
+            TimestampCursorInfo cursorInfo = parseCursor(request.getNextCursor());
+            queryBuilder.addCursorCondition(cursorInfo);
+        }
 
-        // 3. 정렬 및 페이징
-        queryBuilder.addOrderAndPaging(pageable);
+        int limit = 16;
 
-        // 4. 쿼리 실행
+        queryBuilder.addOrderLatest();
+        queryBuilder.addLimit(limit + 1);
+
         List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
                 queryBuilder.getParams().toArray()
         );
 
-        long total = countWithFilters(request);
-        return new PageImpl<>(results, pageable, total);
+        boolean hasNextPage = results.size() > limit;
+
+        String nextCursor = null;
+
+        if (hasNextPage) {
+            results.remove(results.size() - 1); // 마지막 항목 제거
+            CardTypeFundingInfoDto last = results.get(results.size() - 1);
+            nextCursor = createCursor(last.getTimestamp(), last.getFunding().getFundingId());
+        }
+
+        return CursorResponse.<CardTypeFundingInfoDto>builder()
+                .content(results)
+                .nextCursor(nextCursor)
+                .hasNextPage(hasNextPage)
+                .build();
     }
 
-    private void addDynamicConditions(QueryBuilder queryBuilder, SearchRequest request) {
+    public CursorResponse<CardTypeFundingInfoDto> findRecommendedWithFilters(SearchRequest request) {
+        QueryBuilder queryBuilder = new QueryBuilder();
+        queryBuilder.buildBaseQuery(request.getUserId());
+        addAllFiltersFromRequest(queryBuilder, request);
+        queryBuilder.addOrderRecommended();
+        queryBuilder.addLimit(100);
+
+        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
+                queryBuilder.getSql(),
+                this::mapToSearchResultDto,
+                queryBuilder.getParams().toArray()
+        );
+
+        return CursorResponse.<CardTypeFundingInfoDto>builder()
+                .content(results)
+                .nextCursor(null)      // Top 100이므로 커서 없음
+                .hasNextPage(false)    // 더 이상 데이터 없음
+                .build();
+    }
+
+    // 인기순 - Top 100 일괄 전송
+    public CursorResponse<CardTypeFundingInfoDto> findPopularWithFilters(SearchRequest request) {
+        QueryBuilder queryBuilder = new QueryBuilder();
+        queryBuilder.buildBaseQuery(request.getUserId());
+        addAllFiltersFromRequest(queryBuilder, request);
+        queryBuilder.addOrderPopular();
+        queryBuilder.addLimit(100);
+
+        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
+                queryBuilder.getSql(),
+                this::mapToSearchResultDto,
+                queryBuilder.getParams().toArray()
+        );
+
+        return CursorResponse.<CardTypeFundingInfoDto>builder()
+                .content(results)
+                .nextCursor(null)
+                .hasNextPage(false)
+                .build();
+    }
+
+
+    // 공통 필터 적용 메서드
+    private void addAllFiltersFromRequest(QueryBuilder queryBuilder, SearchRequest request) {
         // 검색어
         if (hasText(request.getQ())) {
             queryBuilder.addSearchCondition(request.getQ());
@@ -74,104 +138,29 @@ public class FundingFilterRepository {
         if (request.getCategory() != null) {
             queryBuilder.addCategoryFilter(request.getCategory(), categoryRepository);
         }
-    }
 
-    private Long countWithFilters(SearchRequest request) {
-        QueryBuilder queryBuilder = new QueryBuilder();
-        queryBuilder.buildCountQuery(request.getUserId()); // userId 전달
-        addDynamicConditions(queryBuilder, request);
-
-        return jdbcTemplate.queryForObject(
-                queryBuilder.getSql(),
-                Long.class,
-                queryBuilder.getParams().toArray()
-        );
-    }
-
-    public Page<CardTypeFundingInfoDto> findFundingWithFilters(SearchRequest request, Pageable pageable) {
-        QueryBuilder queryBuilder = new QueryBuilder();
-        queryBuilder.buildBaseQuery(request.getUserId());
-        queryBuilder.addFundingTypeFilter(FundingType.FUNDING);  // INSTANT 고정
-        addAllFiltersFromRequest(queryBuilder, request);  // 기존 필터들 모두 적용
-        queryBuilder.addOrderAndPaging(pageable);
-
-        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
-                queryBuilder.getSql(),
-                this::mapToSearchResultDto,
-                queryBuilder.getParams().toArray()
-        );
-
-        long total = countInstantFundingsWithFilters(request);
-        return new PageImpl<>(results, pageable, total);
-    }
-
-    public Page<CardTypeFundingInfoDto> findVotesWithFilters(SearchRequest request, Pageable pageable) {
-        QueryBuilder queryBuilder = new QueryBuilder();
-        queryBuilder.buildBaseQuery(request.getUserId());
-        queryBuilder.addFundingTypeFilter(FundingType.VOTE);  // VOTE 고정
-        addAllFiltersFromRequest(queryBuilder, request);  // 기존 필터들 모두 적용
-        queryBuilder.addOrderAndPaging(pageable);
-
-        List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
-                queryBuilder.getSql(),
-                this::mapToSearchResultDto,
-                queryBuilder.getParams().toArray()
-
-        );
-
-        long total = countVoteFundingsWithFilters(request);
-        return new PageImpl<>(results, pageable, total);
-    }
-
-    // 공통 필터 적용 메서드
-    private void addAllFiltersFromRequest(QueryBuilder queryBuilder, SearchRequest request) {
-        // 검색어
-        if (hasText(request.getQ())) {
-            queryBuilder.addSearchCondition(request.getQ());
-        }
-
-        // 지역 필터
-        if (hasRegions(request.getRegion())) {
-            queryBuilder.addRegionFilter(request.getRegion());
-        }
-
-        // 극장 타입 필터
-        if (request.getTheaterType() != null) {
-            queryBuilder.addTheaterTypeFilter(request.getTheaterType());
-        }
-
-        // 종료 여부 필터
-        if (request.getIsClosed() != null) {
-            queryBuilder.addClosedFilter(request.getIsClosed());
+        if (request.getFundingType() != null) {
+            queryBuilder.addFundingTypeFilter(request.getFundingType());
         }
     }
-
-    // INSTANT 펀딩 카운트 (필터 포함)
-    private Long countInstantFundingsWithFilters(SearchRequest request) {
-        QueryBuilder queryBuilder = new QueryBuilder();
-        queryBuilder.buildCountQuery(request.getUserId());
-        queryBuilder.addFundingTypeFilter(FundingType.FUNDING);
-        addAllFiltersFromRequest(queryBuilder, request);
-
-        return jdbcTemplate.queryForObject(
-                queryBuilder.getSql(),
-                Long.class,
-                queryBuilder.getParams().toArray()
-        );
+    
+    private String createCursor(LocalDateTime createdAt, Long id) {
+        String cursorData = createdAt + "_" + id;
+        return Base64.getEncoder().encodeToString(cursorData.getBytes(StandardCharsets.UTF_8));
     }
 
-    // VOTE 펀딩 카운트 (필터 포함)
-    private Long countVoteFundingsWithFilters(SearchRequest request) {
-        QueryBuilder queryBuilder = new QueryBuilder();
-        queryBuilder.buildCountQuery(request.getUserId());
-        queryBuilder.addFundingTypeFilter(FundingType.VOTE);
-        addAllFiltersFromRequest(queryBuilder, request);
+    private TimestampCursorInfo parseCursor(String cursor) {
+        String decoded = new String(Base64.getDecoder().decode(cursor));
+        String[] parts = decoded.split("_");
 
-        return jdbcTemplate.queryForObject(
-                queryBuilder.getSql(),
-                Long.class,
-                queryBuilder.getParams().toArray()
-        );
+        if (parts.length < 2) {
+            throw new BadRequestException("커서가 잘못되었습니다.", ResourceCode.INPUT);
+        }
+
+        LocalDateTime timestamp = LocalDateTime.parse(parts[0]);
+        Long fundingId = Long.parseLong(parts[1]);
+
+        return new TimestampCursorInfo(timestamp, fundingId);
     }
 
     private CardTypeFundingInfoDto mapToSearchResultDto(ResultSet rs, int rowNum) throws SQLException {
@@ -337,20 +326,44 @@ public class FundingFilterRepository {
 
         public void addClosedFilter(Boolean isClosed) {
             if (isClosed) {
-                sql.append(" AND f.state = 'CLOSED'");
-            } else {
                 sql.append(" AND f.state != 'CLOSED'");
+            } else {
+                sql.append(" AND f.state = 'CLOSED'");
             }
         }
 
-        public void addOrderAndPaging(Pageable pageable) {
-            sql.append(" ORDER BY f.created_at DESC LIMIT ? OFFSET ?");
-            params.add(pageable.getPageSize());
-            params.add(pageable.getOffset());
+        public void addCursorCondition(TimestampCursorInfo cursorInfo) {
+
+            Long cursorId = cursorInfo.getFundingId();
+            LocalDateTime cursorCreatedAt = cursorInfo.getCreatedAt();
+
+            if (cursorId != null && cursorCreatedAt != null) {
+                sql.append(" AND (f.created_at < ? OR (f.created_at = ? AND f.funding_id < ?))");
+                params.add(cursorCreatedAt);
+                params.add(cursorCreatedAt);
+                params.add(cursorId);
+            }
+        }
+
+        public void addOrderLatest() {
+            sql.append(" ORDER BY f.created_at DESC, f.funding_id DESC");
+        }
+
+        public void addOrderRecommended() {
+            sql.append(" ORDER BY COALESCE(fs.recommend_score, 0) DESC, f.created_at DESC");
+        }
+
+        public void addOrderPopular() {
+            sql.append(" ORDER BY COALESCE(fs.view_count, 0) DESC, f.created_at DESC");
         }
 
         public String getSql() {
             return sql.toString();
+        }
+
+        public void addLimit(int i) {
+            sql.append(" LIMIT ?");
+            params.add(i);
         }
     }
 }

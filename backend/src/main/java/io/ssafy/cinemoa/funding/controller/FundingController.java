@@ -3,10 +3,10 @@ package io.ssafy.cinemoa.funding.controller;
 import io.ssafy.cinemoa.favorite.service.FundingFavoriteService;
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
+import io.ssafy.cinemoa.funding.dto.FundingCreationResult;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
 import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
 import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
-import io.ssafy.cinemoa.funding.dto.SearchRequest;
 import io.ssafy.cinemoa.funding.service.ExpiringFundingService;
 import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.funding.service.RecommendedFundingListService;
@@ -14,12 +14,10 @@ import io.ssafy.cinemoa.funding.service.SearchService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,16 +40,8 @@ public class FundingController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createFunding(@RequestBody FundingCreateRequest request) {
-        fundingService.createFunding(request);
-        return ResponseEntity.ok(ApiResponse.ofSuccess(null));
-    }
-
-    @GetMapping
-    public ResponseEntity<ApiResponse<?>> searchFunding(@ModelAttribute SearchRequest request,
-                                                        @RequestParam(defaultValue = "0") int page,
-                                                        @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(ApiResponse.ofSuccess(searchService.searchFunding(request, pageable)));
+        FundingCreationResult result = fundingService.createFunding(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ofSuccess(result));
     }
 
     @GetMapping("/{fundingId}")
