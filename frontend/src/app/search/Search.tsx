@@ -11,12 +11,12 @@ import type { CardItem } from '@/components/lists/ResponsiveCardList';
 import { STANDARD_CATEGORIES } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 /**
- * 둘러보기 페이지 컴포넌트
+ * 검색 페이지 컴포넌트
  *
- * @description 카테고리별 펀딩 프로젝트를 둘러볼 수 있는 페이지입니다.
+ * @description 검색을 통해 펀딩 프로젝트를 찾을 수 있는 페이지입니다.
  * ListShell을 기반으로 필터링과 정렬 기능을 제공합니다.
  */
-export default function Category() {
+export default function Search() {
   // TODO: 실제 데이터 연결 필요
   // 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
