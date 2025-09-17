@@ -7,8 +7,13 @@ import { formatDateToISOString } from '../../mappers/dateMapper';
 export const useGetCinemas = (city: string, district: string, features: string[]) => {
   return useQuery({
     queryKey: ['cinemas', 'byFeatureAndDistrict', city, district, features],
-    queryFn: () => getCinemas({ city, district, feature: features }),
-    enabled: !!(district && features),
+    queryFn: () =>
+      getCinemas({
+        city,
+        ...(district && { district }), // district가 있을 때만 포함
+        feature: features,
+      }),
+    enabled: !!(features && features.length > 0), // features만 있으면 실행 (district는 선택사항)
   });
 };
 

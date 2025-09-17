@@ -23,14 +23,19 @@ export default function TheaterInfoTab() {
   const [selectedFeature, setSelectedFeature] = useState<string[]>([]); // 선택된 상영관 종류들 (예: ['IMAX', '4DX'])
   const [selectedStartTime, setSelectedStartTime] = useState<string>(''); // 대관 시작 시간 (예: '14:00', '19:00')
   const [selectedEndTime, setSelectedEndTime] = useState<string>(''); // 대관 종료 시간 (예: '18:00', '22:00')
-  const [participantCount, setParticipantCount] = useState<number>(1); // 모집 인원수 (1~100)
-  const [totalPrice, setTotalPrice] = useState<number>(0); // 총 대관료
-  const [isSubmitting, setIsSubmitting] = useState(false); // 폼 제출 중 상태 (로딩 표시용)
+  const [participantCount, setParticipantCount] = useState<number>(1); // 모집 인원수 (1~상영관 좌석 수)
+  const [screenPrice, setScreenPrice] = useState<number>(0); // 선택된 상영관의 가격
+  const [maxParticipants, setMaxParticipants] = useState<number>(1); // 상영관 최대 좌석 수
+  const [selectedScreenFeatures, setSelectedScreenFeatures] = useState<string[]>([]); // 선택된 상영관의 feature들
   const [theaterList, setTheaterList] = useState<CinemaResponse[]>([]); // API에서 받아온 영화관 목록
   const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null); // 선택된 영화관의 고유 ID (상세 정보 조회용)
 
   // React Query로 API 호출 (상영관 종류와 지역이 모두 선택되었을 때만)
-  const { data: cinemas, isLoading, error } = useGetCinemas('서울시', selectedDistrict, selectedFeature);
+  const {
+    data: cinemas,
+    isLoading,
+    error,
+  } = useGetCinemas('서울시', selectedDistrict === '전체' ? '' : selectedDistrict, selectedFeature);
 
   // 선택된 영화관의 상세 정보 조회
   const { data: cinemaDetail, isLoading: isDetailLoading } = useGetCinemaDetail(selectedCinemaId || 0);
@@ -43,29 +48,26 @@ export default function TheaterInfoTab() {
 
   // API 응답 데이터를 영화관 목록으로 처리
   useEffect(() => {
-    if (isLoading) {
-      console.log('로딩 중...');
-    } else if (error) {
-      console.error('에러:', error);
-      setTheaterList([]);
-    } else if (cinemas) {
-      console.log('성공:', cinemas);
+    if (cinemas) {
       setTheaterList(cinemas as CinemaResponse[]);
+    } else if (error) {
+      setTheaterList([]);
     }
-  }, [isLoading, error, cinemas]);
+  }, [cinemas, error]);
 
   // 상영관 종류 목록
   const features = [
     { name: '일반', value: 'NORMAL' },
     { name: 'IMAX', value: 'IMAX' },
     { name: 'SCREENX', value: 'SCREENX' },
-    { name: '4DX', value: '4DX' },
+    { name: '4DX', value: 'FDX' }, // DB상 4dx는 FDX로 파라미터 보내야함
     { name: 'Dolby Atmos', value: 'DOLBY' },
     { name: '리클라이너', value: 'RECLINER' },
   ];
 
   // 서울시 25개 구 목록
   const district = [
+    { name: '전체', value: '전체' },
     { name: '강남구', value: '강남구' },
     { name: '강동구', value: '강동구' },
     { name: '강북구', value: '강북구' },
@@ -106,17 +108,25 @@ export default function TheaterInfoTab() {
     setSelectedTheaterName('');
     setSelectedScreenName('');
     setSelectedScreenId(null);
+    setScreenPrice(0);
+    setMaxParticipants(1);
+    setSelectedScreenFeatures([]);
     setSelectedDate('');
+    setParticipantCount(1); // 모집 인원수 초기화
   };
 
-  // 구 선택 핸들러
+  // 구(district)선택 핸들러
   const handleDistrictChange = (value: string) => {
     setSelectedDistrict(value);
     setSelectedTheater(''); // 영화관 초기화
     setSelectedTheaterName(''); // 영화관 이름 초기화
     setSelectedScreenName(''); // 상영관 초기화
     setSelectedScreenId(null); // 상영관 ID 초기화
+    setScreenPrice(0); // 상영관 가격 초기화
+    setMaxParticipants(1); // 최대 좌석 수 초기화
+    setSelectedScreenFeatures([]); // 상영관 feature 초기화
     setSelectedDate(''); // 날짜 초기화
+    setParticipantCount(1); // 모집 인원수 초기화
   };
 
   // 영화관 선택 핸들러
@@ -130,16 +140,39 @@ export default function TheaterInfoTab() {
 
     setSelectedScreenName(''); // 상영관 초기화
     setSelectedScreenId(null); // 상영관 ID 초기화
+    setScreenPrice(0); // 상영관 가격 초기화
+    setMaxParticipants(1); // 최대 좌석 수 초기화
+    setSelectedScreenFeatures([]); // 상영관 feature 초기화
     setSelectedDate(''); // 날짜 초기화
+    setParticipantCount(1); // 모집 인원수 초기화
   };
 
   // 상영관 선택 핸들러
   const handleHallChange = (value: string) => {
     setSelectedScreenName(value);
 
-    // 선택된 상영관의 screenId 찾기
+    // 선택된 상영관의 screenId, price, seats, features 찾기
     const selectedScreen = cinemaDetail?.screens?.find((screen) => screen.screenName === value);
     setSelectedScreenId(selectedScreen?.screenId || null);
+    setScreenPrice(selectedScreen?.price || 0);
+    setMaxParticipants(selectedScreen?.seats || 1); // 상영관 좌석 수 저장
+    setParticipantCount(1); // 모집 인원수는 1로 초기화
+
+    // 선택된 상영관의 feature 정보 저장
+    if (selectedScreen) {
+      const features: string[] = [];
+      if (selectedScreen.imax) features.push('IMAX');
+      if (selectedScreen.screenx) features.push('SCREENX');
+      if (selectedScreen['4dx']) features.push('4DX');
+      if (selectedScreen.dolby) features.push('DOLBY');
+      if (selectedScreen.recliner) features.push('RECLINER');
+      // 모든 feature가 false면 일반 상영관
+      if (features.length === 0) features.push('NORMAL');
+
+      setSelectedScreenFeatures(features);
+    } else {
+      setSelectedScreenFeatures([]);
+    }
 
     setSelectedDate(''); // 날짜 초기화
     setSelectedStartTime(''); // 시작 시간 초기화
@@ -155,12 +188,34 @@ export default function TheaterInfoTab() {
 
   // 모집인원수 증가 핸들러
   const handleIncreaseCount = () => {
-    setParticipantCount((prev) => Math.min(prev + 1, 100));
+    setParticipantCount((prev) => Math.min(prev + 1, maxParticipants));
   };
 
   // 모집인원수 감소 핸들러
   const handleDecreaseCount = () => {
     setParticipantCount((prev) => Math.max(prev - 1, 1));
+  };
+
+  // 선택된 상영관의 feature 정보를 한국어로 변환
+  const getScreenFeatureNames = () => {
+    return selectedScreenFeatures.map((feature) => {
+      switch (feature) {
+        case 'IMAX':
+          return 'IMAX';
+        case 'SCREENX':
+          return 'SCREENX';
+        case '4DX':
+          return '4DX';
+        case 'DOLBY':
+          return 'Dolby Atmos';
+        case 'RECLINER':
+          return '리클라이너';
+        case 'NORMAL':
+          return '일반';
+        default:
+          return feature;
+      }
+    });
   };
 
   return (
@@ -245,7 +300,7 @@ export default function TheaterInfoTab() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {theaterList.map((theater, i) => (
+                  {theaterList.map((theater) => (
                     <SelectItem key={theater.cinemaId} value={theater.cinemaId?.toString() || ''}>
                       {theater.cinemaName || ''}
                     </SelectItem>
@@ -288,13 +343,14 @@ export default function TheaterInfoTab() {
                       cinemaDetail?.screens?.filter((screen) => {
                         // 상영관도 선택된 feature 중 하나라도 만족하면 표시
                         if (selectedFeature.length === 0) return true;
+
                         return selectedFeature.some((feature) => {
                           switch (feature) {
                             case 'IMAX':
                               return screen.imax === true;
                             case 'SCREENX':
                               return screen.screenx === true;
-                            case '4DX':
+                            case 'FDX':
                               return screen['4dx'] === true;
                             case 'DOLBY':
                               return screen.dolby === true;
@@ -314,7 +370,7 @@ export default function TheaterInfoTab() {
                         });
                       }) || [];
 
-                    return filteredScreens.map((screen, index) => (
+                    return filteredScreens.map((screen) => (
                       <SelectItem key={screen.screenId} value={screen.screenName || ''}>
                         {screen.screenName}
                       </SelectItem>
@@ -430,11 +486,16 @@ export default function TheaterInfoTab() {
             <Card className="h-full p-0 w-full">
               <CardContent className="px-6 py-4 flex flex-col justify-center gap-4 h-full">
                 <div className="flex flex-col justify-center items-center">
-                  <div className="p1-b text-primary text-center">
-                    {selectedTheaterName && selectedScreenName
-                      ? `${selectedTheaterName} ${selectedScreenName}`
-                      : '상영관을 선택해주세요'}
-                  </div>
+                  {selectedScreenFeatures.length > 0 && (
+                    <div className="p1 text-tertiary text-center">{getScreenFeatureNames().join(', ')}</div>
+                  )}
+                  {selectedTheaterName && selectedScreenName ? (
+                    <div className="p1-b text-primary text-center mt-1">
+                      {selectedTheaterName} | {selectedScreenName}
+                    </div>
+                  ) : (
+                    <div className="p1-b text-primary text-center mt-1">상영관을 선택해주세요</div>
+                  )}
                   <div className="p2 text-tertiary text-center mt-1">
                     {selectedDate && selectedStartTime && selectedEndTime ? (
                       <>
@@ -449,12 +510,23 @@ export default function TheaterInfoTab() {
                   </div>
                 </div>
                 <Separator />
-                <div className="w-full flex justify-between items-center">
-                  <div className="p1-b text-tertiary">총 대관료</div>
-                  <div className="p1-b text-primary">{totalPrice.toLocaleString()}원</div>
-                </div>
+                {selectedScreenName ? (
+                  <div className="w-full flex justify-between items-center">
+                    <div className="p1-b text-tertiary">총 대관료</div>
+                    <div className="p1-b text-primary">{screenPrice.toLocaleString()}원</div>
+                  </div>
+                ) : (
+                  <div className="w-full flex justify-center items-center">
+                    <div className="p1-b text-tertiary">상영관을 선택 시 대관료가 표시됩니다</div>
+                  </div>
+                )}
                 <Separator />
-                <div className="p2-b text-primary">모집 인원수</div>
+                <div className="flex justify-between items-center">
+                  <div className="p2-b text-tertiary">모집 인원 선택</div>
+                  <div className="p2-b text-tertiary">
+                    {participantCount} / {maxParticipants.toLocaleString()}석
+                  </div>
+                </div>
                 <div className="flex justify-start items-center gap-2">
                   <Button variant="secondary" size="md" onClick={handleDecreaseCount} disabled={participantCount <= 1}>
                     -
@@ -462,16 +534,21 @@ export default function TheaterInfoTab() {
                   <Input
                     type="number"
                     value={participantCount}
-                    onChange={(e) => setParticipantCount(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      if (value >= 1 && value <= maxParticipants) {
+                        setParticipantCount(value);
+                      }
+                    }}
                     className="flex-1 text-center border-BG-2 border-2 rounded-[8px]"
                     min="1"
-                    max="100"
+                    max={maxParticipants}
                   />
                   <Button
                     variant="secondary"
                     size="md"
                     onClick={handleIncreaseCount}
-                    disabled={participantCount >= 100}
+                    disabled={participantCount >= maxParticipants}
                   >
                     +
                   </Button>
@@ -479,7 +556,9 @@ export default function TheaterInfoTab() {
                 <Separator />
                 <div className="w-full flex justify-between items-center">
                   <div className="p1-b text-tertiary">1인당 티켓 가격</div>
-                  <div className="h4-b text-Brand1-Strong">50,000원</div>
+                  <div className="h4-b text-Brand1-Strong">
+                    {(Math.round(screenPrice / participantCount / 10) * 10).toLocaleString()}원
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -498,8 +577,8 @@ export default function TheaterInfoTab() {
             이전
           </Button>
         </Link>
-        <Button type="submit" variant="brand1" size="lg" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? '처리 중...' : '다음'}
+        <Button type="submit" variant="brand1" size="lg" className="w-full">
+          다음
         </Button>
       </div>
     </div>
