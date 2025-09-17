@@ -39,4 +39,8 @@ public class BadRequestException extends BaseException {
     public static BadRequestException ofWonAuth(String message) {
         return new BadRequestException(message, ResourceCode.WONAUTH);
     }
+
+    public static BadRequestException ofGoogleAuth() {
+        return new BadRequestException("잘못된 구글 토큰입니다.", ResourceCode.GOOGLEAUTH);
+    }
 }

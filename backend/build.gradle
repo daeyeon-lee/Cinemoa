@@ -37,6 +37,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springframework.boot:spring-boot-starter-mail' // 메일 전송
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37'   // ✅ JWT/JWK 검증(구글 공개키로 서명검증)
+//    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server' // JwtDecoder & OIDC 검증을 위한 JOSE/JWT 포함
+//    implementation 'com.fasterxml.jackson.core:jackson-databind' // (선택) JSON 예쁘게 출력
 }
 
 tasks.named('test') {
