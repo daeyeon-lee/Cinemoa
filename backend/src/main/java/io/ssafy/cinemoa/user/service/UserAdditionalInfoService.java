@@ -24,18 +24,22 @@ public class UserAdditionalInfoService {
     private final UserRepository userRepository;
     private final UserCategoryRepository userCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final WonAuthService wonAuthService;
 
     @Transactional // 트랜잭션 처리 -> 모든 작업이 성공적으로 완료되거나 실패해야 함
     public void addAdditionalInfo(Long userId, UserAdditionalInfoRequest request) {
         // 1. 사용자 조회 (없으면 404 예외)
         User user = userRepository.findById(userId).orElseThrow(ResourceNotFoundException::ofUser);
 
-        // 2. 카테고리 유효성 검증, 세부 카테고리 즉 부모 카테고리 id가 null이 아닌 카테고리만 선택 가능
+        // 2. 1원 인증 해시값 검증 (보안 검증)
+        String normalizedAccountNo = request.getAccountNo().replaceAll("-", "");
+        if (!wonAuthService.verifyHashForSignup(normalizedAccountNo, request.getHashValue())) {
+            throw BadRequestException.ofWonAuth("1원 인증이 필요하거나 만료되었습니다.");
+        }
+
+        // 3. 카테고리 유효성 검증, 세부 카테고리 즉 부모 카테고리 id가 null이 아닌 카테고리만 선택 가능
         List<Long> categoryIds = request.getCategoryIds();
         List<Category> validatedCategories = validateCategories(categoryIds);
-
-        // 3. 계좌번호 정규화 (하이픈 있으면 제거)
-        String normalizedAccountNo = request.getAccountNo().replaceAll("-", "");
 
         // 4. 계좌 유효성 검증 (나중에 api 연결)
         if (!isValidAccount(request.getBankCode(), normalizedAccountNo)) {

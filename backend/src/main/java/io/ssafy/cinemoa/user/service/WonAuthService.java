@@ -11,10 +11,12 @@ import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
+import io.ssafy.cinemoa.global.redis.service.RedisService;
 import io.ssafy.cinemoa.global.service.MailSenderService;
 import io.ssafy.cinemoa.user.dto.WonAuthVerifyResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -51,6 +53,11 @@ public class WonAuthService {
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
     private static final DateTimeFormatter YMD = DateTimeFormatter.BASIC_ISO_DATE;
     // --------------------------------------------------------------------
+    // Redis 키 형식 및 TTL
+    // --------------------------------------------------------------------
+    private static final String REDIS_KEY_PREFIX = "won_auth:";
+    private static final Duration REDIS_TTL = Duration.ofMinutes(10); // 10분 유효
+    // --------------------------------------------------------------------
     // 인증 코드 추출
     // --------------------------------------------------------------------
     // 인증코드 정규식: "CINEMOA 7814" → 7814
@@ -62,6 +69,10 @@ public class WonAuthService {
     // gmail 전송
     // --------------------------------------------------------------------
     private final MailSenderService senderService;
+    // --------------------------------------------------------------------
+    // Redis 서비스
+    // --------------------------------------------------------------------
+    private final RedisService redisService;
 
     // ============================ 내부 유틸 ========================================================
 
@@ -159,6 +170,8 @@ public class WonAuthService {
                 case "PAY_0000" -> {
                     // 성공
                     String secretKey = generateDeterministicSecret(accountNo);
+                    // Redis에 해시값 저장 (회원가입 단계용)
+                    saveHashForSignup(accountNo, secretKey);
                     yield WonAuthVerifyResponse.builder().secretKey(secretKey).build();
                 }
                 case "PAY_4001", "PAY_4002" -> throw BadRequestException.ofWonAuth(msg);
@@ -241,6 +254,90 @@ public class WonAuthService {
         }
         String digits = s.trim().replaceAll("[^0-9]", "");
         return digits.replaceFirst("^0+(?!$)", "");
+    }
+
+    // ============================ Redis 관련 메서드 ========================================================
+
+
+    /**
+     * Redis에서 1원 인증 해시값 검증
+     * @param userId 사용자 ID (회원가입 후)
+     * @param accountNo 계좌번호
+     * @param providedHash 클라이언트에서 제공한 해시값
+     * @return 검증 성공 여부
+     */
+    // public boolean verifyHashFromRedis(Long userId, String accountNo, String providedHash) {
+    //     try {
+    //         // 회원가입 후에는 userId를 사용하여 검증
+    //         String redisKey = REDIS_KEY_PREFIX + userId + ":" + accountNo;
+    //         String savedHash = redisService.getValue(redisKey);
+            
+    //         if (savedHash == null) {
+    //             log.warn("Redis에서 해시값을 찾을 수 없음: key={}", redisKey);
+    //             return false;
+    //         }
+            
+    //         boolean isValid = savedHash.equals(providedHash);
+    //         if (isValid) {
+    //             log.info("1원 인증 해시값 검증 성공: userId={}, accountNo={}", userId, accountNo);
+    //             // 검증 성공 시 Redis에서 해당 키 삭제 (일회성 사용)
+    //             redisService.removeKey(redisKey);
+    //         } else {
+    //             log.warn("1원 인증 해시값 검증 실패: userId={}, accountNo={}", userId, accountNo);
+    //         }
+            
+    //         return isValid;
+    //     } catch (Exception e) {
+    //         log.error("Redis 해시값 검증 중 오류 발생: userId={}, accountNo={}", userId, accountNo, e);
+    //         return false;
+    //     }
+    // }
+
+    /**
+     * 회원가입 단계에서 1원 인증 해시값을 Redis에 저장 (userId 없이)
+     * @param accountNo 계좌번호
+     * @param secretKey 해시값
+     */
+    public void saveHashForSignup(String accountNo, String secretKey) {
+        try {
+            String redisKey = REDIS_KEY_PREFIX + "signup:" + accountNo;
+            redisService.setValue(redisKey, secretKey, REDIS_TTL);
+            log.info("회원가입용 1원 인증 해시값 Redis 저장 완료: key={}, ttl={}분", redisKey, REDIS_TTL.toMinutes());
+        } catch (Exception e) {
+            log.error("Redis 해시값 저장 실패: accountNo={}", accountNo, e);
+        }
+    }
+
+    /**
+     * 회원가입 단계에서 1원 인증 해시값 검증 (userId 없이)
+     * @param accountNo 계좌번호
+     * @param providedHash 클라이언트에서 제공한 해시값
+     * @return 검증 성공 여부
+     */
+    public boolean verifyHashForSignup(String accountNo, String providedHash) {
+        try {
+            String redisKey = REDIS_KEY_PREFIX + "signup:" + accountNo;
+            String savedHash = redisService.getValue(redisKey);
+            
+            if (savedHash == null) {
+                log.warn("Redis에서 회원가입용 해시값을 찾을 수 없음: key={}", redisKey);
+                return false;
+            }
+            
+            boolean isValid = savedHash.equals(providedHash);
+            if (isValid) {
+                log.info("회원가입용 1원 인증 해시값 검증 성공: accountNo={}", accountNo);
+                // 검증 성공 시 Redis에서 해당 키 삭제 (일회성 사용)
+                redisService.removeKey(redisKey);
+            } else {
+                log.warn("회원가입용 1원 인증 해시값 검증 실패: accountNo={}", accountNo);
+            }
+            
+            return isValid;
+        } catch (Exception e) {
+            log.error("회원가입용 Redis 해시값 검증 중 오류 발생: accountNo={}", accountNo, e);
+            return false;
+        }
     }
 
     // ============================ 공통 유틸 ========================================================
