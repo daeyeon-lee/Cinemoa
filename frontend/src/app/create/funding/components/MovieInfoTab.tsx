@@ -23,6 +23,7 @@ import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/
 import Link from 'next/link';
 import { useFundingStore } from '@/stores/fundingStore';
 import { useState, useRef, useEffect } from 'react';
+import { useGetCategories } from '@/api/hooks/useCategoryQueries';
 
 // 카테고리 데이터
 const categories = {
@@ -72,6 +73,14 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const [imageError, setImageError] = useState<string>('');
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: getCategories } = useGetCategories();
+
+  useEffect(() => {
+    if (getCategories) {
+      console.log(getCategories);
+    }
+  }, []);
 
   const handleCategorySelect = (categoryKey: string, item: string) => {
     const categoryValue = `${categoryKey}-${item}`;
