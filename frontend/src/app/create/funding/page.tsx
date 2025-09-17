@@ -7,9 +7,6 @@ import FundingInfoTab, { FundingData } from './components/FundingInfoTab';
 import MovieInfoTab from './components/MovieInfoTab';
 import TheaterInfoTab from './components/TheaterInfoTab';
 import PaymentTab from './components/PaymentTab';
-import { createFunding } from '@/api/funding';
-import { CreateFundingParams } from '@/types/funding';
-import * as z from 'zod';
 
 // MovieInfoTab에서 전달하는 데이터 타입
 interface MovieData {
@@ -27,44 +24,32 @@ export default function FundingPage() {
   const [theaterData, setTheaterData] = useState<any>(null);
   const [paymentData, setPaymentData] = useState<any>(null);
 
-  // 펀딩 소개 데이터 처리 함수
+  // 펀딩 정보 데이터 처리 함수
   const handleFundingData = (data: FundingData) => {
     setFundingData(data);
-    console.log('=== 펀딩 소개 데이터 저장됨 ===');
-    console.log('데이터:', data);
-    console.log('================================');
     setActiveTab('movie-info');
   };
 
-  // 영화 정보 데이터 처리 함수
+  // 상영물 정보 데이터 처리 함수
   const handleMovieData = (data: MovieData) => {
     setMovieData(data);
-    console.log('=== 영화 정보 데이터 저장됨 ===');
-    console.log('데이터:', data);
-    console.log('================================');
     setActiveTab('theater-info');
   };
 
   // 상영관 정보 데이터 처리 함수
   const handleTheaterData = (data: any) => {
     setTheaterData(data);
-    console.log('=== 상영관 정보 데이터 저장됨 ===');
-    console.log('데이터:', data);
-    console.log('================================');
     setActiveTab('payment');
   };
 
   // 결제 정보 데이터 처리 함수
   const handlePaymentData = (data: any) => {
     setPaymentData(data);
-    console.log('=== 결제 정보 데이터 저장됨 ===');
-    console.log('데이터:', data);
-    console.log('================================');
   };
 
   // 이전 단계로 이동하는 함수들
   const handlePrevFunding = () => {
-    // 펀딩 소개는 첫 번째 단계이므로 펀딩 홈으로 이동
+    // 펀딩 소개는 첫 번째 단계이므로 만들기 홈으로 이동
     window.location.href = '/create/';
   };
 

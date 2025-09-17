@@ -52,21 +52,18 @@ export default function TheaterInfoTab({ onNext, onPrev }: TheaterInfoTabProps) 
 
     // 모든 데이터를 합쳐서 API 요청
     const fundingData = {
+      userId: 1,
       title,
       description,
       category,
       movieTitle,
-      movieImage,
+      movieImage: movieImage || '',
       cinemaId: selectedCinemaId || 0,
       screenday: selectedDate,
       scrrenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
       scrrenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
       participant: participantCount,
     };
-
-    console.log('=== TheaterInfoTab 제출 ===');
-    console.log('입력된 값:', fundingData);
-    console.log('==========================');
 
     try {
       const result = await createFunding(fundingData);

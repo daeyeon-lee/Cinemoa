@@ -1,8 +1,7 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -20,34 +19,10 @@ import ConcertIcon from '@/component/icon/concertIcon';
 import SportsIcon from '@/component/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
 import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
-import Link from 'next/link';
 import { useFundingStore } from '@/stores/fundingStore';
 import { useState, useRef, useEffect } from 'react';
 import { useGetCategories } from '@/api/hooks/useCategoryQueries';
-
-// 카테고리 데이터
-const categories = {
-  movie: {
-    title: '영화',
-    icon: MovieIcon,
-    items: ['액션', '공포/스릴러', '음악', '판타지/SF', '애니메이션', '기타'],
-  },
-  series: {
-    title: '시리즈',
-    icon: SeriesIcon,
-    items: ['액션', '공포/스릴러', '음악', '판타지/SF', '애니메이션', '기타'],
-  },
-  performance: {
-    title: '공연',
-    icon: ConcertIcon,
-    items: ['K-POP', 'POP', '클래식', '뮤지컬', '기타'],
-  },
-  sports: {
-    title: '스포츠중계',
-    icon: SportsIcon,
-    items: ['축구', '야구', 'F1', 'E-스포츠', '기타'],
-  },
-};
+import { CategoryResponse } from '@/types/category';
 
 interface MovieInfoTabProps {
   onNext: (data: any) => void;
@@ -56,7 +31,9 @@ interface MovieInfoTabProps {
 
 export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const { setMovieInfo } = useFundingStore();
+  const { data: getCategories } = useGetCategories();
 
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [movieTitle, setMovieTitle] = useState('');
   const [movieDescription, setMovieDescription] = useState('');
@@ -74,26 +51,23 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: getCategories } = useGetCategories();
-
   useEffect(() => {
     if (getCategories) {
-      console.log(getCategories);
+      console.log('API 카테고리 데이터:', getCategories);
+      setCategories(getCategories);
     }
-  }, []);
+  }, [getCategories]);
 
-  const handleCategorySelect = (categoryKey: string, item: string) => {
-    const categoryValue = `${categoryKey}-${item}`;
-
+  const handleCategorySelect = (categoryId: string, categoryName: string) => {
     // 카테고리 에러 메시지 초기화
     setCategoryError('');
 
-    if (selectedCategory === categoryValue) {
+    if (selectedCategory === categoryId) {
       // 이미 선택된 경우 제거
       setSelectedCategory('');
     } else {
-      // 새로운 카테고리 선택
-      setSelectedCategory(categoryValue);
+      // 새로운 카테고리 선택 (전체에서 1개만 선택 가능)
+      setSelectedCategory(categoryId);
     }
   };
 
@@ -275,24 +249,41 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
           {/* 카테고리 섹션들 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {Object.entries(categories).map(([key, category]) => (
-              <div key={key}>
+            {categories.map((category) => (
+              <div key={category.categoryId}>
                 <div className="flex items-center mb-2">
-                  <category.icon className="w-4 h-4 mr-1" />
-                  <h3 className="text-sm sm:text-p2-b text-Brand1-Strong">{category.title}</h3>
+                  {(() => {
+                    const getIcon = (categoryName: string) => {
+                      switch (categoryName) {
+                        case '영화':
+                          return MovieIcon;
+                        case '시리즈':
+                          return SeriesIcon;
+                        case '공연':
+                          return ConcertIcon;
+                        case '스포츠 중계':
+                          return SportsIcon;
+                        default:
+                          return MovieIcon;
+                      }
+                    };
+                    const IconComponent = getIcon(category.categoryName);
+                    return <IconComponent className="w-4 h-4 mr-1" />;
+                  })()}
+                  <h3 className="text-sm sm:text-p2-b text-Brand1-Strong">{category.categoryName}</h3>
                 </div>
                 <div className="w-full flex flex-nowrap gap-2">
-                  {category.items.map((item) => {
-                    const categoryValue = `${key}-${item}`;
+                  {category.childCategories.map((item) => {
+                    const categoryValue = item.categoryId.toString();
                     const isSelected = selectedCategory === categoryValue;
                     const isDisabled = selectedCategory !== '' && selectedCategory !== categoryValue;
                     return (
                       <Button
                         variant="outline"
-                        key={item}
+                        key={item.categoryId}
                         size="sm"
                         textSize="sm"
-                        onClick={() => handleCategorySelect(key, item)}
+                        onClick={() => handleCategorySelect(item.categoryId.toString(), item.categoryName)}
                         disabled={isDisabled}
                         className={`flex-1 rounded-[6px] text-xs ${
                           isSelected
@@ -302,7 +293,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                             : 'text-tertiary border-stroke-4 hover:border-stroke-2'
                         }`}
                       >
-                        {item}
+                        {item.categoryName}
                       </Button>
                     );
                   })}
@@ -490,17 +481,17 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
               {selectedImage ? (
                 <div className="flex justify-between gap-3">
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-col gap-2">
                     <img
                       src={selectedImage}
                       alt="선택된 상영물 이미지"
                       className="w-[200px] h-[280px] object-cover rounded-[6px]"
                     />
                     <div className="flex gap-2">
-                      <Button variant="outline" size="md" onClick={handleUploadClick}>
+                      <Button variant="outline" size="md" onClick={handleUploadClick} className="flex-1">
                         변경
                       </Button>
-                      <Button variant="secondary" size="md" onClick={handleImageDelete}>
+                      <Button variant="secondary" size="md" onClick={handleImageDelete} className="flex-1">
                         삭제
                       </Button>
                     </div>
