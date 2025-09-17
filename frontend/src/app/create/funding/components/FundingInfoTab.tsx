@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useFundingStore } from '@/stores/fundingStore';
 
 const formSchema = z.object({
   title: z.string().min(1, '펀딩 제목을 입력해주세요'),
@@ -17,12 +17,20 @@ const formSchema = z.object({
   description: z.string().min(1, '상세 소개를 입력해주세요'),
 });
 
-interface FundingInfoTabProps {
-  onNext: (data: z.infer<typeof formSchema>) => void;
+// 명시적으로 펀딩 데이터 타입 정의
+export interface FundingData {
+  title: string;
+  summary: string;
+  description: string;
 }
 
-export default function FundingInfoTab({ onNext }: FundingInfoTabProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+interface FundingInfoTabProps {
+  onNext: (data: FundingData) => void;
+  onPrev?: () => void;
+}
+
+export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) {
+  const { setFundingInfo } = useFundingStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,27 +42,34 @@ export default function FundingInfoTab({ onNext }: FundingInfoTabProps) {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    try {
-      console.log('펀딩 소개 데이터:', values);
-      onNext(values);
-    } catch (error) {
-      console.error('폼 제출 에러:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  // 다음 단계로 넘어가는 핸들러
+  const handleNext = () => {
+    form.handleSubmit((values) => {
+      console.log('=== FundingInfoTab 제출 ===');
+      console.log('입력된 값:', values);
+      console.log('==========================');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    form.handleSubmit(onSubmit)(e);
+      // Store에 저장
+      setFundingInfo({
+        title: values.title,
+        description: values.description, // summary를 description으로 사용
+      });
+
+      // 명시적으로 FundingData 타입으로 변환
+      const fundingData: FundingData = {
+        title: values.title,
+        summary: values.summary,
+        description: values.description,
+      };
+
+      onNext(fundingData);
+    })();
   };
 
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-8">
           <FormField
             control={form.control}
             name="title"
@@ -117,16 +132,14 @@ export default function FundingInfoTab({ onNext }: FundingInfoTabProps) {
           />
           {/* 이전 다음 바튼 */}
           <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <Link href="/create" className="w-full">
-              <Button variant="tertiary" size="lg" className="w-full">
-                이전
-              </Button>
-            </Link>
-            <Button type="submit" variant="brand1" size="lg" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? '처리 중...' : '다음'}
+            <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+              이전
+            </Button>
+            <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext}>
+              다음
             </Button>
           </div>
-        </form>
+        </div>
       </Form>
     </div>
   );

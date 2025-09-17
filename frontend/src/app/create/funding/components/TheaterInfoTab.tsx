@@ -10,9 +10,18 @@ import InformationIcon from '@/component/icon/infomrationIcon';
 import Link from 'next/link';
 import { useGetCinemas, useGetCinemaDetail, useGetReservationTime } from '@/api/hooks/useCinemaQueries';
 import { CinemaResponse, CinemaDetailResponse } from '@/types/cinema';
+import { useFundingStore } from '@/stores/fundingStore';
+import { createFunding } from '@/api/funding';
 import { formatDateToKorean } from '@/mappers/dateMapper';
 
-export default function TheaterInfoTab() {
+interface TheaterInfoTabProps {
+  onNext: (data: any) => void;
+  onPrev?: () => void;
+}
+
+export default function TheaterInfoTab({ onNext, onPrev }: TheaterInfoTabProps) {
+  const { setTheaterInfo, title, description, category, movieTitle, movieImage } = useFundingStore();
+
   // 상태 관리
   const [selectedDistrict, setSelectedDistrict] = useState<string>(''); // 선택된 구 (예: '강남구', '서초구')
   const [selectedTheater, setSelectedTheater] = useState<string>(''); // 선택된 영화관 ID (예: '90', '91')
@@ -29,6 +38,60 @@ export default function TheaterInfoTab() {
   const [selectedScreenFeatures, setSelectedScreenFeatures] = useState<string[]>([]); // 선택된 상영관의 feature들
   const [theaterList, setTheaterList] = useState<CinemaResponse[]>([]); // API에서 받아온 영화관 목록
   const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null); // 선택된 영화관의 고유 ID (상세 정보 조회용)
+
+  // 다음 단계로 넘어가는 핸들러
+  const handleNext = async () => {
+    // Store에 저장
+    setTheaterInfo({
+      cinemaId: selectedCinemaId || 0,
+      screenday: selectedDate,
+      scrrenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
+      scrrenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
+      participant: participantCount,
+    });
+
+    // 모든 데이터를 합쳐서 API 요청
+    const fundingData = {
+      title,
+      description,
+      category,
+      movieTitle,
+      movieImage,
+      cinemaId: selectedCinemaId || 0,
+      screenday: selectedDate,
+      scrrenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
+      scrrenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
+      participant: participantCount,
+    };
+
+    console.log('=== TheaterInfoTab 제출 ===');
+    console.log('입력된 값:', fundingData);
+    console.log('==========================');
+
+    try {
+      const result = await createFunding(fundingData);
+      console.log('=== 펀딩 생성 성공 ===');
+      console.log('응답:', result);
+      alert('펀딩이 성공적으로 생성되었습니다!');
+      // 성공 시 다른 페이지로 이동하거나 초기화
+    } catch (error) {
+      console.error('=== 펀딩 생성 실패 ===');
+      console.error('에러:', error);
+      alert('펀딩 생성에 실패했습니다. 다시 시도해주세요.');
+    }
+
+    // 기존 데이터도 전달 (호환성을 위해)
+    const theaterData = {
+      selectedCinemaId, // 상영관ID
+      selectedDate, // 상영일
+      selectedStartTime, // 상영시작시간
+      selectedEndTime, // 상영종료시간
+      participantCount, // 모집 인원수
+      selectedFeature, // 상영관 종류
+    };
+
+    onNext(theaterData);
+  };
 
   // React Query로 API 호출 (상영관 종류와 지역이 모두 선택되었을 때만)
   const {
@@ -572,12 +635,10 @@ export default function TheaterInfoTab() {
       {/* 이전 다음 바튼 */}
 
       <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <Link href="/create" className="w-full">
-          <Button variant="tertiary" size="lg" className="w-full">
-            이전
-          </Button>
-        </Link>
-        <Button type="submit" variant="brand1" size="lg" className="w-full">
+        <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+          이전
+        </Button>
+        <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext}>
           다음
         </Button>
       </div>

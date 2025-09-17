@@ -98,11 +98,14 @@ export const searchMulti = async (
       page: page.toString(),
     });
 
+    // 인물(person) 제외하고 영화와 TV만 필터링
+    const filteredResults = data.results.filter((item) => item.media_type !== 'person');
+
     return {
       success: true,
       data: {
-        results: data.results,
-        total_results: data.total_results,
+        results: filteredResults,
+        total_results: filteredResults.length,
         page: data.page,
         total_pages: data.total_pages,
       },

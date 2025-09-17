@@ -8,7 +8,12 @@ import InformationIcon from '@/component/icon/infomrationIcon';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function PaymentTab() {
+interface PaymentTabProps {
+  onNext: (data: any) => void;
+  onPrev?: () => void;
+}
+
+export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentData, setPaymentData] = useState({
     cardNumber1: '',
@@ -40,6 +45,36 @@ export default function PaymentTab() {
       const newValue = value.substring(0, value.length - 2);
       setPaymentData({ ...paymentData, expiryDate: newValue });
     }
+  };
+
+  // 다음 단계로 넘어가는 핸들러
+  const handleNext = () => {
+    console.log('=== PaymentTab 제출 시작 ===');
+    console.log('현재 paymentData:', paymentData);
+    console.log('onNext 함수 존재 여부:', typeof onNext);
+    console.log('============================');
+
+    // 결제 데이터 유효성 검사
+    const hasRequiredData =
+      paymentData.cardNumber1 &&
+      paymentData.cardNumber2 &&
+      paymentData.cardNumber3 &&
+      paymentData.cardNumber4 &&
+      paymentData.expiryDate &&
+      paymentData.cvc;
+
+    console.log('필수 데이터 입력 여부:', hasRequiredData);
+
+    if (!hasRequiredData) {
+      alert('모든 필수 결제 정보를 입력해주세요.');
+      return;
+    }
+
+    console.log('=== PaymentTab 제출 완료 ===');
+    console.log('전달할 데이터:', paymentData);
+    console.log('==========================');
+
+    onNext(paymentData);
   };
 
   return (
@@ -165,12 +200,17 @@ export default function PaymentTab() {
       <div>
         {/* 이전 다음 바튼 */}
         <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-          <Link href="/create" className="w-full">
-            <Button variant="tertiary" size="lg" className="w-full">
-              이전
-            </Button>
-          </Link>
-          <Button type="submit" variant="brand1" size="lg" className="w-full" disabled={isSubmitting}>
+          <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+            이전
+          </Button>
+          <Button
+            type="button"
+            variant="brand1"
+            size="lg"
+            className="w-full"
+            onClick={handleNext}
+            disabled={isSubmitting}
+          >
             {isSubmitting ? '처리 중...' : '다음'}
           </Button>
         </div>

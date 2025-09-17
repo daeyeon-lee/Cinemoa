@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Form, FormItem, FormLabel, FormControl, FormMessage, FormField } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Upload, Search, Image } from 'lucide-react';
 import MovieIcon from '@/component/icon/movieIcon';
 import SeriesIcon from '@/component/icon/seriesIcon';
@@ -14,6 +21,8 @@ import SportsIcon from '@/component/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
 import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
 import Link from 'next/link';
+import { useFundingStore } from '@/stores/fundingStore';
+import { useState, useRef, useEffect } from 'react';
 
 // 카테고리 데이터
 const categories = {
@@ -39,7 +48,14 @@ const categories = {
   },
 };
 
-export default function MovieInfoTab() {
+interface MovieInfoTabProps {
+  onNext: (data: any) => void;
+  onPrev?: () => void;
+}
+
+export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
+  const { setMovieInfo } = useFundingStore();
+
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [movieTitle, setMovieTitle] = useState('');
   const [movieDescription, setMovieDescription] = useState('');
@@ -51,11 +67,17 @@ export default function MovieInfoTab() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryError, setCategoryError] = useState<string>('');
+  const [titleError, setTitleError] = useState<string>('');
+  const [imageError, setImageError] = useState<string>('');
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleCategorySelect = (categoryKey: string, item: string) => {
     const categoryValue = `${categoryKey}-${item}`;
+
+    // 카테고리 에러 메시지 초기화
+    setCategoryError('');
 
     if (selectedCategory === categoryValue) {
       // 이미 선택된 경우 제거
@@ -101,8 +123,9 @@ export default function MovieInfoTab() {
         handleSearchMovies(searchQuery);
       }, 1000); // 1초 후 검색
     } else {
-      // 입력값이 없으면 검색 결과 초기화
+      // 입력값이 없으면 검색 결과 초기화 및 로딩 상태 해제
       setSearchResults([]);
+      setIsSearching(false);
     }
 
     // 컴포넌트 언마운트 시 타이머 클리어
@@ -121,6 +144,8 @@ export default function MovieInfoTab() {
       setMovieTitle(getMediaTitle(movie));
       setMovieDescription(movie.overview);
       setSelectedMovieId(movieId);
+      setTitleError(''); // 제목 에러 메시지 초기화
+      setImageError(''); // 이미지 에러 메시지 초기화
 
       // 이미지 URL 설정
       if (movie.poster_path) {
@@ -148,6 +173,7 @@ export default function MovieInfoTab() {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
+      setImageError(''); // 이미지 에러 메시지 초기화
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
@@ -168,6 +194,62 @@ export default function MovieInfoTab() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  // 유효성 검사 함수
+  const isFormValid = () => {
+    return selectedCategory && movieTitle.trim() && selectedImage;
+  };
+
+  // 다음 단계로 넘어가는 핸들러
+  const handleNext = () => {
+    // 에러 메시지 초기화
+    setCategoryError('');
+    setTitleError('');
+    setImageError('');
+
+    let hasError = false;
+
+    // 유효성 검사
+    if (!selectedCategory) {
+      setCategoryError('카테고리를 1개 선택해주세요.');
+      hasError = true;
+    }
+
+    if (!movieTitle.trim()) {
+      setTitleError('상영물 제목을 입력하거나 검색해주세요.');
+      hasError = true;
+    }
+
+    if (!selectedImage) {
+      setImageError('상영물 이미지를 검색하거나 추가해주세요.');
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    // Store에 저장
+    setMovieInfo({
+      category: selectedCategory,
+      movieTitle: movieTitle,
+      movieImage: selectedImage,
+    });
+
+    const movieData = {
+      selectedCategory, // 선택한 카테고리
+      movieTitle, // 상영물 제목
+      selectedImage, // 상영물 이미지
+      selectedMovieId,
+      // movieDescription,
+    };
+
+    console.log('=== MovieInfoTab 제출 ===');
+    console.log('입력된 값:', movieData);
+    console.log('========================');
+
+    onNext(movieData);
   };
 
   return (
@@ -219,6 +301,8 @@ export default function MovieInfoTab() {
               </div>
             ))}
           </div>
+          {/* 카테고리 에러 메시지 */}
+          {categoryError && <div className="text-Brand1-Primary p3 mt-2">{categoryError}</div>}
         </div>
       </div>
 
@@ -229,45 +313,51 @@ export default function MovieInfoTab() {
             <h4 className="h5-b text-primary">
               상영물 제목 <span className="text-Brand1-Primary">*</span>
             </h4>
-            <p className="p3 text-tertiary">상영물 제목을 직접 입력하거나 검색해주세요.</p>
+            <p className="p3 text-tertiary">상영물 정보를 직접 입력하거나 상영물 검색 버튼을 통해 찾을 수 있습니다.</p>
           </div>
           <div className="space-y-2">
             <div className="flex gap-2">
               <Input
                 placeholder="상영물 제목을 입력하거나 검색해주세요"
                 value={movieTitle}
-                onChange={(e) => setMovieTitle(e.target.value)}
+                onChange={(e) => {
+                  setMovieTitle(e.target.value);
+                  setTitleError(''); // 제목 에러 메시지 초기화
+                }}
                 className="flex-1"
               />
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" onClick={handleModalOpen} className="h-10 px-4">
                     <Search className="w-4 h-4 mr-2" />
-                    제목 찾기
+                    상영물 검색
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh]">
                   <DialogHeader className="self-stretch">
                     <DialogTitle>상영물 검색</DialogTitle>
+                    <DialogDescription></DialogDescription>
                   </DialogHeader>
-                  <div className="w-full space-y-4">
+                  <div className="w-full space-y-4 min-h-[300px]">
                     <Input
                       placeholder="상영물 제목 검색"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full border border-stroke-2 rounded-[6px]  placeholder:text-p2-b"
+                      className="w-full border border-stroke-2 rounded-[6px] placeholder:text-p2-b"
                     />
 
                     {isSearching && (
-                      <div className="p3 text-tertiary flex items-center justify-center gap-3 rounded-[6px]">
-                        <div className="w-6 h-6 border-2 p2 border-Brand1-Primary border-t-transparent rounded-full animate-spin"></div>
-                        검색 중...
+                      <div className="flex items-center justify-center h-[400px]">
+                        <div className="p1 text-tertiary flex items-center justify-center gap-3 rounded-[6px]">
+                          <div className="w-6 h-6 border-2 h3-b border-Brand1-Primary border-t-transparent rounded-full animate-spin"></div>
+                          검색 중...
+                        </div>
                       </div>
                     )}
 
                     {/* 검색 결과 */}
                     {searchQuery && !isSearching && searchResults.length > 0 && (
-                      <div className="max-h-[400px] overflow-y-auto scrollbar-hide space-y-2">
+                      <div className="h-[400px] overflow-y-auto scrollbar-hide space-y-2">
                         {searchResults.map((item) => (
                           <div
                             key={item.id}
@@ -287,7 +377,8 @@ export default function MovieInfoTab() {
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="h6 text-primary">
-                                {getMediaTitle(item)} ({getMediaDate(item)?.split('-')[0]})
+                                {getMediaTitle(item)}
+                                {getMediaDate(item) ? ` (${getMediaDate(item)?.split('-')[0]})` : ''}
                               </div>
                               <div className="p3 text-primary">{getMediaTypeKorean(item.media_type)}</div>
                               {item.overview && (
@@ -301,7 +392,7 @@ export default function MovieInfoTab() {
 
                     {/* 초기 상태 메시지 */}
                     {!searchQuery && !isSearching && (
-                      <div className="p-6  rounded-[6px] text-center">
+                      <div className="p-6 rounded-[6px] text-center min-h-[400px] flex flex-col items-center justify-center">
                         <Search className="w-12 h-12 text-tertiary mx-auto mb-3" />
                         <p className="h4-b text-tertiary mb-1">상영물을 검색해보세요</p>
                         <p className="p2 text-tertiary">제목을 입력하면 자동으로 검색됩니다</p>
@@ -310,7 +401,7 @@ export default function MovieInfoTab() {
 
                     {/* 검색 결과가 없을 때 */}
                     {searchQuery && !isSearching && searchResults.length === 0 && (
-                      <div className="p-3  rounded-[6px]">
+                      <div className="p-3 rounded-[6px] min-h-[400px] flex items-center justify-center">
                         <p className="p1-b text-tertiary text-center">"{searchQuery}"에 대한 검색 결과가 없습니다.</p>
                       </div>
                     )}
@@ -318,6 +409,8 @@ export default function MovieInfoTab() {
                 </DialogContent>
               </Dialog>
             </div>
+            {/* 제목 에러 메시지 */}
+            {titleError && <div className="text-Brand1-Primary p3 mt-2">{titleError}</div>}
           </div>
 
           {/* 선택된 영화 정보 */}
@@ -338,7 +431,8 @@ export default function MovieInfoTab() {
                 <div className="flex-1">
                   <h4 className="h6 text-primary">{getMediaTitle(selectedMovie)}</h4>
                   <p className="p3 text-primary">
-                    {getMediaDate(selectedMovie)?.split('-')[0]} • {getMediaTypeKorean(selectedMovie.media_type)}
+                    {getMediaDate(selectedMovie) ? `${getMediaDate(selectedMovie)?.split('-')[0]} • ` : ''}
+                    {getMediaTypeKorean(selectedMovie.media_type)}
                   </p>
                 </div>
                 <Button
@@ -386,19 +480,47 @@ export default function MovieInfoTab() {
             <CardContent className="h-[350px]">
               <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
               {selectedImage ? (
-                <div className="flex items-center">
-                  <img
-                    src={selectedImage}
-                    alt="선택된 상영물 이미지"
-                    className="w-[430px] h-[320px] object-contain rounded-[6px] p-1"
-                  />
-                  <div className="flex flex-col items-center gap-3">
-                    <Button variant="outline" size="lg" onClick={handleUploadClick} className="ml-3">
-                      변경
-                    </Button>
-                    <Button variant="outline" size="lg" onClick={handleImageDelete} className="ml-3">
-                      삭제
-                    </Button>
+                <div className="flex justify-between gap-3">
+                  <div className="flex flex-col items-center gap-2">
+                    <img
+                      src={selectedImage}
+                      alt="선택된 상영물 이미지"
+                      className="w-[200px] h-[280px] object-cover rounded-[6px]"
+                    />
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="md" onClick={handleUploadClick}>
+                        변경
+                      </Button>
+                      <Button variant="secondary" size="md" onClick={handleImageDelete}>
+                        삭제
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-BG-1 border border-stroke-3 rounded-[6px] p-8 h-full max-w-sm">
+                      <div className="flex items-start gap-3 ">
+                        <div className="w-6 h-6 rounded-full bg-Brand1-Primary flex justify-center items-center flex-shrink-0">
+                          <span className="text-primary p1-b">!</span>
+                        </div>
+                        <p className="h6-b text-primary">이미지 업로드 안내</p>
+                      </div>
+                      <div className="space-y-1 mt-2">
+                        <ul className="space-y-2 mt-4">
+                          <li className="p2 text-secondary">• 이미지는 1개 이상 필수로 업로드 해주세요.</li>
+                          <li className="p2 text-secondary">• 상영물 검색 시 자동으로 이미지가 등록됩니다.</li>
+                          <li className="p2 text-secondary">• 직접 이미지를 업로드할 수 있습니다.</li>
+                          <li className="p2 text-secondary">
+                            • 업로드 규격:
+                            <ul className="ml-4 mt-1 space-y-0.5">
+                              <li className="p2 text-tertiary">- 파일 형식: webp(권장), jpg, png</li>
+                              <li className="p2 text-tertiary">- 용량: 5MB 이하</li>
+                              <li className="p2 text-tertiary">- 사이즈: 가로 세로 각각 1,000px 이상</li>
+                              <li className="p2 text-tertiary">- 비율: 1:1</li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -407,22 +529,22 @@ export default function MovieInfoTab() {
                   onClick={handleUploadClick}
                 >
                   <Upload className="w-11 h-11 text-tertiary mb-3" size={44} />
-                  <p className="p3-b text-tertiary text-center mb-1">이미지를 업로드하거나 드래그하세요</p>
-                  <p className="caption1 text-subtle text-center">JPG, PNG 파일을 지원합니다</p>
+                  <p className="p2-b text-tertiary text-center mb-1">이미지를 업로드하거나 드래그하세요</p>
+                  <p className="p2 text-subtle text-center">JPG, PNG 파일을 지원합니다</p>
                 </div>
               )}
             </CardContent>
           </Card>
+          {/* 이미지 에러 메시지 */}
+          {imageError && <div className="text-Brand1-Primary p3 mt-2">{imageError}</div>}
         </div>
       </div>
       {/* 이전 다음 바튼 */}
       <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <Link href="/create" className="w-full">
-          <Button variant="tertiary" size="lg" className="w-full">
-            이전
-          </Button>
-        </Link>
-        <Button type="submit" variant="brand1" size="lg" className="w-full">
+        <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+          이전
+        </Button>
+        <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext}>
           다음
         </Button>
       </div>
