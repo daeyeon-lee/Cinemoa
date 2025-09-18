@@ -15,9 +15,9 @@ public class SearchService {
 
     public CursorResponse<CardTypeFundingInfoDto> search(SearchRequest request) {
         return switch (request.getSortBy()) {
-            case LATEST -> filterRepository.findLatestWithFilters(request);
             case RECOMMENDED -> filterRepository.findRecommendedWithFilters(request);
             case POPULAR -> filterRepository.findPopularWithFilters(request);
+            default -> filterRepository.findLatestWithFilters(request);
         };
     }
 }
