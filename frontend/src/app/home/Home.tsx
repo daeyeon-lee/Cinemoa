@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import React, { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { RecommendedSection } from './sections/RecommendedSection';
 import { ClosingSoonSection } from './sections/ClosingSoonSection';
 import { PopularSection } from './sections/PopularSection';
@@ -41,6 +43,9 @@ const sampleCardData: ListCardData = {
 };
 
 export default function Home() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
   const recommendedItems = Array(10).fill(sampleCardData);
   const closingSoonItems = Array(10).fill(sampleCardData);
   const popularItems = Array(8).fill(sampleCardData);
@@ -48,6 +53,23 @@ export default function Home() {
 
   // TODO: 실제 투표 카테고리 데이터로 교체 필요
   const categories = HOME_CATEGORIES;
+
+  // 검색 실행 핸들러
+  const handleSearch = useCallback(() => {
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }, [searchQuery, router]);
+
+  // 엔터키 핸들러
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
 
   return (
     <div className="w-full max-w-[1200px] mx-auto">
@@ -61,11 +83,14 @@ export default function Home() {
             <div className="flex flex-col items-center gap-3">
               {/* 검색어 입력 */}
               <div className="w-full max-w-2xl flex items-center gap-2">
-                <Input placeholder="보고싶은 상영물을 입력해주세요." className="flex-1 h-14 px-8 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle" />
-                <Button variant="ghost" className="hover:bg-BG-0">
-                  {/*                   
-                  Input용 : value={inputQuery} onChange={(e) => setInputQuery(e.target.value)} onKeyDown={handleKeyDown} 
-                  Button용: onClick={handleSearch} */}
+                <Input
+                  placeholder="보고싶은 상영물을 입력해주세요."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="flex-1 h-14 px-8 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle"
+                />
+                <Button variant="ghost" className="hover:bg-BG-0" onClick={handleSearch}>
                   <SearchIcon width={34} height={34} stroke="#cbd5e1" />
                 </Button>
               </div>
