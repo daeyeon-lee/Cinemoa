@@ -10,9 +10,9 @@ import { getUserInfo } from '@/api/mypage';
 import type { UserInfo } from '@/types/mypage';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
-function Avatar({ src, size = 64 }: { src?: string; size?: number }) {
+function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
   // 기본 이미지(플레이스홀더) 설정
-  const url = src || 'https://placehold.co/87x72';
+  const url = src || 'https://placehold.co/72x72';
 
   return (
     <div
@@ -55,7 +55,7 @@ export default function MyPage() {
         // API 서버가 준비되지 않은 경우 기본값 사용 (console 에러 방지)
         setUserInfo({
           nickname: '사용자',
-          profileImgUrl: 'https://placehold.co/87x72'
+          profileImgUrl: 'https://placehold.co/72x72'
         });
       } finally {
         setIsLoading(false);
@@ -125,14 +125,14 @@ export default function MyPage() {
         <div className="col-span-12 min-w-[376px] px-3.5 sm:px-6 sm:px-14 py-3.5 sm:py-7 my-14 bg-slate-800 rounded-2xl flex flex-col justify-start items-start gap-6">
           {/* PC: 한 줄 레이아웃 */}
           <div className="hidden sm:flex w-full justify-between items-center">
-            <div className="w-96 flex flex-col justify-start items-start gap-2.5">
+            <div className="w-full flex flex-col justify-start items-start gap-2.5">
               <div className="flex justify-start items-center gap-6">
-                <Avatar src={userInfo?.profileImgUrl} size={64} />
-                <div className="w-64 px-1 flex flex-col justify-center items-start gap-2.5">
+                <Avatar src={userInfo?.profileImgUrl} size={72} />
+                <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
                   <div className="text-slate-50 text-2xl font-bold leading-loose">
-                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
+                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}, 안녕하세요`}
                   </div>
-                  <div className="w-64 h-8 flex justify-between items-center">
+                  <div className="h-8 flex justify-start items-center gap-[14px]">
                     <Button
                       variant="secondary"
                       size="sm"
@@ -162,7 +162,7 @@ export default function MyPage() {
 
           {/* 모바일: 두 줄 레이아웃 */}
           <div className="w-full sm:hidden flex justify-start items-center gap-5">
-            <Avatar src={userInfo?.profileImgUrl} size={64} />
+            <Avatar src={userInfo?.profileImgUrl} size={72} />
             <div className="flex flex-col flex-1 justify-start items-start gap-2">
               <div className="w-full flex justify-between items-center">
                 <div className="text-slate-50 text-2xl font-bold leading-loose">
