@@ -215,11 +215,15 @@ public class FundingService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(ResourceNotFoundException::ofCategory);
 
+        Cinema cinema = cinemaRepository.findById(request.getCinemaId())
+                .orElseThrow(ResourceNotFoundException::ofCinema);
+
         Funding vote = Funding.builder()
                 .fundingType(FundingType.VOTE)
                 .bannerUrl(request.getPosterUrl())
                 .content(request.getContent())
                 .title(request.getTitle())
+                .cinema(cinema)
                 .videoName(request.getVideoName())
                 .leader(user)
                 .category(category)
