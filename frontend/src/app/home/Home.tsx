@@ -7,6 +7,8 @@ import { PopularSection } from './sections/PopularSection';
 import { RecentlyViewedSection } from './sections/RecentlyViewedSection';
 import { CategoryButton } from '@/components/buttons/CategoryButton';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import SearchIcon from '@/component/icon/searchIcon';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import { HOME_CATEGORIES } from '@/constants/categories';
 import { navigateToCategory } from '@/utils/categoryNavigation';
@@ -54,18 +56,20 @@ export default function Home() {
         <div className="col-span-12 py-8">
           {/* Desktop: 로고 + 검색 + 카테고리 */}
           <div className="hidden md:flex flex-col items-center gap-8 w-full">
-            <Image
-              src="/cinemoa_logo_long.png"
-              alt="씨네모아 로고"
-              width={120}
-              height={40}
-              className="h-10 w-auto"
-              priority
-            />
+            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={120} height={40} className="h-10 w-auto" priority />
 
-            <div className="flex flex-col items-center gap-2">
-              <Input type="text" placeholder="보고 싶은 상영물을 검색해보세요!" className="w-full" />
-
+            <div className="flex flex-col items-center gap-3">
+              {/* 검색어 입력 */}
+              <div className="w-full max-w-2xl flex items-center gap-2">
+                <Input placeholder="보고싶은 상영물을 입력해주세요." className="flex-1 h-14 px-8 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle" />
+                <Button variant="ghost" className="hover:bg-BG-0">
+                  {/*                   
+                  Input용 : value={inputQuery} onChange={(e) => setInputQuery(e.target.value)} onKeyDown={handleKeyDown} 
+                  Button용: onClick={handleSearch} */}
+                  <SearchIcon width={34} height={34} stroke="#cbd5e1" />
+                </Button>
+              </div>
+              {/* 버튼 선택 후 둘러보기페이지로 선택내용 들고서 이동 */}
               <div className="flex gap-1">
                 {categories.map((category) => (
                   <CategoryButton
@@ -74,7 +78,7 @@ export default function Home() {
                     categoryValue={category.value}
                     page="home"
                     uniformWidth={true}
-                    onClick={() => navigateToCategory({ categoryId: category.categoryId })}
+                    onClick={() => navigateToCategory({ categoryId: category.categoryId ?? undefined })}
                   >
                     {category.label}
                   </CategoryButton>
@@ -93,7 +97,7 @@ export default function Home() {
                   categoryValue={category.value}
                   page="home"
                   uniformWidth={true}
-                  onClick={() => navigateToCategory({ categoryId: category.categoryId })}
+                  onClick={() => navigateToCategory({ categoryId: category.categoryId ?? undefined })}
                 >
                   {category.label}
                 </CategoryButton>
@@ -110,12 +114,7 @@ export default function Home() {
             <div className="col-span-8 space-y-12">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={false} />
 
-              <ClosingSoonSection
-                title="종료 임박 상영회"
-                items={closingSoonItems}
-                loading={false}
-                onMoreClick={() => console.log('종료 임박 더보기')}
-              />
+              <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={false} onMoreClick={() => console.log('종료 임박 더보기')} />
             </div>
 
             {/* Right Column - Popular */}
@@ -128,12 +127,7 @@ export default function Home() {
           <div className="md:hidden space-y-8">
             <RecommendedSection title="추천 상영회" items={recommendedItems} loading={false} />
 
-            <ClosingSoonSection
-              title="종료 임박 상영회"
-              items={closingSoonItems}
-              loading={false}
-              onMoreClick={() => console.log('종료 임박 더보기')}
-            />
+            <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={false} onMoreClick={() => console.log('종료 임박 더보기')} />
 
             <PopularSection title="인기 상영회" items={popularItems} loading={false} />
 
