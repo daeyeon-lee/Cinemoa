@@ -30,7 +30,7 @@ export interface CreateFundingParams {
   // 영화 정보
   categoryId?: number;
   videoName?: string;
-  posterUrl?: string;
+  // posterUrl?: string;
   // 상영 정보
   cinemaId?: number;
   screenId?: number;

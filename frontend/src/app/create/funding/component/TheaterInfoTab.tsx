@@ -64,7 +64,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
       title: fundingData?.title,
       categoryId: movieData?.categoryId,
       videoName: movieData?.videoName,
-      posterUrl: movieData?.posterUrl,
+      // posterUrl: movieData?.posterUrl,
       cinemaId: theaterData?.cinemaId || 0,
       screenId: theaterData?.screenId || 0,
       screenDay: theaterData?.screenday,
@@ -72,9 +72,10 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
       screenEndsOn: theaterData?.scrrenEndsOn,
       maxPeople: theaterData?.maxPeople,
     };
+    const posterUrl = movieData?.posterUrl;
 
     try {
-      const result = await createFunding(completeData);
+      const result = await createFunding(completeData, posterUrl || '');
       console.log('=== 펀딩 생성 성공 ===');
       console.log('응답:', result);
       const fundingId = result.data.fundingId;

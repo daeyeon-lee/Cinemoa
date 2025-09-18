@@ -215,7 +215,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     const movieData: movieinfo = {
       categoryId: parseInt(selectedCategoryId), // 선택한 카테고리
       videoName: movieTitle, // 상영물 제목
-      posterUrl: selectedImage, // 상영물 이미지
+      posterUrl: selectedImage, // 상영물 이미지 배너
     };
 
     console.log('=== MovieInfoTab 제출 ===');
