@@ -51,13 +51,13 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <div className="space-y-8">
+        <div className="space-y-12">
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                <FormLabel className="h5-b text-primary min-w-[200px] sm:pt-2">
+              <FormItem className="flex ">
+                <FormLabel className="h5-b text-primary w-[376px] sm:pt-2">
                   투표 제목 <span className="text-Brand1-Primary">*</span>
                   <p className="text-p3 text-tertiary">투표 제목을 적어주세요</p>
                 </FormLabel>
@@ -75,8 +75,8 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
             control={form.control}
             name="content"
             render={({ field }) => (
-              <FormItem className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <FormLabel className="h5-b text-primary min-w-[200px] sm:pt-2">
+              <FormItem className="flex">
+                <FormLabel className="h5-b text-primary w-[376px] sm:pt-2">
                   투표 내용 <span className="text-Brand1-Primary">*</span>
                   <p className="text-p3 text-tertiary">투표 내용을 자세히 설명해주세요.</p>
                 </FormLabel>
@@ -84,17 +84,17 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
                   <FormControl>
                     <Textarea placeholder="생성할 투표에 대해 자세히 설명해주세요" {...field} className="min-h-[135px] resize-none" />
                   </FormControl>
-                  <FormMessage className="mt-1 " />
+                  <FormMessage className="mt-1" />
                 </div>
               </FormItem>
             )}
           />
           {/* 이전 다음 바튼 */}
-          <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+          <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
+            <Button variant="tertiary" size="lg" onClick={onPrev} className="w-[138px]">
               이전
             </Button>
-            <Button type="button" variant="brand2" size="lg" className="w-full" onClick={handleNext}>
+            <Button type="button" variant="brand2" size="lg" onClick={handleNext} className="w-[138px]">
               다음
             </Button>
           </div>

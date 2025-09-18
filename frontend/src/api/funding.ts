@@ -6,7 +6,7 @@ export const createFunding = async (data: CreateFundingParams): Promise<CreateFu
     console.log('=== 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터:', data);
 
-    const response = await fetch('/api/funding', {
+    const response = await fetch('https://j13a110.p.ssafy.io:8443/api/funding', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
