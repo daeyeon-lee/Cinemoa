@@ -87,7 +87,7 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
               <div className="justify-center h4 text-Brand1-Primary">{Math.round(progressRate)}%</div>
             </div>
             <div className="self-stretch inline-flex flex-col justify-start items-start">
-              <div className="justify-center h6 text-tertiary">{maxPeople.toLocaleString()}명 모집</div>
+              <div className="justify-center h6 text-tertiary">{maxPeople.toLocaleString()}명 모집해요</div>
             </div>
           </div>
         </div>
