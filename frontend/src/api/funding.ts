@@ -11,6 +11,7 @@ export const createFunding = async (data: CreateFundingParams): Promise<CreateFu
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 

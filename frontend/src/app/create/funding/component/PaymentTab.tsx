@@ -5,15 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import InformationIcon from '@/component/icon/infomrationIcon';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CreatePaymentParams } from '@/types/payment';
+import { useAuthStore } from '@/stores/authStore';
+import { createPayment } from '@/api/payment';
 
 interface PaymentTabProps {
-  onNext: (data: any) => void;
+  onNext: (data: CreatePaymentParams) => void;
   onPrev?: () => void;
+  fundingId?: number | null; // 생성된 펀딩 ID
+  amount?: number | null; // 1인당 결제 금액
 }
 
-export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
+export default function PaymentTab({ onNext, onPrev, fundingId, amount }: PaymentTabProps) {
+  const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentData, setPaymentData] = useState({
     cardNumber1: '',
@@ -48,27 +53,50 @@ export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
   };
 
   // 다음 단계로 넘어가는 핸들러
-  const handleNext = () => {
+  const handleNext = async () => {
     console.log('=== PaymentTab 제출 시작 ===');
     console.log('현재 paymentData:', paymentData);
-    console.log('onNext 함수 존재 여부:', typeof onNext);
+    console.log('fundingId:', fundingId);
     console.log('============================');
 
     // 결제 데이터 유효성 검사
     const hasRequiredData = paymentData.cardNumber1 && paymentData.cardNumber2 && paymentData.cardNumber3 && paymentData.cardNumber4 && paymentData.expiryDate && paymentData.cvc;
-
     console.log('필수 데이터 입력 여부:', hasRequiredData);
 
     if (!hasRequiredData) {
-      alert('모든 필수 결제 정보를 입력해주세요.');
+      alert('필수 결제 정보를 입력해주세요.');
       return;
     }
+    setIsSubmitting(true);
+    try {
+      // 카드 번호 합치기
+      const fullCardNumber = `${paymentData.cardNumber1}${paymentData.cardNumber2}${paymentData.cardNumber3}${paymentData.cardNumber4}`;
 
-    console.log('=== PaymentTab 제출 완료 ===');
-    console.log('전달할 데이터:', paymentData);
-    console.log('==========================');
+      const paymentParams: CreatePaymentParams = {
+        userId: user?.userId || 0,
+        fundingId: fundingId || 0,
+        cardNumber: fullCardNumber,
+        cardCvc: paymentData.cvc,
+        amount: amount || 0, // 1인당 결제 금액
+      };
 
-    onNext(paymentData);
+      console.log('=== Payment API 요청 시작 ===');
+      console.log('요청 데이터:', paymentParams);
+
+      const result = await createPayment(paymentParams);
+
+      console.log('=== Payment API 요청 성공 ===');
+      console.log('응답:', result);
+
+      alert('결제가 성공적으로 완료되었습니다!');
+      onNext(paymentParams);
+    } catch (error) {
+      console.error('=== Payment API 요청 실패 ===');
+      console.error('에러:', error);
+      alert('결제에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

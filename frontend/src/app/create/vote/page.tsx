@@ -9,6 +9,7 @@ import { VoteMovieinfo } from '@/types/vote';
 import { VoteTheaterinfo } from '@/types/vote';
 import VoteMovieInfoTab from './component/VoteMovieInfoTab';
 import VoteTheaterInfoTab from './component/VoteTheaterInfoTab';
+import HorizontalScroller from '@/components/containers/HorizontalScroller';
 
 // MovieInfoTab에서 전달하는 데이터 타입
 interface MovieData {
@@ -62,6 +63,7 @@ export default function VotePage() {
   };
 
   // 탭 컴포넌트 렌더링 함수
+
   const renderTabContent = () => {
     switch (voteActiveTab) {
       case 'vote-funding-info':

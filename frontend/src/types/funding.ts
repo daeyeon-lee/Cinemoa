@@ -18,6 +18,8 @@ export interface theaterinfo {
   scrrenStartsOn?: number;
   scrrenEndsOn?: number;
   maxPeople?: number;
+  fundingId?: number;
+  amount?: number; // 1인당 결제 금액
 }
 
 export interface CreateFundingParams {
@@ -43,5 +45,7 @@ export interface CreateFundingResponse {
   state: string;
   message: string;
   code: number;
-  //   data: FundingDetail;
+  data: {
+    fundingId: number;
+  };
 }

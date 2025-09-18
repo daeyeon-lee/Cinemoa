@@ -16,7 +16,7 @@ interface User {
 interface AuthStore {
   user: User | null;
   isLoggedIn: boolean;
-  
+
   // Actions
   setUser: (user: User) => void;
   clearUser: () => void;
@@ -48,6 +48,6 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage', // localStorage 키
-    }
-  )
+    },
+  ),
 );

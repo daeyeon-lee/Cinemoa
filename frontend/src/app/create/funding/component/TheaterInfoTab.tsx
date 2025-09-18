@@ -12,16 +12,21 @@ import { CinemaResponse } from '@/types/cinema';
 import { createFunding } from '@/api/funding';
 import { CalendarDemo } from '@/components/calenderdemo';
 import { theaterinfo, fundinginfo, movieinfo, CreateFundingParams } from '@/types/funding';
+import { useAuthStore } from '@/stores/authStore';
 
 interface TheaterInfoTabProps {
-  onNext: (data: theaterinfo) => void;
+  onNext: (data: { fundingId: number; amount: number }) => void;
   onPrev?: () => void;
   fundingData?: fundinginfo;
   movieData?: movieinfo;
+  theaterData?: theaterinfo;
+  fundingId?: number;
+  amount?: number;
 }
 
-export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData }: TheaterInfoTabProps) {
+export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData, theaterData, fundingId, amount }: TheaterInfoTabProps) {
   // 상태 관리
+  const { user } = useAuthStore();
   const [selectedDistrict, setSelectedDistrict] = useState<string>(''); // 선택된 구 (예: '강남구', '서초구')
   const [selectedTheater, setSelectedTheater] = useState<string>(''); // 선택된 영화관 ID (예: '90', '91')
   const [selectedTheaterName, setSelectedTheaterName] = useState<string>(''); // 선택된 영화관 이름 (예: 'CGV 강남', '메가박스 강남')
@@ -37,53 +42,54 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
   const [selectedScreenFeatures, setSelectedScreenFeatures] = useState<string[]>([]); // 선택된 상영관의 feature들
   const [theaterList, setTheaterList] = useState<CinemaResponse[]>([]); // API에서 받아온 영화관 목록
   const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null); // 선택된 영화관의 고유 ID (상세 정보 조회용)
+  const [perPersonAmount, setPerPersonAmount] = useState<number>(0); // 1인당 결제 금액
 
   // 다음 단계로 넘어가는 핸들러
   const handleNext = async () => {
     // 전달받은 데이터 확인
-    console.log('=== TheaterInfoTab 데이터 확인 ===');
-    console.log('fundingData:', fundingData);
-    console.log('movieData:', movieData);
-    console.log('=====================================');
 
     // 각각의 정보를 구조화해서 API 요청
     const theaterData: theaterinfo = {
       cinemaId: selectedCinemaId || 0,
       screenId: selectedScreenId || 0,
-      screenday: selectedDate,
+      screenday: selectedDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
       scrrenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
       scrrenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
       maxPeople: participantCount,
     };
 
     const completeData: CreateFundingParams = {
-      userId: 1,
+      userId: user?.userId || 0,
       content: fundingData?.content,
       title: fundingData?.title,
       categoryId: movieData?.categoryId,
       videoName: movieData?.videoName,
       posterUrl: movieData?.posterUrl,
-      cinemaId: selectedCinemaId || 0,
-      screenId: selectedScreenId || 0,
-      screenDay: selectedDate,
-      screenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
-      screenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
-      maxPeople: participantCount,
+      cinemaId: theaterData?.cinemaId || 0,
+      screenId: theaterData?.screenId || 0,
+      screenDay: theaterData?.screenday,
+      screenStartsOn: theaterData?.scrrenStartsOn,
+      screenEndsOn: theaterData?.scrrenEndsOn,
+      maxPeople: theaterData?.maxPeople,
     };
 
     try {
       const result = await createFunding(completeData);
       console.log('=== 펀딩 생성 성공 ===');
       console.log('응답:', result);
+      const fundingId = result.data.fundingId;
       alert('펀딩이 성공적으로 생성되었습니다!');
-      // 성공 시 다른 페이지로 이동하거나 초기화
+
+      // fundingId와 1인당 결제 금액을 함께 전달
+      onNext({
+        fundingId: fundingId,
+        amount: perPersonAmount,
+      });
     } catch (error) {
       console.error('=== 펀딩 생성 실패 ===');
       console.error('에러:', error);
       alert('펀딩 생성에 실패했습니다. 다시 시도해주세요.');
     }
-
-    onNext(theaterData);
   };
 
   // React Query
@@ -101,6 +107,16 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       setTheaterList([]);
     }
   }, [cinemas, error]);
+
+  // 1인당 결제 금액 계산
+  useEffect(() => {
+    if (screenPrice > 0 && participantCount > 0) {
+      const calculatedAmount = Math.round(screenPrice / participantCount / 10) * 10;
+      setPerPersonAmount(calculatedAmount);
+    } else {
+      setPerPersonAmount(0);
+    }
+  }, [screenPrice, participantCount]);
 
   // 상영관 종류 목록
   const features = [
@@ -399,7 +415,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                 value={selectedDate}
                 onChange={setSelectedDate}
                 disabled={!selectedScreenName}
-                min={new Date().toISOString().split('T')[0]} // 오늘 이후 날짜만 선택 가능
+                min={new Date().toISOString().split('T')[0]} // 오늘부터 선택 가능
                 placeholder="날짜를 선택해주세요"
               />
             </div>
@@ -430,11 +446,21 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {reservationTime?.available_time?.map((hour) => (
-                    <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
-                      {`${hour.toString().padStart(2, '0')}:00`}
-                    </SelectItem>
-                  )) || []}
+                  {reservationTime?.available_time
+                    ?.filter((hour) => {
+                      // 오늘 날짜가 선택된 경우 현재 시간 이후만 표시
+                      const dateOnly = selectedDate.split(' ')[0]; // 요일 정보 제거
+                      if (dateOnly === new Date().toISOString().split('T')[0]) {
+                        const currentHour = new Date().getHours();
+                        return hour > currentHour;
+                      }
+                      return true;
+                    })
+                    ?.map((hour) => (
+                      <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
+                        {`${hour.toString().padStart(2, '0')}:00`}
+                      </SelectItem>
+                    )) || []}
                 </SelectContent>
               </Select>
             </div>
@@ -467,7 +493,15 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                     ?.filter((hour) => {
                       // 시작 시간 이후의 시간만 표시
                       const startHour = parseInt(selectedStartTime.split(':')[0]);
-                      return hour > startHour;
+                      if (hour <= startHour) return false;
+
+                      // 오늘 날짜가 선택된 경우 현재 시간 이후만 표시
+                      const dateOnly = selectedDate.split(' ')[0]; // 요일 정보 제거
+                      if (dateOnly === new Date().toISOString().split('T')[0]) {
+                        const currentHour = new Date().getHours();
+                        return hour > currentHour;
+                      }
+                      return true;
                     })
                     .map((hour) => (
                       <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
@@ -548,7 +582,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                 <Separator />
                 <div className="w-full flex justify-between items-center">
                   <div className="p1-b text-tertiary">1인당 티켓 가격</div>
-                  <div className="h4-b text-Brand1-Strong">{(Math.round(screenPrice / participantCount / 10) * 10).toLocaleString()}원</div>
+                  <div className="h4-b text-Brand1-Strong">{perPersonAmount.toLocaleString()}원</div>
                 </div>
               </CardContent>
             </Card>
@@ -561,12 +595,12 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       </div>
       {/* 이전 다음 바튼 */}
 
-      <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+      <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
+        <Button variant="tertiary" size="lg" className="w-[138px]" onClick={onPrev}>
           이전
         </Button>
-        <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext}>
-          다음
+        <Button type="button" variant="brand1" size="lg" className="w-[138px]" onClick={handleNext}>
+          상영회 생성하기
         </Button>
       </div>
     </div>

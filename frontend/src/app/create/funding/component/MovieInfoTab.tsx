@@ -330,12 +330,12 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                     상영물 검색
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh]">
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
                   <DialogHeader className="self-stretch">
                     <DialogTitle>상영물 검색</DialogTitle>
                     <DialogDescription></DialogDescription>
                   </DialogHeader>
-                  <div className="w-full space-y-4 min-h-[300px]">
+                  <div className="w-full space-y-4 min-h-[300px] max-h-[60vh] overflow-hidden">
                     <Input
                       placeholder="상영물 제목 검색"
                       value={searchQuery}
@@ -344,7 +344,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                     />
 
                     {isSearching && (
-                      <div className="flex items-center justify-center h-[400px]">
+                      <div className="flex items-center justify-center h-[300px]">
                         <div className="p1 text-tertiary flex items-center justify-center gap-3 rounded-[6px]">
                           <div className="w-6 h-6 border-2 h3-b border-Brand1-Primary border-t-transparent rounded-full animate-spin"></div>
                           검색 중...
@@ -354,7 +354,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
                     {/* 검색 결과 */}
                     {searchQuery && !isSearching && searchResults.length > 0 && (
-                      <div className="h-[400px] overflow-y-auto scrollbar-hide space-y-2">
+                      <div className="max-h-[300px] overflow-y-auto scrollbar-hide space-y-2">
                         {searchResults.map((item) => (
                           <div
                             key={item.id}
@@ -383,7 +383,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
                     {/* 초기 상태 메시지 */}
                     {!searchQuery && !isSearching && (
-                      <div className="p-6 rounded-[6px] text-center min-h-[400px] flex flex-col items-center justify-center">
+                      <div className="p-6 rounded-[6px] text-center min-h-[300px] flex flex-col items-center justify-center">
                         <Search className="w-12 h-12 text-tertiary mx-auto mb-3" />
                         <p className="h4-b text-tertiary mb-1">상영물을 검색해보세요</p>
                         <p className="p2 text-tertiary">제목을 입력하면 자동으로 검색됩니다</p>
@@ -392,7 +392,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
                     {/* 검색 결과가 없을 때 */}
                     {searchQuery && !isSearching && searchResults.length === 0 && (
-                      <div className="p-3 rounded-[6px] min-h-[400px] flex items-center justify-center">
+                      <div className="p-3 rounded-[6px] min-h-[300px] flex items-center justify-center">
                         <p className="p1-b text-tertiary text-center">"{searchQuery}"에 대한 검색 결과가 없습니다.</p>
                       </div>
                     )}
@@ -515,11 +515,11 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
         </div>
       </div>
       {/* 이전 다음 바튼 */}
-      <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+      <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
+        <Button variant="tertiary" size="lg" className="w-[138px]" onClick={onPrev}>
           이전
         </Button>
-        <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext}>
+        <Button type="button" variant="brand1" size="lg" className="w-[138px]" onClick={handleNext}>
           다음
         </Button>
       </div>

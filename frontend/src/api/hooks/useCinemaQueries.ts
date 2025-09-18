@@ -17,6 +17,19 @@ export const useGetCinemas = (city: string, district: string, features: string[]
   });
 };
 
+// 구로만 영화관 전체 조회 (투표용)
+export const useGetCinemasByDistrict = (city: string, district: string) => {
+  return useQuery({
+    queryKey: ['cinemas', 'byDistrict', city, district],
+    queryFn: () =>
+      getCinemas({
+        city,
+        ...(district && district !== '전체' && { district }), // district가 '전체'가 아닐 때만 포함
+      }),
+    enabled: !!city, // city가 있으면 실행
+  });
+};
+
 // 영화관 상세 조회
 export const useGetCinemaDetail = (cinemaId: number, features?: string[]) => {
   return useQuery({

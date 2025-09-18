@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InformationIcon from '@/component/icon/infomrationIcon';
-import { useGetCinemas, useGetCinemaDetail } from '@/api/hooks/useCinemaQueries';
+import { useGetCinemas, useGetCinemaDetail, useGetCinemasByDistrict } from '@/api/hooks/useCinemaQueries';
 import { CinemaResponse } from '@/types/cinema';
 import { creatVoteFunding } from '@/api/vote';
 import { CalendarDemo } from '@/components/calenderdemo';
 import { VoteTheaterinfo, VoteFundinginfo, VoteMovieinfo, CreateVoteFundingParams } from '@/types/vote';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'next/navigation';
 
 interface TheaterInfoTabProps {
   onNext: (data: VoteTheaterinfo) => void;
@@ -19,13 +21,13 @@ interface TheaterInfoTabProps {
 
 export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData }: TheaterInfoTabProps) {
   // 상태 관리
+  const { user } = useAuthStore();
+  const router = useRouter();
   const [selectedDistrict, setSelectedDistrict] = useState<string>(''); // 선택된 구 (예: '강남구', '서초구')
   const [selectedTheater, setSelectedTheater] = useState<string>(''); // 선택된 영화관 ID (예: '90', '91')
-  const [selectedScreenName, setSelectedScreenName] = useState<string>(''); // 선택된 상영관 이름 (예: '01관', '02관')
-  const [selectedScreenId, setSelectedScreenId] = useState<number | null>(null); // 선택된 상영관의 screenId
+  // 투표 기능에서는 상영관 선택이 없음
   const [selectedStartDate, setSelectedStartDate] = useState<string>(''); // 선택된 시작 날짜 (예: '2025-01-15')
   const [selectedEndDate, setSelectedEndDate] = useState<string>(''); // 선택된 종료 날짜 (예: '2025-01-20')
-  const [selectedFeature, setSelectedFeature] = useState<string[]>([]); // 선택된 상영관 종류들 (예: ['IMAX', '4DX'])
   const [selectedScreenFeatures, setSelectedScreenFeatures] = useState<string[]>([]); // 선택된 상영관의 feature들
   const [theaterList, setTheaterList] = useState<CinemaResponse[]>([]); // API에서 받아온 영화관 목록
   const [selectedCinemaId, setSelectedCinemaId] = useState<number | null>(null); // 선택된 영화관의 고유 ID (상세 정보 조회용)
@@ -41,39 +43,39 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
     // 각각의 정보를 구조화해서 API 요청
     const theaterData: VoteTheaterinfo = {
       cinemaId: selectedCinemaId || 0,
-      screenMinDate: selectedStartDate,
-      screenMaxDate: selectedEndDate,
+      screenMinDate: selectedStartDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
+      screenMaxDate: selectedEndDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
     };
 
     const completeData: CreateVoteFundingParams = {
-      userId: 1,
+      userId: user?.userId || 0,
       content: fundingData?.content,
       title: fundingData?.title,
       categoryId: movieData?.categoryId,
       videoName: movieData?.videoName,
       posterUrl: movieData?.posterUrl,
       cinemaId: selectedCinemaId || 0,
-      screenMinDate: selectedStartDate,
-      screenMaxDate: selectedEndDate,
+      screenMinDate: selectedStartDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
+      screenMaxDate: selectedEndDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
     };
 
     try {
       const result = await creatVoteFunding(completeData);
       console.log('=== 펀딩 생성 성공 ===');
       console.log('응답:', result);
-      alert('펀딩이 성공적으로 생성되었습니다!');
-      // 성공 시 다른 페이지로 이동하거나 초기화
+
+      // 성공 alert 표시 후 홈으로 이동
+      alert('투표가 성공적으로 생성되었습니다!');
+      router.push('/');
     } catch (error) {
       console.error('=== 펀딩 생성 실패 ===');
       console.error('에러:', error);
-      alert('펀딩 생성에 실패했습니다. 다시 시도해주세요.');
+      alert('투표 생성에 실패했습니다. 다시 시도해주세요.');
     }
-
-    onNext(theaterData);
   };
 
   // React Query
-  const { data: cinemas, isLoading, error } = useGetCinemas('서울시', selectedDistrict === '전체' ? '' : selectedDistrict, selectedFeature);
+  const { data: cinemas, isLoading, error } = useGetCinemasByDistrict('서울시', selectedDistrict);
   // 선택된 영화관의 상세 정보 조회
   const { data: cinemaDetail, isLoading: isDetailLoading } = useGetCinemaDetail(selectedCinemaId || 0);
 
@@ -85,16 +87,6 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       setTheaterList([]);
     }
   }, [cinemas, error]);
-
-  // 상영관 종류 목록
-  const features = [
-    { name: '일반', value: 'NORMAL' },
-    { name: 'IMAX', value: 'IMAX' },
-    { name: 'SCREENX', value: 'SCREENX' },
-    { name: '4DX', value: 'FDX' }, // DB상 4dx는 FDX로 파라미터 보내야함
-    { name: 'Dolby Atmos', value: 'DOLBY' },
-    { name: '리클라이너', value: 'RECLINER' },
-  ];
 
   // 서울시 25개 구 목록
   const district = [
@@ -126,31 +118,10 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
     { name: '중랑구', value: '중랑구' },
   ];
 
-  // 상영관 종류 선택 핸들러
-  const handleFeatureChange = (value: string) => {
-    if (selectedFeature.includes(value)) {
-      setSelectedFeature(selectedFeature.filter((f) => f !== value));
-    } else {
-      setSelectedFeature([...selectedFeature, value]);
-    }
-    // 다른 선택사항들 초기화
-    setSelectedDistrict('');
-    setSelectedTheater('');
-    setSelectedScreenName('');
-    setSelectedScreenId(null);
-    setSelectedScreenFeatures([]);
-    setSelectedStartDate('');
-    setSelectedEndDate('');
-  };
-
   // 구(district)선택 핸들러
   const handleDistrictChange = (value: string) => {
     setSelectedDistrict(value);
     setSelectedTheater(''); // 영화관 초기화
-    // 영화관 이름 초기화
-    setSelectedScreenName(''); // 상영관 초기화
-    setSelectedScreenId(null); // 상영관 ID 초기화
-    setSelectedScreenFeatures([]); // 상영관 feature 초기화
     setSelectedStartDate(''); // 시작 날짜 초기화
     setSelectedEndDate(''); // 종료 날짜 초기화
   };
@@ -160,83 +131,15 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
     setSelectedTheater(value);
     setSelectedCinemaId(Number(value)); // 선택된 영화관 ID 저장
 
-    setSelectedScreenName(''); // 상영관 초기화
-    setSelectedScreenId(null); // 상영관 ID 초기화
-    setSelectedScreenFeatures([]); // 상영관 feature 초기화
+    // 투표 기능에서는 상영관 선택이 없으므로 날짜만 초기화
     setSelectedStartDate(''); // 시작 날짜 초기화
     setSelectedEndDate(''); // 종료 날짜 초기화
-  };
-
-  // 상영관 선택 핸들러
-  const handleHallChange = (value: string) => {
-    setSelectedScreenName(value);
-
-    // 선택된 상영관의 screenId와 features 찾기
-    const selectedScreen = cinemaDetail?.screens?.find((screen) => screen.screenName === value);
-    setSelectedScreenId(selectedScreen?.screenId || null);
-
-    // 선택된 상영관의 feature 정보 저장
-    if (selectedScreen) {
-      const features: string[] = [];
-      if (selectedScreen.imax) features.push('IMAX');
-      if (selectedScreen.screenx) features.push('SCREENX');
-      if (selectedScreen['4dx']) features.push('4DX');
-      if (selectedScreen.dolby) features.push('DOLBY');
-      if (selectedScreen.recliner) features.push('RECLINER');
-      // 모든 feature가 false면 일반 상영관
-      if (features.length === 0) features.push('NORMAL');
-
-      setSelectedScreenFeatures(features);
-    } else {
-      setSelectedScreenFeatures([]);
-    }
-
-    setSelectedStartDate(''); // 시작 날짜 초기화
-    setSelectedEndDate(''); // 종료 날짜 초기화
-  };
-
-  // 선택된 상영관의 feature 정보를 한국어로 변환
-  const getScreenFeatureNames = () => {
-    return selectedScreenFeatures.map((feature) => {
-      switch (feature) {
-        case 'IMAX':
-          return 'IMAX';
-        case 'SCREENX':
-          return 'SCREENX';
-        case '4DX':
-          return '4DX';
-        case 'DOLBY':
-          return 'Dolby Atmos';
-        case 'RECLINER':
-          return '리클라이너';
-        case 'NORMAL':
-          return '일반';
-        default:
-          return feature;
-      }
-    });
   };
 
   return (
     <div className="w-full space-y-8">
       <div className="flex gap-12 w-full justify-center items-center">
         <div className="flex flex-col gap-12 w-full">
-          {/* 상영관 종류 선택 */}
-          <div className="flex flex-col gap-2 w-full">
-            <div className="space-y-1">
-              <h4 className="h5-b text-primary">
-                상영관 종류 <span className="text-Brand1-Primary">*</span>
-              </h4>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {features.map((feature) => (
-                <Button key={feature.value} variant={selectedFeature.includes(feature.value) ? 'brand2' : 'secondary'} size="sm" onClick={() => handleFeatureChange(feature.value)} className="h-10">
-                  {feature.name}
-                </Button>
-              ))}
-            </div>
-          </div>
-
           {/* 지역, 영화관, 상영관 선택 */}
           <div className="flex gap-2 w-full">
             {/* 지역 선택 */}
@@ -246,9 +149,9 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                   지역 선택 <span className="text-Brand1-Primary">*</span>
                 </h4>
               </div>
-              <Select value={selectedDistrict} onValueChange={handleDistrictChange} disabled={selectedFeature.length === 0}>
+              <Select value={selectedDistrict} onValueChange={handleDistrictChange}>
                 <SelectTrigger className="w-full h-10">
-                  <SelectValue placeholder={selectedFeature.length === 0 ? '상영관 종류를 먼저 선택해주세요' : '지역을 선택해주세요'} />
+                  <SelectValue placeholder="지역을 선택해주세요" />
                 </SelectTrigger>
                 <SelectContent>
                   {district.map((item) => (
@@ -266,7 +169,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                   영화관 선택 <span className="text-Brand1-Primary">*</span>
                 </h4>
               </div>
-              <Select value={selectedTheater} onValueChange={handleTheaterChange} disabled={!selectedDistrict || isLoading || theaterList.length === 0}>
+              <Select value={selectedTheater} onValueChange={handleTheaterChange} disabled={!selectedDistrict || selectedDistrict === '' || isLoading || theaterList.length === 0}>
                 <SelectTrigger className="w-full h-10">
                   <SelectValue
                     placeholder={isLoading ? '로딩 중...' : !selectedDistrict ? '지역을 먼저 선택해주세요' : theaterList.length === 0 ? '해당 조건의 영화관이 없습니다' : '영화관을 선택해주세요'}
@@ -281,76 +184,19 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                 </SelectContent>
               </Select>
             </div>
-            {/* 상영관 선택 */}
-            <div className="flex flex-col gap-2 w-full">
-              <div className="space-y-1">
-                <h4 className="h5-b text-primary">
-                  상영관 선택 <span className="text-Brand1-Primary">*</span>
-                </h4>
-              </div>
-              <Select value={selectedScreenName} onValueChange={handleHallChange} disabled={!selectedTheater || isDetailLoading || !cinemaDetail?.screens || cinemaDetail.screens.length === 0}>
-                <SelectTrigger className="w-full h-10">
-                  <SelectValue
-                    placeholder={
-                      isDetailLoading
-                        ? '로딩 중...'
-                        : !selectedTheater
-                        ? '영화관을 먼저 선택해주세요'
-                        : !cinemaDetail?.screens || cinemaDetail.screens.length === 0
-                        ? '상영관 정보가 없습니다'
-                        : '상영관을 선택해주세요'
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {(() => {
-                    const filteredScreens =
-                      cinemaDetail?.screens?.filter((screen) => {
-                        // 상영관도 선택된 feature 중 하나라도 만족하면 표시
-                        if (selectedFeature.length === 0) return true;
-
-                        return selectedFeature.some((feature) => {
-                          switch (feature) {
-                            case 'IMAX':
-                              return screen.imax === true;
-                            case 'SCREENX':
-                              return screen.screenx === true;
-                            case 'FDX':
-                              return screen['4dx'] === true;
-                            case 'DOLBY':
-                              return screen.dolby === true;
-                            case 'RECLINER':
-                              return screen.recliner === true;
-                            case 'NORMAL':
-                              return screen.imax === false && screen.screenx === false && screen['4dx'] === false && screen.dolby === false && screen.recliner === false;
-                            default:
-                              return true;
-                          }
-                        });
-                      }) || [];
-
-                    return filteredScreens.map((screen) => (
-                      <SelectItem key={screen.screenId} value={screen.screenName || ''}>
-                        {screen.screenName}
-                      </SelectItem>
-                    ));
-                  })()}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <div className="flex gap-2 w-full items-end">
             {/* 시작 날짜, 우측 날짜 선택 */}
             <div className="flex flex-col gap-2 w-full">
               <div className="space-y-1">
                 <h4 className="h5-b text-primary">
-                  시작 날짜 선택 <span className="text-Brand1-Primary">*</span>
+                  대관 예정일 시작 날짜 선택 <span className="text-Brand1-Primary">*</span>
                 </h4>
               </div>
               <CalendarDemo
                 value={selectedStartDate}
                 onChange={setSelectedStartDate}
-                disabled={!selectedScreenName}
+                disabled={!selectedTheater}
                 min={new Date().toISOString().split('T')[0]} // 오늘 이후 날짜만 선택 가능
                 placeholder="시작 날짜를 선택해주세요"
               />
@@ -364,8 +210,8 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
               <CalendarDemo
                 value={selectedEndDate}
                 onChange={setSelectedEndDate}
-                disabled={!selectedScreenName || !selectedStartDate}
-                min={selectedStartDate || new Date().toISOString().split('T')[0]} // 시작 날짜 이후만 선택 가능
+                disabled={!selectedTheater || !selectedStartDate}
+                min={selectedStartDate ? selectedStartDate.split(' ')[0] : new Date().toISOString().split('T')[0]} // 시작 날짜 이후만 선택 가능
                 placeholder="종료 날짜를 선택해주세요"
               />
             </div>
