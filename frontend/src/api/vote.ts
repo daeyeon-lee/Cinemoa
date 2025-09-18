@@ -1,12 +1,12 @@
 import { CreateVoteFundingParams, CreateVoteFundingResponse } from '@/types/vote';
-
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
 export const creatVoteFunding = async (data: CreateVoteFundingParams): Promise<CreateVoteFundingResponse> => {
   try {
     console.log('=== 투표 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터:', data);
 
-    const response = await fetch('https://j13a110.p.ssafy.io:8443/api/vote', {
+    const response = await fetch(`${BaseUrl}vote`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

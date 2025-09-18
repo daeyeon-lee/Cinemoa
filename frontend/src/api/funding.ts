@@ -1,12 +1,12 @@
 import { CreateFundingParams, CreateFundingResponse } from '@/types/funding';
-
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
 export const createFunding = async (data: CreateFundingParams): Promise<CreateFundingResponse> => {
   try {
     console.log('=== 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터:', data);
 
-    const response = await fetch('https://j13a110.p.ssafy.io:8443/api/funding', {
+    const response = await fetch(`${BaseUrl}funding`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
