@@ -31,5 +31,12 @@ export const REGIONS = [
   '강동구',
 ];
 
-// 상영관 타입 목록
-export const THEATER_TYPES = ['일반', 'IMAX', '4DX', '리클라이너', 'DOLBY ATMOS'];
+// 상영관 타입 목록 (UI용 한글 + 백엔드용 영문 매핑)
+export const THEATER_TYPES = [
+  { label: '일반관', value: 'NORMAL' },
+  { label: 'IMAX', value: 'IMAX' },
+  { label: '4DX', value: 'FDX' },
+  { label: '리클라이너', value: 'RECLINER' },
+  { label: 'DOLBY', value: 'DOLBY' },
+  { label: 'ScreenX', value: 'SCREENX' },
+];

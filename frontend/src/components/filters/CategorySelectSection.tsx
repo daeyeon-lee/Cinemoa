@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { CategoryButtonGroup, type CategoryItem } from './CategoryButtonGroup';
 import { SubCategoryChips, type SubCategoryItem } from './SubCategoryChips';
-import type { Category } from '@/constants/categories';
+import type { Category, CategoryValue } from '@/constants/categories';
 import { getCategoryItems } from '@/constants/categories';
 
 interface CategorySelectSectionProps {
   categories: Category[];
-  selectedCategory: string | null;
-  onCategoryChange: (value: string) => void;
-  selectedSubCategories: number[];
-  onSubCategoryChange: (value: number[]) => void;
+  selectedCategory: CategoryValue | null;
+  onCategoryChange: (value: CategoryValue | null) => void;
+  selectedSubCategory: number | null;
+  onSubCategoryChange: (value: number | null) => void;
   variant?: 'brand1' | 'brand2';
 }
 
@@ -19,7 +19,7 @@ const CategorySelectSection: React.FC<CategorySelectSectionProps> = ({
   categories,
   selectedCategory,
   onCategoryChange,
-  selectedSubCategories,
+  selectedSubCategory,
   onSubCategoryChange,
   variant = 'brand1',
 }) => {
@@ -43,7 +43,7 @@ const CategorySelectSection: React.FC<CategorySelectSectionProps> = ({
 
   const handleCategoryChange = (newCategory: string) => {
     onCategoryChange(newCategory);
-    onSubCategoryChange([]); // 2차 카테고리 초기화
+    onSubCategoryChange(null); // 2차 카테고리 초기화
   };
 
   return (
@@ -57,7 +57,7 @@ const CategorySelectSection: React.FC<CategorySelectSectionProps> = ({
       />
       <SubCategoryChips
         items={currentSubCategories}
-        value={selectedSubCategories}
+        value={selectedSubCategory}
         onChange={onSubCategoryChange}
         visible={selectedCategory !== 'all'}
         variant={variant}

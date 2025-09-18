@@ -2,6 +2,7 @@ import { CategoryValue } from '@/constants/categories';
 
 export interface CategoryNavigationParams {
   category?: CategoryValue;
+  categoryId?: number; // categoryId 직접 전달용
   // 추가로 전달할 수 있는 다른 필터 파라미터들
   region?: string[];
   theaterType?: string;
@@ -9,31 +10,17 @@ export interface CategoryNavigationParams {
 }
 
 /**
- * 카테고리 페이지로 네비게이션
+ * 카테고리 페이지로 네비게이션 (URL 파라미터 없이 이동)
  */
 export const navigateToCategory = (params: CategoryNavigationParams = {}) => {
-  const searchParams = new URLSearchParams();
-
-  if (params.category && params.category !== 'all') {
-    searchParams.set('category', params.category);
+  // categoryId가 있으면 localStorage에 저장해서 전달
+  if (params.categoryId) {
+    localStorage.setItem('selectedCategoryId', params.categoryId.toString());
+    console.log('🎯 [navigateToCategory] categoryId 저장:', params.categoryId);
   }
 
-  if (params.region && params.region.length > 0) {
-    searchParams.set('region', params.region.join(','));
-  }
-
-  if (params.theaterType) {
-    searchParams.set('theaterType', params.theaterType);
-  }
-
-  if (params.sort) {
-    searchParams.set('sort', params.sort);
-  }
-
-  const queryString = searchParams.toString();
-  const url = queryString ? `/category?${queryString}` : '/category';
-
-  window.location.href = url;
+  // URL 파라미터 없이 바로 이동
+  window.location.href = '/category';
 };
 
 /**

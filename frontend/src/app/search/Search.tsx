@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
@@ -10,6 +10,8 @@ import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 import type { CardItem } from '@/components/lists/ResponsiveCardList';
 import { STANDARD_CATEGORIES } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
+import { useSearch } from '@/hooks/queries/useSearch';
+import type { SearchParams, SortBy } from '@/types/searchApi';
 /**
  * 검색 페이지 컴포넌트
  *
@@ -17,96 +19,134 @@ import { REGIONS, THEATER_TYPES } from '@/constants/regions';
  * ListShell을 기반으로 필터링과 정렬 기능을 제공합니다.
  */
 export default function Search() {
-  // TODO: 실제 데이터 연결 필요
-  // 상태 관리
+  console.log('🔍 [Search] 컴포넌트 렌더링');
+
+  // 필터 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
-  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<string>('latest');
+  const [sortBy, setSortBy] = useState<SortBy>('LATEST');
   const [showClosed, setShowClosed] = useState<boolean>(false);
+
+  // 검색어 상태 추가 (TODO: 실제 검색 기능 추가 시 사용)
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const categories = STANDARD_CATEGORIES;
   const regions = REGIONS;
   const theaterTypes = THEATER_TYPES;
 
-  // TODO: 실제 카드 데이터로 교체 필요 - 더미 데이터
-  const dummyItems: CardItem[] = [
-    {
-      funding: {
-        fundingId: 1,
-        title: '어벤져스: 엔드게임 스페셜 상영',
-        bannerUrl: '/images/dummy-banner-1.jpg',
-        state: 'ACTIVE',
-        progressRate: 75,
-        fundingEndsOn: '2024-01-15',
-        screenDate: '2024-01-20',
-        price: 15000,
-        maxPeople: 100,
-        participantCount: 75,
-        favoriteCount: 45,
-        isLiked: false,
-        fundingType: 'FUNDING',
-      },
-      cinema: {
-        cinemaId: 1,
-        cinemaName: 'CGV 강남점',
-        city: '서울',
-        district: '강남구',
-      },
-    },
-    {
-      funding: {
-        fundingId: 2,
-        title: '기생충 4DX 체험',
-        bannerUrl: '/images/dummy-banner-2.jpg',
-        state: 'ACTIVE',
-        progressRate: 60,
-        fundingEndsOn: '2024-01-18',
-        screenDate: '2024-01-25',
-        price: 25000,
-        maxPeople: 50,
-        participantCount: 30,
-        favoriteCount: 28,
-        isLiked: true,
-        fundingType: 'FUNDING',
-      },
-      cinema: {
-        cinemaId: 2,
-        cinemaName: '롯데시네마 월드타워',
-        city: '서울',
-        district: '송파구',
-      },
-    },
-  ];
+  // 🔍 useSearch 훅으로 API 데이터 조회 - 검색용 (사용자가 선택한 것만 전달)
+  const searchParams = useMemo(() => {
+    const params: SearchParams = {};
+
+    // 검색어가 있으면 q 파라미터 추가
+    if (searchQuery.trim()) {
+      params.q = searchQuery.trim();
+    }
+
+    // 사용자가 정렬을 변경했을 때만 전달 (기본값: LATEST)
+    if (sortBy !== 'LATEST') {
+      params.sortBy = sortBy;
+    }
+
+    // 카테고리 선택 로직 (단일 값만 전달)
+    if (selectedCategory === 'all') {
+      // 1차 "전체" 선택: category 파라미터 없음 (모든 카테고리)
+      // params.category는 추가하지 않음
+    } else if (selectedSubCategory !== null) {
+      // 세부 카테고리 선택: 선택된 카테고리 전달
+      params.category = selectedSubCategory;
+    } else if (selectedCategory) {
+      // 1차 카테고리 선택했지만 서브카테고리 선택 안함 (예: "영화-전체")
+      const categoryInfo = categories.find(cat => cat.value === selectedCategory);
+      if (categoryInfo?.categoryId) {
+        params.category = categoryInfo.categoryId;
+      }
+    }
+
+    // 사용자가 지역을 선택했을 때만 전달 (기본값: 전체)
+    if (selectedRegions.length > 0) {
+      params.region = selectedRegions[0];
+    }
+
+    // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
+    // selectedTheaterType에는 한글 label이 들어있으므로 백엔드용 value로 변환
+    if (selectedTheaterType.length > 0) {
+      const theaterValues = selectedTheaterType.map(label =>
+        theaterTypes.find(type => type.label === label)?.value
+      ).filter(Boolean);
+      if (theaterValues.length > 0) {
+        params.theaterType = theaterValues as string[];
+      }
+    }
+
+    // 사용자가 종료된 상영회 포함을 체크했을 때만 전달 (기본값: false)
+    if (showClosed) {
+      params.isClosed = showClosed;
+    }
+
+    console.log('📤 [Search] API 파라미터 (선택된 것만):', params);
+    return params;
+  }, [searchQuery, sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes]);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error,
+    refetch
+  } = useSearch(searchParams);
+
+  const items = data?.content || [];
+
+  console.log('📊 [Search] 현재 데이터 상태:', {
+    itemsCount: items.length,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    error: !!error,
+    searchQuery
+  });
 
   // 필터 초기화 핸들러
   const handleResetFilters = () => {
     setSelectedCategory('all');
-    setSelectedSubCategories([]);
+    setSelectedSubCategory(null);
     setSelectedRegions([]);
     setSelectedTheaterType([]);
-    setSortBy('latest');
+    setSortBy('LATEST');
     setShowClosed(false);
+    setSearchQuery(''); // 검색어도 초기화
   };
 
-  // 재시도 핸들러
-  const handleRetry = () => {
-    // TODO: 데이터 재로딩 로직 구현
-    console.log('재시도 중...');
-  };
+  // 🔄 재시도 핸들러
+  const handleRetry = useCallback(() => {
+    console.log('🔄 [Search] 재시도 버튼 클릭');
+    refetch();
+  }, [refetch]);
 
-  // 카드 클릭 핸들러
-  const handleCardClick = (id: number) => {
+  // 🔄 무한 스크롤 핸들러
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      console.log('📋 [Search] 다음 페이지 로드');
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // 🖱️ 카드 클릭 핸들러
+  const handleCardClick = useCallback((id: number) => {
+    console.log('🔍 [Search] 카드 클릭:', id);
     // TODO: 상세 페이지 이동 로직 구현
-    console.log('카드 클릭:', id);
-  };
+  }, []);
 
-  // 투표/좋아요 클릭 핸들러
-  const handleVoteClick = (id: number) => {
+  // ❤️ 좋아요 클릭 핸들러
+  const handleVoteClick = useCallback((id: number) => {
+    console.log('❤️ [Search] 좋아요 버튼 클릭:', id);
     // TODO: 좋아요 토글 로직 구현
-    console.log('좋아요 클릭:', id);
-  };
+  }, []);
 
   return (
     <ListShell
@@ -115,8 +155,8 @@ export default function Search() {
           categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
-          selectedSubCategories={selectedSubCategories}
-          onSubCategoryChange={setSelectedSubCategories}
+          selectedSubCategory={selectedSubCategory}
+          onSubCategoryChange={setSelectedSubCategory}
           variant="brand1"
         />
       }
@@ -146,15 +186,18 @@ export default function Search() {
 
           {/* 카드 목록 */}
           <ResponsiveCardList
-            items={dummyItems}
+            items={items}
             mode="funding"
-            loading={false}
-            empty={false}
-            error={false}
+            loading={isLoading}
+            empty={!isLoading && items.length === 0}
+            error={!!error}
             onCardClick={handleCardClick}
             onVoteClick={handleVoteClick}
             onResetFilters={handleResetFilters}
             onRetry={handleRetry}
+            onLoadMore={handleLoadMore}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
           />
         </div>
       }

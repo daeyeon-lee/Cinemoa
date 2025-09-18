@@ -1,14 +1,15 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import type { SortBy } from '@/types/searchApi';
 /**
  * SortBar 컴포넌트의 props 타입
  */
 interface SortBarProps {
   /** 현재 선택된 정렬 기준 */
-  sortBy: string;
+  sortBy: SortBy;
   /** 정렬 기준 변경 시 호출되는 콜백 함수 */
-  onSortChange: (value: string) => void;
+  onSortChange: (value: SortBy) => void;
   /** 마감된 항목 표시 여부 */
   isClosed: boolean;
   /** 마감된 항목 표시 여부 변경 시 호출되는 콜백 함수 */
@@ -38,11 +39,11 @@ interface SortBarProps {
  * @param props.onIsClosedChange - 마감된 항목 표시 여부 변경 핸들러
  */
 const SortBar: React.FC<SortBarProps> = ({ sortBy, onSortChange, isClosed, onIsClosedChange }) => {
-  // TODO: 실제 정렬 옵션 데이터로 교체 필요
-  const sortOptions = [
-    { value: 'latest', label: '최신순' },
-    { value: 'popular', label: '인기순' },
-    { value: 'deadline', label: '종료임박순' },
+  // API 쿼리 파라미터와 일치하는 정렬 옵션
+  const sortOptions: { value: SortBy; label: string }[] = [
+    { value: 'LATEST', label: '최신순' },
+    { value: 'POPULAR', label: '인기순' },
+    { value: 'RECOMMENDED', label: '추천순' },
   ];
 
   return (
@@ -73,7 +74,7 @@ const SortBar: React.FC<SortBarProps> = ({ sortBy, onSortChange, isClosed, onIsC
           className="w-4 h-4 bg-slate-800"
         />
         <label htmlFor="show-closed" className="text-sm text-secondary cursor-pointer">
-          종료된 상영회 안보기
+          종료된 상영회 포함
         </label>
       </div>
     </div>
