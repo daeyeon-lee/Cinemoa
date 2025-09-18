@@ -1,4 +1,4 @@
-import Vote from "./Vote";
+import Vote from './Vote';
 
 export default function VotePage() {
   return <Vote />;

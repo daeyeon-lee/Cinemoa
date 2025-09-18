@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import SuccessCheckIcon from '@/component/icon/success_check_icon';
+import { validateAndFormatExpiryDate, validateBirthDate, validateAllPaymentFields } from '@/utils/validation';
 
 export default function Payment() {
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
@@ -24,26 +25,13 @@ export default function Payment() {
     termsAgreed: false,
   });
 
-  // 유효기간 입력 포맷팅 함수
+  // 유효기간 입력 처리 (validation 함수 사용)
   const handleExpiryDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-
-    // 숫자만 추출
-    let numbersOnly = value.replace(/\D/g, '');
-
-    // 최대 4자리까지만 허용
-    if (numbersOnly.length > 4) {
-      numbersOnly = numbersOnly.substring(0, 4);
+    const result = validateAndFormatExpiryDate(e.target.value);
+    if (result.formattedValue) {
+      setPaymentData({ ...paymentData, expiryDate: result.formattedValue });
     }
-
-    // 포맷팅 적용
-    if (numbersOnly.length >= 3) {
-      value = numbersOnly.substring(0, 2) + '/' + numbersOnly.substring(2);
-    } else {
-      value = numbersOnly;
-    }
-
-    setPaymentData({ ...paymentData, expiryDate: value });
+    // TODO: 에러 처리 (result.error가 있을 때 에러 메시지 표시)
   };
 
   // 백스페이스 키 처리
@@ -58,19 +46,9 @@ export default function Payment() {
     }
   };
 
-  // 모든 필드가 입력되었는지 확인
+  // 모든 필드가 입력되었는지 확인 (validation 함수 사용)
   const isAllFieldsCompleted = () => {
-    return (
-      paymentData.cardNumber1.length === 4 &&
-      paymentData.cardNumber2.length === 4 &&
-      paymentData.cardNumber3.length === 4 &&
-      paymentData.cardNumber4.length === 4 &&
-      paymentData.expiryDate.length === 5 && // MM/YY 형식 (5자리)
-      paymentData.cvc.length === 3 &&
-      paymentData.password.length === 2 &&
-      paymentData.birthDate.length === 6 &&
-      paymentData.termsAgreed
-    );
+    return validateAllPaymentFields(paymentData).isValid;
   };
 
   // 다음으로 이동
@@ -103,18 +81,50 @@ export default function Payment() {
     }
   };
 
-  // 이전으로 이동
+  // step1 이동 시 데이터 초기화
   const handleBackToStep1 = () => {
     setCurrentStep('step1');
+    // 입력 데이터 초기화
+    setPaymentData({
+      cardNumber1: '',
+      cardNumber2: '',
+      cardNumber3: '',
+      cardNumber4: '',
+      expiryDate: '',
+      cvc: '',
+      password: '',
+      birthDate: '',
+      termsAgreed: false,
+    });
   };
 
-  const handleBackToStep2 = () => {
-    setCurrentStep('step2');
-  };
+  // step2로 이동
+  // const handleBackToStep2 = () => {
+  //   setCurrentStep('step2');
+  // };
 
   // 최종 제출
   const handleConfirmComplete = () => {
-    setCurrentStep('step1');
+    resetAllStates();
+  };
+
+  // 모든 상태를 초기화하는 함수
+  const resetAllStates = () => {
+    setCurrentStep('step1'); // 첫 번째 단계로 리셋
+    setIsLoading(false); // 로딩 상태 리셋
+    setPaymentCompleted(false); // 결제 완료 상태 리셋
+    setPaymentData({
+      // 결제 데이터 리셋
+      cardNumber1: '',
+      cardNumber2: '',
+      cardNumber3: '',
+      cardNumber4: '',
+      expiryDate: '',
+      cvc: '',
+      password: '',
+      birthDate: '',
+      termsAgreed: false,
+    });
   };
 
   // step3에 진입하면 자동으로 결제 처리 시작
@@ -129,10 +139,10 @@ export default function Payment() {
     if (currentStep === 'step1') {
       return (
         <>
-          <DialogHeader className="self-stretch">
+          <DialogHeader className="self-stretch" onClose={resetAllStates}>
             <DialogTitle>결제 내역</DialogTitle>
-            <DialogDescription className="sr-only">펀딩 결제 내역을 확인하고 결제를 진행합니다</DialogDescription>
           </DialogHeader>
+          <DialogDescription className="sr-only">펀딩 결제를 위한 내역을 확인하는 단계입니다.</DialogDescription>
           <div className="w-full flex flex-col gap-6">
             <div className="flex flex-col">
               <div className="h5-b text-primary leading-7">펀딩 제목</div>
@@ -161,12 +171,10 @@ export default function Payment() {
     if (currentStep === 'step2') {
       return (
         <>
-          <DialogHeader className="self-stretch">
+          <DialogHeader className="self-stretch" onClose={resetAllStates}>
             <DialogTitle>결제 정보 입력</DialogTitle>
-            <DialogDescription className="sr-only">
-              카드 정보와 개인 정보를 입력하여 결제를 완료합니다
-            </DialogDescription>
           </DialogHeader>
+          <DialogDescription className="sr-only">카드 정보와 개인 정보를 입력하는 단계입니다.</DialogDescription>
           <div className="flex flex-col gap-2">
             <label className="h5-b text-primary">
               카드번호 <span className="text-Brand1-Primary">*</span>
@@ -268,7 +276,9 @@ export default function Payment() {
               checked={paymentData.termsAgreed}
               onChange={(e) => setPaymentData({ ...paymentData, termsAgreed: e.target.checked })}
             />
-            <DialogDescription className="mb-0">[필수] 결제 서비스 이용 약관, 개인정보 처리 동의</DialogDescription>
+            <label htmlFor="terms-agreement" className="p1 text-primary">
+              [필수] 결제 서비스 이용 약관, 개인정보 처리 동의
+            </label>
           </div>
 
           <div className="self-stretch flex gap-3">
@@ -300,10 +310,10 @@ export default function Payment() {
         // 로딩 중 상태
         return (
           <>
-            <DialogDescription className="sr-only">결제 처리중입니다.</DialogDescription>
+            <DialogDescription className="sr-only">결제 처리가 진행 중입니다. 잠시만 기다려주세요.</DialogDescription>
             <div className="w-full flex flex-col items-center gap-4 py-8">
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-subtle border-t-transparent"></div>
-              <div className="text-center">
+              <div className="text-center mt-4">
                 <div className="h5-b text-primary">결제 처리중입니다</div>
                 <div className="p2 text-tertiary">잠시만 기다려주세요</div>
               </div>
@@ -314,7 +324,7 @@ export default function Payment() {
         // 결제 완료 상태
         return (
           <>
-            <DialogDescription className="sr-only">결제가 성공적으로 완료되었습니다</DialogDescription>
+            <DialogDescription className="sr-only">결제가 성공적으로 완료되었습니다.</DialogDescription>
             <div className="w-full flex flex-col items-center">
               <SuccessCheckIcon width={72} height={72} />
 
@@ -326,14 +336,14 @@ export default function Payment() {
               </div>
             </div>
 
-            <div className="w-full flex gap-4">
+            {/* <div className="w-full flex gap-4">
               <Button variant="secondary" size="lg" className="w-full" onClick={handleBackToStep2}>
                 이전
-              </Button>
-              <Button variant="brand1" size="lg" className="w-full" onClick={handleConfirmComplete}>
-                확인
-              </Button>
-            </div>
+              </Button> */}
+
+            <Button variant="brand1" size="lg" className="w-full" onClick={handleConfirmComplete}>
+              확인
+            </Button>
           </>
         );
       }
@@ -341,7 +351,7 @@ export default function Payment() {
   };
 
   return (
-    <DialogContent className="p-10 bg-slate-800 border-slate-700 max-w-md duration-0 data-[state=open]:animate-none data-[state=closed]:animate-none">
+    <DialogContent onPointerDownOutside={resetAllStates} onEscapeKeyDown={resetAllStates}>
       {renderContent()}
     </DialogContent>
   );
