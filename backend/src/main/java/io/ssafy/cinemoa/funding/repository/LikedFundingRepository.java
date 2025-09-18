@@ -45,9 +45,7 @@ public class LikedFundingRepository {
         queryBuilder.buildBaseQuery(userId);
 
         // 2. 동적 조건 추가 (커서와 타입 필터)
-        if (request.getCursor() != null) {
-            addCursor(queryBuilder, request.getCursor());
-        }
+        addCursor(queryBuilder, request.getCursor());
 
         // 3. 정렬 및 페이징 (커서 기반)
         queryBuilder.addOrderAndLimit(request.getLimit() + 1);
@@ -84,6 +82,9 @@ public class LikedFundingRepository {
      * 보고싶어요 목록 조회를 위한 동적 조건을 추가합니다.
      */
     private void addCursor(LikedQueryBuilder queryBuilder, String cursor) {
+        if (cursor == null) {
+            return;
+        }
         // 커서 조건 추가
         queryBuilder.addCursorCondition(parseCursor(cursor));
     }

@@ -75,6 +75,9 @@ public class ProposedFundingRepository {
      * 제안 목록 조회를 위한 커서 조건을 추가합니다.
      */
     private void addCursor(ProposedQueryBuilder queryBuilder, String cursor) {
+        if (cursor == null) {
+            return;
+        }
         // 커서 조건 추가
         queryBuilder.addCursorCondition(parseCursor(cursor));
     }

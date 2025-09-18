@@ -81,6 +81,9 @@ public class ParticipatedFundingRepository {
      * 보고싶어요 목록 조회를 위한 동적 조건을 추가합니다.
      */
     private void addCursor(ParticipatedQueryBuilder queryBuilder, String cursor) {
+        if (cursor == null) {
+            return;
+        }
         // 커서 조건 추가
         queryBuilder.addCursorCondition(parseCursor(cursor));
     }
