@@ -4,6 +4,7 @@ import io.ssafy.cinemoa.cinema.enums.CinemaFeature;
 import io.ssafy.cinemoa.funding.enums.FundingSortOrder;
 import io.ssafy.cinemoa.funding.enums.FundingType;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public class SearchRequest {
     private FundingType fundingType;
     private Long category;
     private List<String> region;
-    private CinemaFeature theaterType;
+    private Set<CinemaFeature> theaterType;
     private Boolean isClosed;
     private String nextCursor;
 }

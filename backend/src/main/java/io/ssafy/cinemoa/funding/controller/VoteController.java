@@ -2,7 +2,6 @@ package io.ssafy.cinemoa.funding.controller;
 
 import io.ssafy.cinemoa.funding.dto.VoteCreateRequest;
 import io.ssafy.cinemoa.funding.service.FundingService;
-import io.ssafy.cinemoa.funding.service.SearchService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class VoteController {
 
     private final FundingService fundingService;
-    private final SearchService searchService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createVote(@RequestBody VoteCreateRequest request) {

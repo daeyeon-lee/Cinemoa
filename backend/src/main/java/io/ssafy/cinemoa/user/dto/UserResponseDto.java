@@ -12,11 +12,10 @@
 // }
 package io.ssafy.cinemoa.user.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -24,7 +23,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserResponseDto {
     private String nickname;
-    
-    @JsonProperty("profile_img_url")
+
     private String profileImgUrl;
 }

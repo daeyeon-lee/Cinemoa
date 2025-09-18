@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -143,7 +144,7 @@ public class FundingFilterRepository {
             queryBuilder.addFundingTypeFilter(request.getFundingType());
         }
     }
-    
+
     private String createCursor(LocalDateTime createdAt, Long id) {
         String cursorData = createdAt + "_" + id;
         return Base64.getEncoder().encodeToString(cursorData.getBytes(StandardCharsets.UTF_8));
@@ -300,20 +301,32 @@ public class FundingFilterRepository {
             params.add(categoryId);
         }
 
-        public void addTheaterTypeFilter(CinemaFeature theaterType) {
-            switch (theaterType) {
-                case IMAX -> sql.append(" AND s.is_imax = true");
-                case FDX -> sql.append(" AND s.is_4dx = true");
-                case SCREENX -> sql.append(" AND s.is_screenx = true");
-                case DOLBY -> sql.append(" AND s.is_dolby = true");
-                case RECLINER -> sql.append(" AND s.is_recliner = true");
-                case NORMAL -> sql.append("""
-                         AND s.is_imax = false
-                         AND s.is_screenx = false
-                         AND s.is_4dx = false
-                         AND s.is_dolby = false
-                         AND s.is_recliner = false
-                        """);
+        public void addTheaterTypeFilter(Set<CinemaFeature> theaterTypes) {
+            if (theaterTypes == null || theaterTypes.isEmpty()) {
+                return;
+            }
+
+            List<String> conditions = new ArrayList<>();
+
+            for (CinemaFeature type : theaterTypes) {
+                switch (type) {
+                    case IMAX -> conditions.add("s.is_imax = true");
+                    case FDX -> conditions.add("s.is_4dx = true");
+                    case SCREENX -> conditions.add("s.is_screenx = true");
+                    case DOLBY -> conditions.add("s.is_dolby = true");
+                    case RECLINER -> conditions.add("s.is_recliner = true");
+                    case NORMAL -> conditions.add("""
+                            (s.is_imax = false AND s.is_screenx = false
+                             AND s.is_4dx = false AND s.is_dolby = false 
+                             AND s.is_recliner = false)
+                            """);
+                }
+            }
+
+            if (!conditions.isEmpty()) {
+                sql.append(" AND (")
+                        .append(String.join(" OR ", conditions))
+                        .append(")");
             }
         }
 

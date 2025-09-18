@@ -10,7 +10,6 @@ import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
 import io.ssafy.cinemoa.funding.service.ExpiringFundingService;
 import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.funding.service.RecommendedFundingListService;
-import io.ssafy.cinemoa.funding.service.SearchService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/funding")
 public class FundingController {
 
-
     private final FundingService fundingService;
-    private final SearchService searchService;
     private final FundingFavoriteService fundingFavoriteService;
 
     private final ExpiringFundingService expiringFundingService;

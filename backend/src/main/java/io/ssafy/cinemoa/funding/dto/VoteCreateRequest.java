@@ -16,7 +16,6 @@ public class VoteCreateRequest {
     private String videoName;
     private String posterUrl;
     private long cinemaId;
-    private LocalDate rangeStart;
-    private LocalDate rangeEnd;
-    private int maxPeople;
+    private LocalDate screenMinDate;
+    private LocalDate screenMaxDate;
 }

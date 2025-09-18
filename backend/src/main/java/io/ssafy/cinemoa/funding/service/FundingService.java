@@ -223,13 +223,13 @@ public class FundingService {
                 .videoName(request.getVideoName())
                 .leader(user)
                 .category(category)
-                .maxPeople(request.getMaxPeople())
+                .maxPeople(0)
                 .state(FundingState.EVALUATING)
                 .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
                 .build();
 
-        FundingEstimatedDay estimatedDay = new FundingEstimatedDay(null, vote, request.getRangeStart(),
-                request.getRangeEnd());
+        FundingEstimatedDay estimatedDay = new FundingEstimatedDay(null, vote, request.getScreenMinDate(),
+                request.getScreenMaxDate());
 
         fundingRepository.save(vote);
 
