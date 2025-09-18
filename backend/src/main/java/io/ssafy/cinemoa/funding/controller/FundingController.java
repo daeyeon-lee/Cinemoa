@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,8 +38,10 @@ public class FundingController {
     private final RecommendedFundingListService recommendedFundingListService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> createFunding(@RequestBody FundingCreateRequest request) {
-        FundingCreationResult result = fundingService.createFunding(request);
+    public ResponseEntity<ApiResponse<?>> createFunding(
+            @RequestPart(name = "bannerImg", required = false) MultipartFile image
+            , @RequestPart(name = "request") FundingCreateRequest request) {
+        FundingCreationResult result = fundingService.createFunding(image, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ofSuccess(result));
     }
 

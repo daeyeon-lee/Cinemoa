@@ -39,4 +39,8 @@ public class ResourceNotFoundException extends BaseException {
     public static ResourceNotFoundException ofWonAuth(String message) {
         return new ResourceNotFoundException(message, ResourceCode.WONAUTH);
     }
+
+    public static ResourceNotFoundException ofImage() {
+        return new ResourceNotFoundException("존재하지 않는 이미지입니다.", ResourceCode.IMAGE);
+    }
 }
