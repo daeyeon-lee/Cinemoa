@@ -170,16 +170,15 @@ public class AccountTransferApiClient {
 
         // 4. 용도별 로깅 처리
         if (errorCode.isSuccess()) {
-            log.info("■■■■■■■■{} 성공 - 거래번호: {}, 거래일자: {}, 금액: {}, 펀딩ID: {}, 내부코드: {}■■■■■■■■",
+            log.info("■■■■■■■■ {} 성공 - 거래번호: {}, 거래일자: {}, 금액: {}, 펀딩ID: {} ■■■■■■■■",
                     transferType.getDescription(),
                     result.getTransactionUniqueNo(),
                     result.getTransactionDate(),
                     amount,
-                    fundingId,
-                    errorCode.getCode());
+                    fundingId);
         } else {
             log.warn(
-                    "■■■■■■■■{} 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 출금계좌: {}, 입금계좌: {}, 금액: {}, 펀딩ID: {}■■■■■■■■",
+                    "■■■■■■■■ {} 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 출금계좌: {}, 입금계좌: {}, 금액: {}, 펀딩ID: {} ■■■■■■■■",
                     transferType.getDescription(),
                     apiCode,
                     apiMessage,

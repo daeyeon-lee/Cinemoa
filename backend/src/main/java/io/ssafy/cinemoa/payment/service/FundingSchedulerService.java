@@ -67,9 +67,10 @@ public class FundingSchedulerService {
      * 3. 펀딩 상태를 SUCCESS 또는 FAILED로 업데이트
      */
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정
+
     @Transactional
     public void checkFundingResults() {
-        log.info("■■■■■■■■펀딩 성공/실패 판단 스케줄러 시작■■■■■■■■");
+        log.info("■■■■■■■■ 펀딩 성공/실패 판단 스케줄러 시작 ■■■■■■■■");
 
         try {
             // 1. 어제 마감된 펀딩들 조회 (ON_PROGRESS 상태인 것들만)
@@ -88,7 +89,7 @@ public class FundingSchedulerService {
                 processFundingResult(funding);
             }
 
-            log.info("■■■■■■■■펀딩 성공/실패 판단 스케줄러 완료■■■■■■■■");
+            log.info("■■■■■■■■ 펀딩 성공/실패 판단 스케줄러 완료 ■■■■■■■■");
 
         } catch (Exception e) {
             log.error("펀딩 성공/실패 판단 중 오류 발생: {}", e.getMessage(), e);
@@ -105,7 +106,7 @@ public class FundingSchedulerService {
     @Scheduled(cron = "0 0 7 * * *") // 매일 오전 7시
     @Transactional
     public void transferToCinemaAccounts() {
-        log.info("■■■■■■■■영화관 송금 스케줄러 시작■■■■■■■■");
+        log.info("■■■■■■■■ 영화관 송금 스케줄러 시작 ■■■■■■■■");
 
         try {
             // 1. 어제 성공한 펀딩들 조회 (Cinema, Screen 정보 포함)
@@ -125,7 +126,7 @@ public class FundingSchedulerService {
                 transferToCinema(funding);
             }
 
-            log.info("■■■■■■■■영화관 송금 스케줄러 완료■■■■■■■■");
+            log.info("■■■■■■■■ 영화관 송금 스케줄러 완료 ■■■■■■■■");
 
         } catch (Exception e) {
             log.error("영화관 송금 중 오류 발생: {}", e.getMessage(), e);
@@ -142,7 +143,7 @@ public class FundingSchedulerService {
     @Scheduled(cron = "0 0 8 * * *") // 매일 오전 8시
     @Transactional
     public void refundToFailedFundingParticipants() {
-        log.info("■■■■■■■■실패한 펀딩에 대한 참여자 환불 스케줄러 시작■■■■■■■■");
+        log.info("■■■■■■■■ 실패한 펀딩에 대한 참여자 환불 스케줄러 시작 ■■■■■■■■");
 
         try {
             // 1. 어제 실패한 펀딩들 조회 (Cinema, Screen 정보 포함)
@@ -162,7 +163,7 @@ public class FundingSchedulerService {
                 refundToParticipants(funding);
             }
 
-            log.info("■■■■■■■■실패한 펀딩에 대한 참여자 환불 스케줄러 완료■■■■■■■■");
+            log.info("■■■■■■■■ 실패한 펀딩에 대한 참여자 환불 스케줄러 완료 ■■■■■■■■");
 
         } catch (Exception e) {
             log.error("참여자 환불 처리 중 오류 발생: {}", e.getMessage(), e);
@@ -240,6 +241,7 @@ public class FundingSchedulerService {
                         .funding(funding)
                         .balance(totalAmount)
                         .state(FundingTransactionState.SUCCESS)
+                        .processedAt(LocalDateTime.now())
                         .build();
 
                 fundingTransactionRepository.save(fundingTransaction);
@@ -274,9 +276,9 @@ public class FundingSchedulerService {
             validateTransferRequirements(funding);
             String fundingAccount = funding.getFundingAccount();
 
-            // 2. 해당 펀딩에 참여한 참여자 목록 조회 (SUCCESS 상태인 UserTransaction 목록)
+            // 2. 해당 펀딩에 참여한 참여자 목록 조회 (SUCCESS 상태인 UserTransaction 목록, User 정보 포함)
             List<UserTransaction> successTransactions = userTransactionRepository
-                    .findByFunding_FundingIdAndState(fundingId, UserTransactionState.SUCCESS);
+                    .findByFunding_FundingIdAndStateWithUser(fundingId, UserTransactionState.SUCCESS);
 
             if (successTransactions.isEmpty()) {
                 log.warn("환불할 참여자가 없습니다 - 펀딩ID: {}", fundingId);
@@ -287,50 +289,7 @@ public class FundingSchedulerService {
 
             // 3. 각 참여자별로 환불 처리
             for (UserTransaction userTransaction : successTransactions) {
-                try {
-                    User user = userTransaction.getUser();
-                    Integer refundAmount = userTransaction.getBalance();
-
-                    // 사용자 계좌 정보 조회
-                    String userAccountNo = user.getRefundAccountNumber();
-                    if (userAccountNo == null || userAccountNo.trim().isEmpty()) {
-                        log.warn("사용자 환불 계좌 정보가 없습니다 - 펀딩ID: {}, 사용자ID: {}", fundingId, user.getId());
-                        handleRefundFailure(user, funding, "USER_ACCOUNT_NOT_FOUND");
-                        continue; // 다음 참여자로 넘어감
-                    }
-
-                    // 참여자 계좌로 환불 실행 (금융망 API 호출)
-                    AccountTransferResponse transferResponse = accountTransferApiClient.processRefundTransfer(
-                            fundingAccount,
-                            userAccountNo,
-                            String.valueOf(refundAmount),
-                            fundingId);
-
-                    // 이체 결과 확인 및 처리
-                    if (transferResponse.getResponseCode().equals("PAY_0000")) {
-                        // 성공 시 UserTransaction 상태를 REFUNDED로 업데이트
-                        userTransaction.setTransactionUniqueNo(transferResponse.getTransactionUniqueNo());
-                        userTransaction.setState(UserTransactionState.REFUNDED);
-                        userTransaction.setProcessedAt(LocalDateTime.now());
-                        userTransactionRepository.save(userTransaction);
-
-                        log.info("참여자 환불 성공 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 거래번호: {}",
-                                fundingId, user.getId(), refundAmount, transferResponse.getTransactionUniqueNo());
-                    } else {
-                        // 실패 시 에러 로깅 및 개별 참여자 환불 실패 처리
-                        log.error("참여자 환불 실패 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 에러코드: {}",
-                                fundingId, user.getId(), refundAmount, transferResponse.getResponseCode());
-
-                        handleRefundFailure(user, funding, "REFUND_FAILED: " + transferResponse.getResponseCode());
-                    }
-
-                } catch (Exception e) {
-                    log.error("개별 참여자 환불 처리 중 에러 발생 - 펀딩ID: {}, 사용자ID: {}, 에러: {}",
-                            fundingId, userTransaction.getUser().getId(), e.getMessage(), e);
-
-                    handleRefundFailure(userTransaction.getUser(), funding,
-                            "INDIVIDUAL_REFUND_ERROR: " + e.getMessage());
-                }
+                processIndividualRefund(userTransaction, fundingId, fundingAccount);
             }
 
             log.info("환불 처리 완료 - 펀딩ID: {}", fundingId);
@@ -340,6 +299,62 @@ public class FundingSchedulerService {
         } catch (Exception e) {
             log.error("참여자 환불 처리 중 에러 발생 - 펀딩ID: {}, 에러 내용: {}",
                     funding.getFundingId(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 개별 참여자 환불 처리
+     * 
+     * @param userTransaction 환불할 사용자 거래
+     * @param fundingId       펀딩 ID
+     * @param fundingAccount  펀딩 계좌번호
+     */
+    private void processIndividualRefund(UserTransaction userTransaction, Long fundingId, String fundingAccount) {
+
+        try {
+            User user = userTransaction.getUser();
+            Integer refundAmount = userTransaction.getBalance();
+
+            // 사용자 계좌 정보 조회
+            String userAccountNo = user.getRefundAccountNumber();
+            if (userAccountNo == null || userAccountNo.trim().isEmpty()) {
+                log.warn("사용자 환불 계좌 정보가 없습니다 - 펀딩ID: {}, 사용자ID: {}", fundingId, user.getId());
+                handleRefundFailure(user.getId(), fundingId, "USER_ACCOUNT_NOT_FOUND");
+                return; // 메서드 종료
+            }
+
+            // 참여자 계좌로 환불 실행 (금융망 API 호출)
+            AccountTransferResponse transferResponse = accountTransferApiClient.processRefundTransfer(
+                    fundingAccount,
+                    userAccountNo,
+                    String.valueOf(refundAmount),
+                    fundingId);
+
+            // 이체 결과 확인 및 처리
+            if (transferResponse.getResponseCode().equals("PAY_0000")) {
+                // 성공 시 UserTransaction 상태를 REFUNDED로 업데이트
+                userTransaction.setTransactionUniqueNo(transferResponse.getTransactionUniqueNo());
+                userTransaction.setState(UserTransactionState.REFUNDED);
+                userTransaction.setProcessedAt(LocalDateTime.now());
+                userTransactionRepository.save(userTransaction);
+
+                log.info("참여자 환불 성공 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 거래번호: {}",
+                        fundingId, user.getId(), refundAmount, transferResponse.getTransactionUniqueNo());
+            } else {
+                // 실패 시 에러 로깅 및 개별 참여자 환불 실패 처리
+                log.error("참여자 환불 실패 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 에러코드: {}",
+                        fundingId, user.getId(), refundAmount, transferResponse.getResponseCode());
+
+                handleRefundFailure(user.getId(), fundingId,
+                        "REFUND_FAILED: " + transferResponse.getResponseCode());
+            }
+
+        } catch (Exception e) {
+            log.error("개별 참여자 환불 처리 중 에러 발생 - 펀딩ID: {}, 사용자ID: {}, 에러: {}",
+                    fundingId, userTransaction.getUser().getId(), e.getMessage(), e);
+
+            handleRefundFailure(userTransaction.getUser().getId(), fundingId,
+                    "INDIVIDUAL_REFUND_ERROR: " + e.getMessage());
         }
     }
 
@@ -434,9 +449,7 @@ public class FundingSchedulerService {
      * 
      * - UserTransaction 상태 업데이트
      */
-    private void handleRefundFailure(User user, Funding funding, String reason) {
-        Long fundingId = funding.getFundingId();
-        Long userId = user.getId();
+    private void handleRefundFailure(Long userId, Long fundingId, String reason) {
 
         try {
             // User Transaction에 기록이 있는 경우
