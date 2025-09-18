@@ -8,6 +8,9 @@ import { RecentlyViewedSection } from './sections/RecentlyViewedSection';
 import { CategoryButton } from '@/components/buttons/CategoryButton';
 import { Input } from '@/components/ui/input';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
+import { HOME_CATEGORIES } from '@/constants/categories';
+import { navigateToCategory } from '@/utils/categoryNavigation';
+
 import type { ListCardData } from './types/listCardData';
 
 const sampleCardData: ListCardData = {
@@ -41,21 +44,16 @@ export default function Home() {
   const popularItems = Array(8).fill(sampleCardData);
   const recentlyViewedItems = Array(10).fill(sampleCardData);
 
-  // 카테고리 데이터 (아이콘은 임시로 텍스트 사용, 실제로는 아이콘 컴포넌트 사용)
-  const categories = [
-    { name: '영화', icon: '🎬' },
-    { name: '시리즈', icon: '📺' },
-    { name: '공연', icon: '🎭' },
-    { name: '스포츠중계', icon: '⚽' },
-  ];
+  // TODO: 실제 투표 카테고리 데이터로 교체 필요
+  const categories = HOME_CATEGORIES;
 
   return (
     <div className="w-full max-w-[1200px] mx-auto">
-      <main className="grid grid-cols-12 gap-6">
+      <main className="grid grid-cols-12 gap-5">
         {/* 로고+검색+카테고리 - Full Width */}
         <div className="col-span-12 py-8">
           {/* Desktop: 로고 + 검색 + 카테고리 */}
-          <div className="hidden md:flex flex-col items-center gap-8">
+          <div className="hidden md:flex flex-col items-center gap-8 w-full">
             <Image
               src="/cinemoa_logo_long.png"
               alt="씨네모아 로고"
@@ -65,24 +63,20 @@ export default function Home() {
               priority
             />
 
-            <div className="flex flex-col items-center gap-2 w-full">
-              <Input
-                type="text"
-                placeholder="보고 싶은 상영물을 검색해보세요!"
-                className="w-full"
-                style={{ width: `${categories.length * 130 + (categories.length - 1) * 12}px` }}
-              />
+            <div className="flex flex-col items-center gap-2">
+              <Input type="text" placeholder="보고 싶은 상영물을 검색해보세요!" className="w-full" />
 
               <div className="flex gap-1">
                 {categories.map((category) => (
                   <CategoryButton
-                    key={category.name}
+                    key={category.value}
                     icon={category.icon}
-                    onClick={() => console.log(`${category.name} 선택됨`)}
-                    containerBgClass="bg-BG-0"
+                    categoryValue={category.value}
+                    page="home"
                     uniformWidth={true}
+                    onClick={() => navigateToCategory({ category: category.value })}
                   >
-                    {category.name}
+                    {category.label}
                   </CategoryButton>
                 ))}
               </div>
@@ -90,23 +84,20 @@ export default function Home() {
           </div>
 
           {/* Mobile: 카테고리 버튼만 */}
-          <div className="md:hidden">
-            <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <div className="flex gap-1 justify-center min-w-max">
-                {categories.map((category) => (
-                  <CategoryButton
-                    key={category.name}
-                    icon={category.icon}
-                    isMobile={true}
-                    onClick={() => console.log(`${category.name} 선택됨`)}
-                    containerBgClass="bg-BG-0"
-                    uniformWidth={true}
-                    className="flex-shrink-0"
-                  >
-                    {category.name}
-                  </CategoryButton>
-                ))}
-              </div>
+          <div className="md:hidden px-4">
+            <div className="flex gap-1 justify-center">
+              {categories.map((category) => (
+                <CategoryButton
+                  key={category.value}
+                  icon={category.icon}
+                  categoryValue={category.value}
+                  page="home"
+                  uniformWidth={true}
+                  onClick={() => navigateToCategory({ category: category.value })}
+                >
+                  {category.label}
+                </CategoryButton>
+              ))}
             </div>
           </div>
         </div>

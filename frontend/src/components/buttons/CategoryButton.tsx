@@ -1,126 +1,89 @@
 'use client';
 
 import React from 'react';
-import { Button, type ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-interface CategoryButtonProps extends Omit<ButtonProps, 'variant'> {
-  /** 버튼에 표시될 텍스트 (필수) */
+import type { CategoryValue } from '@/constants/categories';
+import { ComponentType } from 'react';
+
+interface CategoryButtonProps {
   children: React.ReactNode;
-  /** 아이콘 (필수) */
-  icon: React.ReactNode;
-  /** 선택 상태 */
+  icon?: ComponentType<any> | null;
   selected?: boolean;
-  /** 모바일 버전 여부 */
-  isMobile?: boolean;
-  /** 노치 크기 (기본값: 16px) */
-  notchSize?: number;
-  /** 컨테이너 배경 클래스 (노치 색상과 맞춤) */
-  containerBgClass?: string;
-  /** 클릭 핸들러 */
-  onClick?: () => void;
-  /** 홈에서 사용할 때 동일한 너비로 통일 */
+  page?: 'home' | 'category' | 'vote' | 'search';
+  categoryValue?: CategoryValue;
+  showNotches?: boolean;
   uniformWidth?: boolean;
+  onClick?: () => void;
+  className?: string;
 }
 
 export function CategoryButton({
   children,
   icon,
   selected = false,
-  isMobile = false,
-  notchSize = 16,
-  containerBgClass = 'bg-BG-0',
+  page = 'home',
+  categoryValue,
+  showNotches = true,
+  uniformWidth = false,
   onClick,
   className,
-  uniformWidth = false,
-  ...props
 }: CategoryButtonProps) {
-  // 노치의 절반 크기 (버튼 바깥으로 반쯤 겹치게 하기 위함)
-  const notchOffset = notchSize / 2;
+  const isVotePage = page === 'vote';
 
-  // 선택 상태에 따른 스타일 결정
-  const getStyles = () => {
-    if (selected) {
-      return {
-        bg: 'bg-BG-2',
-        text: 'text-primary',
-        iconColor: 'text-Brand1-Primary'
-      };
-    } else {
-      return {
-        bg: 'bg-BG-2 hover:bg-Brand1-Primary',
-        text: 'text-primary',
-        iconColor: 'text-primary'
-      };
-    }
-  };
+  const baseClasses = cn(
+    'relative rounded-xl border-0 transition-colors cursor-pointer group',
+    // 웹 스타일 (기본) - 가로 배치
+    'inline-flex justify-center items-center gap-1.5 px-5 py-3',
+    // 모바일 스타일 - 세로 배치
+    'max-sm:flex max-sm:flex-col max-sm:px-4 max-sm:py-2.5 max-sm:gap-1',
+    // 균일한 폭 설정 (스포츠중계 크기 기준)
+    uniformWidth && 'w-36 max-sm:w-20',
+    // 기본 색상
+    selected ? (isVotePage ? 'bg-[#2cd8ce] text-primary' : 'bg-[#e83045] text-primary') : 'bg-slate-700 text-primary',
+    // 호버 색상
+    !selected && (isVotePage ? 'hover:bg-[#2cd8ce] hover:text-primary' : 'hover:bg-[#e83045] hover:text-primary'),
+    className,
+  );
 
-  const styles = getStyles();
+  const iconClasses = cn(
+    // 아이콘 색상 - vote 페이지에서는 기본적으로 brand2 색상
+    isVotePage && !selected ? 'text-[#2cd8ce]' : 'text-[#e83045]',
+    selected && 'text-primary',
+    // 그룹 호버 시 아이콘 색상 변경
+    !selected && 'group-hover:text-primary',
+  );
+
+  const labelClasses = cn(
+    // 웹 라벨 크기 (p2-b에 해당하는 클래스) - 기본
+    'text-p2-b',
+    // 모바일 라벨 크기 (caption1-b에 해당하는 클래스)
+    'max-sm:text-caption1-b',
+  );
 
   return (
-    <div className="relative inline-flex">
-      <Button
-        variant="secondary"
-        onClick={onClick}
-        className={cn(
-          // 카테고리 버튼 기본 스타일
-          'relative rounded-xl transition-all duration-200',
-          // 기본 Button 컴포넌트의 고정 높이 제거
-          'h-auto',
-          styles.bg,
-          styles.text,
-          // 모바일/웹 레이아웃
-          isMobile 
-            ? 'flex-col gap-1 px-4 py-2.5' // 모바일: 세로 정렬
-            : 'flex-row gap-1.5 px-5 py-3', // 웹: 가로 정렬
-          // 홈에서 동일 너비 적용 (웹/모바일 모두 - 스포츠중계 기준)
-          uniformWidth && (isMobile ? 'w-[90px]' : 'w-[130px]'), // 스포츠중계가 가장 긴 텍스트
-          className
+    <div className="relative flex">
+      <button onClick={onClick} className={baseClasses}>
+        {icon && (
+          <div className={iconClasses}>
+            {React.createElement(icon, {
+              width: 20,
+              height: 20,
+              className: 'max-sm:w-7 max-sm:h-7',
+              stroke: 'currentColor',
+            })}
+          </div>
         )}
-        {...props}
-      >
-        {/* 아이콘 */}
-        <div className={cn(
-          'relative flex items-center justify-center',
-          styles.iconColor,
-          isMobile ? 'w-7 h-7' : 'w-5 h-5' // 모바일: 28px, 웹: 20px
-        )}>
-          {icon}
-        </div>
-        
-        {/* 텍스트 */}
-        <div className={cn(
-          isMobile ? 'caption1-b' : 'p2-b' // 모바일: caption1-b, 웹: p2-b
-        )}>
-          {children}
-        </div>
-      </Button>
+        <div className={labelClasses}>{children}</div>
+      </button>
 
-      {/* 좌측 노치 */}
-      <div
-        className={cn(
-          'absolute rounded-full pointer-events-none inset-y-1/2 -translate-y-1/2',
-          containerBgClass
-        )}
-        style={{
-          width: `${notchSize}px`,
-          height: `${notchSize}px`,
-          left: `-${notchOffset}px`,
-        }}
-      />
-
-      {/* 우측 노치 */}
-      <div
-        className={cn(
-          'absolute rounded-full pointer-events-none inset-y-1/2 -translate-y-1/2',
-          containerBgClass
-        )}
-        style={{
-          width: `${notchSize}px`,
-          height: `${notchSize}px`,
-          right: `-${notchOffset}px`,
-        }}
-      />
+      {/* 노치 */}
+      {showNotches && (
+        <>
+          <div className="absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 bg-BG-0 w-4 h-4 -left-2" />
+          <div className="absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 bg-BG-0 w-4 h-4 -right-2" />
+        </>
+      )}
     </div>
   );
 }
