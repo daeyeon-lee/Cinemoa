@@ -123,20 +123,10 @@ export default function Category() {
       sidebar={
         <div className="space-y-10">
           {/* 지역 필터 */}
-          <RegionFilterPanel
-            regions={regions}
-            value={selectedRegions}
-            onChange={setSelectedRegions}
-            onReset={() => setSelectedRegions([])}
-          />
+          <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} />
 
           {/* 상영관 타입 필터 */}
-          <TheaterTypeFilterPanel
-            types={theaterTypes}
-            value={selectedTheaterType}
-            onChange={setSelectedTheaterType}
-            onReset={() => setSelectedTheaterType([])}
-          />
+          <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} />
         </div>
       }
       content={
@@ -159,6 +149,5 @@ export default function Category() {
         </div>
       }
     />
->>>>>>> 0927b22872d1918649b33b1438d85b92fa161c28
   );
 }
