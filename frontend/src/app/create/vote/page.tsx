@@ -4,9 +4,9 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import VoteFundingInfoTab from './component/VoteFundingInfoTab';
-import { fundinginfo } from '@/types/funding';
-import { movieinfo } from '@/types/funding';
-import { theaterinfo } from '@/types/funding';
+import { VoteFundinginfo } from '@/types/vote';
+import { VoteMovieinfo } from '@/types/vote';
+import { VoteTheaterinfo } from '@/types/vote';
 import VoteMovieInfoTab from './component/VoteMovieInfoTab';
 import VoteTheaterInfoTab from './component/VoteTheaterInfoTab';
 
@@ -21,12 +21,12 @@ interface MovieData {
 
 export default function VotePage() {
   const [voteActiveTab, setVoteActiveTab] = useState('vote-funding-info');
-  const [fundingData, setVoteFundingData] = useState<fundinginfo | null>(null);
-  const [movieData, setVoteMovieData] = useState<movieinfo | null>(null);
-  const [theaterData, setVoteTheaterData] = useState<theaterinfo | null>(null);
+  const [fundingData, setVoteFundingData] = useState<VoteFundinginfo | null>(null);
+  const [movieData, setVoteMovieData] = useState<VoteMovieinfo | null>(null);
+  const [theaterData, setVoteTheaterData] = useState<VoteTheaterinfo | null>(null);
 
   // 펀딩 정보 데이터 처리 함수
-  const handleFundingData = (data: fundinginfo) => {
+  const handleFundingData = (data: VoteFundinginfo) => {
     console.log('=== handleFundingData ===');
     console.log('받은 데이터:', data);
     setVoteFundingData(data);
@@ -34,7 +34,7 @@ export default function VotePage() {
   };
 
   // 상영물 정보 데이터 처리 함수
-  const handleMovieData = (data: movieinfo) => {
+  const handleMovieData = (data: VoteMovieinfo) => {
     console.log('=== handleMovieData ===');
     console.log('받은 데이터:', data);
     setVoteMovieData(data);
@@ -42,7 +42,7 @@ export default function VotePage() {
   };
 
   // 상영관 정보 데이터 처리 함수
-  const handleTheaterData = (data: theaterinfo) => {
+  const handleTheaterData = (data: VoteTheaterinfo) => {
     setVoteTheaterData(data);
     setVoteActiveTab('vote-payment');
   };

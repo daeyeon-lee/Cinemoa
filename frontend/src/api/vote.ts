@@ -11,6 +11,7 @@ export const creatVoteFunding = async (data: CreateVoteFundingParams): Promise<C
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 

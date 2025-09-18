@@ -9,6 +9,7 @@ export const getCategories = async (): Promise<CategoryResponse[]> => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {
