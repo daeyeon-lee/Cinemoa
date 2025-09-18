@@ -10,8 +10,7 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
-import { startWonauth } from '@/api/wonauth';
-// import { startWonauth, verifyWonauth } from '@/api/wonauth';
+import { startWonauth, verifyWonauth } from '@/api/wonauth';
 
 // 은행 목록
 const banks = [
@@ -121,6 +120,7 @@ export default function Step2Page() {
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [isVerificationSuccess, setIsVerificationSuccess] = useState(false);
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -235,23 +235,24 @@ export default function Step2Page() {
       return;
     }
 
-    // try {
-      // setVerificationCodeError('');
-      // const result = await verifyWonauth({
-      //   accountNo: accountNumber,
-      //   authCode: verificationCode,
-      // });
+    try {
+      setVerificationCodeError('');
+      const result = await verifyWonauth({
+        accountNo: accountNumber,
+        authCode: verificationCode,
+      });
       
-      // if (result.code === 0) {
-      //   setIsVerificationSuccess(true);
-      //   console.log('인증 완료, secretKey:', result.data.secretKey);
-      // } else {
-      //   setVerificationCodeError(result.message || '인증에 실패했습니다.');
-      // }
-    // } catch (error: any) {
-    //   console.error('인증번호 검증 실패:', error);
-    //   setVerificationCodeError(error.message || '인증번호가 올바르지 않습니다.');
-    // }
+      if (result.code === 0) {
+        setIsVerificationSuccess(true);
+        setIsVerificationSent(true);
+        console.log('인증 완료, secretKey:', result.data.secretKey);
+      } else {
+        setVerificationCodeError(result.message || '인증에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('인증번호 검증 실패:', error);
+      setVerificationCodeError(error.message || '인증번호가 올바르지 않습니다.');
+    }
   };
 
   return (
@@ -355,6 +356,11 @@ export default function Step2Page() {
                   if (verificationCodeError) {
                     setVerificationCodeError('');
                   }
+                  // 인증번호가 변경되면 인증 상태 초기화
+                  if (isVerificationSent) {
+                    setIsVerificationSent(false);
+                    setIsVerificationSuccess(false);
+                  }
                 },
               })}
               placeholder="인증번호 4자리를 입력해주세요"
@@ -365,19 +371,19 @@ export default function Step2Page() {
             <Button
               type="button"
               onClick={handleVerificationRequest}
-              variant={isVerificationRequested ? 'outline' : 'tertiary'}
+              variant={isVerificationSent ? 'outline' : 'tertiary'}
               disabled={!isVerificationRequested}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
-              {isVerificationRequested ? '인증 완료' : '인증 요청'}
+              {isVerificationSent ? '인증 완료' : '인증 요청'}
             </Button>
           </div>
-          {(form.formState.errors.verificationCode || verificationCodeError) && (
+          {(form.formState.errors.verificationCode || verificationCodeError) && !isVerificationSuccess && (
             <p className="text-Brand1-Primary text-caption1-b mt-1">
               {form.formState.errors.verificationCode?.message || verificationCodeError}
             </p>
           )}
-          {isVerificationSuccess && (
+          {isVerificationSuccess && !verificationCodeError && (
             <p className="text-green-600 text-caption1-b mt-1">
               인증 완료
             </p>
