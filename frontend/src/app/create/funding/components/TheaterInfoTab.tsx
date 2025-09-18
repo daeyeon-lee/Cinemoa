@@ -9,19 +9,18 @@ import { Separator } from '@/components/ui/separator';
 import InformationIcon from '@/component/icon/infomrationIcon';
 import { useGetCinemas, useGetCinemaDetail, useGetReservationTime } from '@/api/hooks/useCinemaQueries';
 import { CinemaResponse } from '@/types/cinema';
-import { useFundingStore } from '@/stores/fundingStore';
 import { createFunding } from '@/api/funding';
 import { CalendarDemo } from '@/components/calenderdemo';
-import { theaterinfo } from '@/types/funding';
+import { theaterinfo, fundinginfo, movieinfo, CreateFundingParams } from '@/types/funding';
 
 interface TheaterInfoTabProps {
   onNext: (data: theaterinfo) => void;
   onPrev?: () => void;
+  fundingData?: fundinginfo;
+  movieData?: movieinfo;
 }
 
-export default function TheaterInfoTab({ onNext, onPrev }: TheaterInfoTabProps) {
-  const { setTheaterInfo, fundinginfo, movieinfo } = useFundingStore();
-
+export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData }: TheaterInfoTabProps) {
   // 상태 관리
   const [selectedDistrict, setSelectedDistrict] = useState<string>(''); // 선택된 구 (예: '강남구', '서초구')
   const [selectedTheater, setSelectedTheater] = useState<string>(''); // 선택된 영화관 ID (예: '90', '91')
@@ -41,23 +40,14 @@ export default function TheaterInfoTab({ onNext, onPrev }: TheaterInfoTabProps) 
 
   // 다음 단계로 넘어가는 핸들러
   const handleNext = async () => {
-    // Store에 저장
-    setTheaterInfo({
-      cinemaId: selectedCinemaId || 0,
-      screenday: selectedDate,
-      scrrenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
-      scrrenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
-      maxPeople: participantCount,
-    });
+    // 전달받은 데이터 확인
+    console.log('=== TheaterInfoTab 데이터 확인 ===');
+    console.log('fundingData:', fundingData);
+    console.log('movieData:', movieData);
+    console.log('=====================================');
 
-    // 모든 데이터를 합쳐서 API 요청
-    const fundingData = {
-      userId: 1,
-      title: fundinginfo.title,
-      content: fundinginfo.content,
-      categoryId: movieinfo.categoryId,
-      videoName: movieinfo.videoName,
-      posterUrl: movieinfo.posterUrl || '',
+    // 각각의 정보를 구조화해서 API 요청
+    const theaterData: theaterinfo = {
       cinemaId: selectedCinemaId || 0,
       screenId: selectedScreenId || 0,
       screenday: selectedDate,
@@ -66,8 +56,15 @@ export default function TheaterInfoTab({ onNext, onPrev }: TheaterInfoTabProps) 
       maxPeople: participantCount,
     };
 
+    const completeData: CreateFundingParams = {
+      userId: 1,
+      fundinginfo: fundingData,
+      movieinfo: movieData,
+      theaterinfo: theaterData,
+    };
+
     try {
-      const result = await createFunding(fundingData);
+      const result = await createFunding(completeData);
       console.log('=== 펀딩 생성 성공 ===');
       console.log('응답:', result);
       alert('펀딩이 성공적으로 생성되었습니다!');
@@ -78,24 +75,13 @@ export default function TheaterInfoTab({ onNext, onPrev }: TheaterInfoTabProps) 
       alert('펀딩 생성에 실패했습니다. 다시 시도해주세요.');
     }
 
-    // 기존 데이터도 전달 (호환성을 위해)
-    const theaterData: theaterinfo = {
-      cinemaId: selectedCinemaId || 0, // 상영관ID
-      screenday: selectedDate, // 상영일
-      scrrenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0, // 상영시작시간
-      scrrenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0, // 상영종료시간
-      maxPeople: participantCount, // 모집 인원수
-    };
-
     onNext(theaterData);
   };
 
-  // React Query로 API 호출 (상영관 종류와 지역이 모두 선택되었을 때만)
+  // React Query
   const { data: cinemas, isLoading, error } = useGetCinemas('서울시', selectedDistrict === '전체' ? '' : selectedDistrict, selectedFeature);
-
   // 선택된 영화관의 상세 정보 조회
   const { data: cinemaDetail, isLoading: isDetailLoading } = useGetCinemaDetail(selectedCinemaId || 0);
-
   // 선택된 상영관의 예약 가능 시간 조회
   const { data: reservationTime, isLoading: isReservationTimeLoading } = useGetReservationTime(selectedScreenId || 0, selectedDate ? new Date(selectedDate) : new Date());
 

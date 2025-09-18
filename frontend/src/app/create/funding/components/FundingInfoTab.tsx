@@ -8,9 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import Link from 'next/link';
-import { useFundingStore } from '@/stores/fundingStore';
-
 import { fundinginfo } from '@/types/funding';
 
 const formSchema = z.object({
@@ -19,15 +16,12 @@ const formSchema = z.object({
 });
 
 // 명시적으로 펀딩 데이터 타입 정의
-
 interface FundingInfoTabProps {
   onNext: (data: fundinginfo) => void;
   onPrev?: () => void;
 }
 
 export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) {
-  const { setFundingInfo } = useFundingStore();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -44,13 +38,7 @@ export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) 
       console.log('입력된 값:', values);
       console.log('==========================');
 
-      // Store에 저장
-      setFundingInfo({
-        title: values.title,
-        content: values.content,
-      });
-
-      // 명시적으로 FundingData 타입으로 변환
+      // 명시적으로 fundinginfo 타입으로 변환
       const fundingData: fundinginfo = {
         title: values.title,
         content: values.content,
@@ -94,11 +82,7 @@ export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) 
                 </FormLabel>
                 <div className="flex-1">
                   <FormControl>
-                    <Textarea
-                      placeholder="생성할 펀딩에 대해 자세히 설명해주세요"
-                      {...field}
-                      className="min-h-[135px] resize-none"
-                    />
+                    <Textarea placeholder="생성할 펀딩에 대해 자세히 설명해주세요" {...field} className="min-h-[135px] resize-none" />
                   </FormControl>
                   <FormMessage className="mt-1 " />
                 </div>

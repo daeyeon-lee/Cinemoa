@@ -55,13 +55,7 @@ export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
     console.log('============================');
 
     // 결제 데이터 유효성 검사
-    const hasRequiredData =
-      paymentData.cardNumber1 &&
-      paymentData.cardNumber2 &&
-      paymentData.cardNumber3 &&
-      paymentData.cardNumber4 &&
-      paymentData.expiryDate &&
-      paymentData.cvc;
+    const hasRequiredData = paymentData.cardNumber1 && paymentData.cardNumber2 && paymentData.cardNumber3 && paymentData.cardNumber4 && paymentData.expiryDate && paymentData.cvc;
 
     console.log('필수 데이터 입력 여부:', hasRequiredData);
 
@@ -127,28 +121,14 @@ export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
               <Label className="h5-b text-primary">
                 유효 기간 (MM/YY) <span className="text-Brand1-Primary">*</span>
               </Label>
-              <Input
-                placeholder="MM/YY"
-                maxLength={5}
-                className="bg-BG-2"
-                value={paymentData.expiryDate}
-                onChange={handleExpiryDateChange}
-                onKeyDown={handleExpiryDateKeyDown}
-              />
+              <Input placeholder="MM/YY" maxLength={5} className="bg-BG-2" value={paymentData.expiryDate} onChange={handleExpiryDateChange} onKeyDown={handleExpiryDateKeyDown} />
             </div>
             {/* CVC*/}
             <div className="flex-1 space-y-2">
               <Label className="h5-b text-primary">
                 CVC <span className="text-Brand1-Primary">*</span>
               </Label>
-              <Input
-                type="password"
-                placeholder="3자리"
-                maxLength={3}
-                className="bg-BG-2"
-                value={paymentData.cvc}
-                onChange={(e) => setPaymentData({ ...paymentData, cvc: e.target.value })}
-              />
+              <Input type="password" placeholder="3자리" maxLength={3} className="bg-BG-2" value={paymentData.cvc} onChange={(e) => setPaymentData({ ...paymentData, cvc: e.target.value })} />
             </div>
           </div>
         </div>
@@ -172,13 +152,7 @@ export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
             <Label className="h5-b text-primary">
               생년월일(YYMMDD) <span className="text-Brand1-Primary">*</span>
             </Label>
-            <Input
-              placeholder="주민번호 앞 6자리"
-              maxLength={6}
-              className="bg-BG-2"
-              value={paymentData.birthDate}
-              onChange={(e) => setPaymentData({ ...paymentData, birthDate: e.target.value })}
-            />
+            <Input placeholder="주민번호 앞 6자리" maxLength={6} className="bg-BG-2" value={paymentData.birthDate} onChange={(e) => setPaymentData({ ...paymentData, birthDate: e.target.value })} />
           </div>
         </div>
       </div>
@@ -188,9 +162,7 @@ export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <InformationIcon />
-          <p className="p2-b text-tertiary">
-            프로젝트 만들기 버튼을 클릭하면 입력한 결제 정보에 따라 주최자의 티켓값이 결제됩니다.
-          </p>
+          <p className="p2-b text-tertiary">프로젝트 만들기 버튼을 클릭하면 입력한 결제 정보에 따라 주최자의 티켓값이 결제됩니다.</p>
         </div>
         <div className="flex items-center gap-2">
           <InformationIcon />
@@ -203,14 +175,7 @@ export default function PaymentTab({ onNext, onPrev }: PaymentTabProps) {
           <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
             이전
           </Button>
-          <Button
-            type="button"
-            variant="brand1"
-            size="lg"
-            className="w-full"
-            onClick={handleNext}
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext} disabled={isSubmitting}>
             {isSubmitting ? '처리 중...' : '다음'}
           </Button>
         </div>

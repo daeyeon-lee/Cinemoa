@@ -3,7 +3,10 @@
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import FundingInfoTab, { FundingData } from './components/FundingInfoTab';
+import FundingInfoTab from './components/FundingInfoTab';
+import { fundinginfo } from '@/types/funding';
+import { movieinfo } from '@/types/funding';
+import { theaterinfo } from '@/types/funding';
 import MovieInfoTab from './components/MovieInfoTab';
 import TheaterInfoTab from './components/TheaterInfoTab';
 import PaymentTab from './components/PaymentTab';
@@ -19,25 +22,29 @@ interface MovieData {
 
 export default function FundingPage() {
   const [activeTab, setActiveTab] = useState('funding-info');
-  const [fundingData, setFundingData] = useState<FundingData | null>(null);
-  const [movieData, setMovieData] = useState<MovieData | null>(null);
-  const [theaterData, setTheaterData] = useState<any>(null);
+  const [fundingData, setFundingData] = useState<fundinginfo | null>(null);
+  const [movieData, setMovieData] = useState<movieinfo | null>(null);
+  const [theaterData, setTheaterData] = useState<theaterinfo | null>(null);
   const [paymentData, setPaymentData] = useState<any>(null);
 
   // 펀딩 정보 데이터 처리 함수
-  const handleFundingData = (data: FundingData) => {
+  const handleFundingData = (data: fundinginfo) => {
+    console.log('=== handleFundingData ===');
+    console.log('받은 데이터:', data);
     setFundingData(data);
     setActiveTab('movie-info');
   };
 
   // 상영물 정보 데이터 처리 함수
-  const handleMovieData = (data: MovieData) => {
+  const handleMovieData = (data: movieinfo) => {
+    console.log('=== handleMovieData ===');
+    console.log('받은 데이터:', data);
     setMovieData(data);
     setActiveTab('theater-info');
   };
 
   // 상영관 정보 데이터 처리 함수
-  const handleTheaterData = (data: any) => {
+  const handleTheaterData = (data: theaterinfo) => {
     setTheaterData(data);
     setActiveTab('payment');
   };
@@ -73,7 +80,11 @@ export default function FundingPage() {
       case 'movie-info':
         return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} />;
       case 'theater-info':
-        return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} />;
+        console.log('=== TheaterInfoTab 렌더링 시 데이터 상태 ===');
+        console.log('fundingData:', fundingData);
+        console.log('movieData:', movieData);
+        console.log('=======================================');
+        return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} fundingData={fundingData || undefined} movieData={movieData || undefined} />;
       case 'payment':
         return <PaymentTab onNext={handlePaymentData} onPrev={handlePrevPayment} />;
       default:
@@ -93,36 +104,16 @@ export default function FundingPage() {
 
         {/* 네비게이션 탭 */}
         <div className="w-full flex px-4 py-2">
-          <Button
-            variant={activeTab === 'funding-info' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[25px] mx-1"
-            disabled
-          >
+          <Button variant={activeTab === 'funding-info' ? 'brand1' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
             펀딩 소개
           </Button>
-          <Button
-            variant={activeTab === 'movie-info' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[25px] mx-1"
-            disabled
-          >
+          <Button variant={activeTab === 'movie-info' ? 'brand1' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
             상영물 정보
           </Button>
-          <Button
-            variant={activeTab === 'theater-info' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[25px] mx-1"
-            disabled
-          >
+          <Button variant={activeTab === 'theater-info' ? 'brand1' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
             영화관 정보
           </Button>
-          <Button
-            variant={activeTab === 'payment' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[25px] mx-1"
-            disabled
-          >
+          <Button variant={activeTab === 'payment' ? 'brand1' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
             결제
           </Button>
         </div>

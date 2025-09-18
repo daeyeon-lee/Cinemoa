@@ -12,7 +12,6 @@ import ConcertIcon from '@/component/icon/concertIcon';
 import SportsIcon from '@/component/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
 import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
-import { useFundingStore } from '@/stores/fundingStore';
 import { useState, useRef, useEffect } from 'react';
 import { useGetCategories } from '@/api/hooks/useCategoryQueries';
 import { CategoryResponse } from '@/types/category';
@@ -24,7 +23,6 @@ interface MovieInfoTabProps {
 }
 
 export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
-  const { setMovieInfo } = useFundingStore();
   const { data: getCategories } = useGetCategories();
 
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
@@ -213,13 +211,6 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     if (hasError) {
       return;
     }
-
-    // Store에 저장
-    setMovieInfo({
-      categoryId: parseInt(selectedCategoryId),
-      videoName: movieTitle,
-      posterUrl: selectedImage,
-    });
 
     const movieData: movieinfo = {
       categoryId: parseInt(selectedCategoryId), // 선택한 카테고리
