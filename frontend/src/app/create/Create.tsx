@@ -93,12 +93,7 @@ export default function Create() {
             <h2 className="h4-b text-primary">프로젝트 생성 유형 선택</h2>
           </div>
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
-            <Button
-              variant="brand1"
-              size="lg"
-              className="w-full flex flex-col gap-1 sm:gap-2 py-4 sm:py-7 h-auto sm:h-full min-h-[100px] sm:min-h-[140px]"
-              onClick={handleFundingStart}
-            >
+            <Button variant="brand1" size="lg" className="w-full flex flex-col gap-1 sm:gap-2 py-4 sm:py-7 h-auto sm:h-full min-h-[100px] sm:min-h-[140px]" onClick={handleFundingStart}>
               <FundingIcon className="w-8 h-8 sm:w-12 sm:h-12" />
               <h4 className="h5-b sm:h4-b text-primary text-center">펀딩 바로 시작</h4>
               <p className="p3 sm:p2 text-primary text-center">
@@ -107,14 +102,9 @@ export default function Create() {
                 프로젝트를 시작합니다.
               </p>
             </Button>
-            <Button
-              variant="tertiary"
-              size="lg"
-              className="w-full flex flex-col gap-1 sm:gap-2 py-4 sm:py-7 h-auto sm:h-full min-h-[100px] sm:min-h-[140px] cursor-pointer"
-              onClick={handleVoteStart}
-            >
+            <Button variant="tertiary" size="lg" className="w-full flex flex-col gap-1 sm:gap-2 py-4 sm:py-7 h-auto sm:h-full min-h-[100px] sm:min-h-[140px] cursor-pointer" onClick={handleVoteStart}>
               <VoteIcon className="w-8 h-8 sm:w-12 sm:h-12" />
-              <h4 className="h5-b sm:h4-b text-primary text-center">수요조사만 해볼래요</h4>
+              <h4 className="h5-b sm:h4-b text-primary text-center">투표로 해볼래요</h4>
               <p className="p3 sm:p2 text-secondary text-center">
                 펀딩 개설 전, 관심도를
                 <br />

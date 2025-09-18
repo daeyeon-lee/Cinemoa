@@ -3,13 +3,13 @@
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import FundingInfoTab from './components/FundingInfoTab';
+import FundingInfoTab from './component/FundingInfoTab';
 import { fundinginfo } from '@/types/funding';
 import { movieinfo } from '@/types/funding';
 import { theaterinfo } from '@/types/funding';
-import MovieInfoTab from './components/MovieInfoTab';
-import TheaterInfoTab from './components/TheaterInfoTab';
-import PaymentTab from './components/PaymentTab';
+import MovieInfoTab from './component/MovieInfoTab';
+import TheaterInfoTab from './component/TheaterInfoTab';
+import PaymentTab from './component/PaymentTab';
 
 // MovieInfoTab에서 전달하는 데이터 타입
 interface MovieData {
@@ -80,10 +80,6 @@ export default function FundingPage() {
       case 'movie-info':
         return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} />;
       case 'theater-info':
-        console.log('=== TheaterInfoTab 렌더링 시 데이터 상태 ===');
-        console.log('fundingData:', fundingData);
-        console.log('movieData:', movieData);
-        console.log('=======================================');
         return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} fundingData={fundingData || undefined} movieData={movieData || undefined} />;
       case 'payment':
         return <PaymentTab onNext={handlePaymentData} onPrev={handlePrevPayment} />;
