@@ -4,7 +4,7 @@ const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const createFunding = async (data: CreateFundingParams, posterUrl: string): Promise<CreateFundingResponse> => {
   const formData = new FormData();
   formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-  formData.append('BannerImg', posterUrl);
+  formData.append('bannerImg', posterUrl);
 
   try {
     console.log('=== 펀딩 생성 API 요청 시작 ===');

@@ -82,15 +82,15 @@ export default function VotePage() {
       <div className="flex flex-col gap-10  w-full">
         <Card className="flex flex-col gap-4 px-4 sm:px-6">
           <CardHeader className="max-sm:text-center">
-            <CardTitle>투표 만들기</CardTitle>
-            <CardDescription>원하는 영화의 상영회를 직접 제안해보세요</CardDescription>
+            <CardTitle>수요조사 만들기</CardTitle>
+            <CardDescription>원하는 영화의 상영회의 수요조사를 만들어 보세요</CardDescription>
           </CardHeader>
         </Card>
 
         {/* 네비게이션 탭 */}
         <div className="w-full flex px-4 py-2">
           <Button variant={voteActiveTab === 'vote-funding-info' ? 'brand2' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
-            투표 소개
+            수요조사 소개
           </Button>
           <Button variant={voteActiveTab === 'vote-movie-info' ? 'brand2' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
             상영물 정보
