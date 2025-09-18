@@ -1,17 +1,7 @@
 import { useAuthStore } from '@/stores/authStore';
+import { LoginResponse } from '@/types/auth';
 
-interface LoginResponse {
-  data: {
-    userId: number;
-    email: string;
-    isAnonymous: boolean;
-  };
-  code: number;
-  message: string;
-  state: string;
-}
-
-// export const googleLogin = async (credential: string) => {
+// 구글 로그인 api (프론트 -> 백), idToken을 백으로 전송
 export const googleLogin = async (idToken: string) => {
   try {
     // console.log("Google login idToken:", idToken);
@@ -39,7 +29,7 @@ export const googleLogin = async (idToken: string) => {
     }
 
     const loginData: LoginResponse = await response.json();
-    console.log("Google login response:", loginData);
+    // console.log("Google login response:", loginData);
 
     // 로그인 성공 시 사용자 정보를 store에 저장
     if (loginData.code === 0 && loginData.data) {

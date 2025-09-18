@@ -14,22 +14,22 @@ const categories = {
   movie: {
     title: '영화',
     icon: MovieIcon,
-    items: ['액션', '음악', '판타지/SF', '애니메이션', '기타'],
+    items: ['액션', '공포/스릴러', '음악', '판타지/SF', '애니메이션', '기타'],
   },
   series: {
     title: '시리즈',
     icon: SeriesIcon,
-    items: ['액션', '음악', '판타지/SF', '애니메이션', '기타'],
+    items: ['액션', '공포/스릴러', '음악', '판타지/SF', '애니메이션', '기타'],
   },
   performance: {
     title: '공연',
     icon: ConcertIcon,
-    items: ['K-POP', 'POP', '클래식', '뮤지컬', '기타'],
+    items: ['외국가수', '한국가수', '클래식', '뮤지컬 ', '기타'],
   },
   sports: {
     title: '스포츠중계',
     icon: SportsIcon,
-    items: ['축구', '야구', 'F1', 'E-스포츠', '기타'],
+    items: ['축구', '야구', 'F1', 'e스포츠', '기타'],
   },
 };
 

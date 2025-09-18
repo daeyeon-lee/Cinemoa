@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { startWonauth, verifyWonauth } from '@/api/wonauth';
+import { updateUserAdditionalInfo } from '@/api/user';
 
 // 은행 목록
 const banks = [
@@ -114,6 +115,80 @@ type FormData = z.infer<typeof formSchema>;
 export default function Step2Page() {
   const router = useRouter();
   const { updateUserInfo, user } = useAuthStore();
+  
+  // 카테고리 이름을 ID로 매핑하는 함수 (실제 DB 데이터 기준)
+  const getCategoryIds = (preferences: any): number[] => {
+    const categoryIds: number[] = [];
+    
+    // 영화 카테고리 매핑 (parent_category_id = 1)
+    const movieMap: { [key: string]: number } = {
+      '액션': 5,
+      '공포/스릴러': 6,
+      '음악': 7,
+      '판타지/SF': 8,
+      '애니메이션': 9,
+      '기타': 10,
+    };
+    
+    // 시리즈 카테고리 매핑 (parent_category_id = 2)
+    const seriesMap: { [key: string]: number } = {
+      '액션': 11,
+      '공포/스릴러': 12,
+      '음악': 13,
+      '판타지/SF': 14,
+      '애니메이션': 15,
+      '기타': 16,
+    };
+    
+    // 공연 카테고리 매핑 (parent_category_id = 3)
+    const performanceMap: { [key: string]: number } = {
+      '외국가수': 17,
+      '한국가수': 18,
+      '클래식': 19,
+      '뮤지컬 ': 20,    // 공백 포함
+      '기타': 21,
+    };
+    
+    // 스포츠 카테고리 매핑 (parent_category_id = 4)
+    const sportsMap: { [key: string]: number } = {
+      '축구': 22,
+      '야구': 23,
+      'F1': 24,
+      'e스포츠': 25,    // 소문자 e
+      '기타': 26,
+    };
+    
+    // 각 카테고리 타입별로 매핑
+    if (preferences?.movie) {
+      preferences.movie.forEach((category: string) => {
+        const id = movieMap[category];
+        if (id) categoryIds.push(id);
+      });
+    }
+    
+    if (preferences?.series) {
+      preferences.series.forEach((category: string) => {
+        const id = seriesMap[category];
+        if (id) categoryIds.push(id);
+      });
+    }
+    
+    if (preferences?.performance) {
+      preferences.performance.forEach((category: string) => {
+        const id = performanceMap[category];
+        if (id) categoryIds.push(id);
+      });
+    }
+    
+    if (preferences?.sports) {
+      preferences.sports.forEach((category: string) => {
+        const id = sportsMap[category];
+        if (id) categoryIds.push(id);
+      });
+    }
+    
+    return categoryIds;
+  };
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [verificationCodeError, setVerificationCodeError] = useState('');
   const [accountNumberError, setAccountNumberError] = useState('');
@@ -121,6 +196,7 @@ export default function Step2Page() {
   const [emailError, setEmailError] = useState('');
   const [isVerificationSuccess, setIsVerificationSuccess] = useState(false);
   const [isVerificationSent, setIsVerificationSent] = useState(false);
+  const [secretKey, setSecretKey] = useState<string>('');
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -159,21 +235,60 @@ export default function Step2Page() {
     }
   };
 
-  const onSubmit = (values: FormData) => {
+  const onSubmit = async (values: FormData) => {
+    if (!user || !secretKey) {
+      console.error('사용자 정보 또는 secretKey가 없습니다.');
+      return;
+    }
+
     // 선택된 은행명에 해당하는 bankCode 찾기
     const selectedBank = banks.find((bank) => bank.bankName === values.bank);
     const bankCode = selectedBank ? selectedBank.bankCode : null;
 
-    console.log('폼 데이터:', {
-      ...values,
-      bankCode: bankCode,
-    });
+    if (!bankCode) {
+      console.error('은행 코드를 찾을 수 없습니다.');
+      return;
+    }
+
+    // 카테고리 ID 매핑
+    console.log('=== 카테고리 정보 확인 ===');
+    console.log('사용자 preferences:', user.preferences);
+    const categoryIds = getCategoryIds(user.preferences);
+    console.log('변환된 카테고리 IDs:', categoryIds);
     
-    // 회원가입 완료 - 사용자 정보 업데이트 (isAnonymous를 false로 변경)
-    updateUserInfo({ isAnonymous: false });
-    
-    // 홈페이지로 이동
-    router.push('/home');
+    if (categoryIds.length === 0) {
+      console.error('선택된 카테고리가 없습니다.');
+      return;
+    }
+
+    try {
+      console.log('=== 회원가입 완료 API 호출 ===');
+      console.log('사용자 ID:', user.userId);
+      console.log('카테고리 IDs:', categoryIds);
+      // console.log('은행 코드:', bankCode);
+      // console.log('계좌번호:', values.accountNumber);
+      console.log('이메일:', user.email);
+      // console.log('SecretKey:', secretKey);
+
+      // 추가 정보 입력 API 호출
+      await updateUserAdditionalInfo(user.userId, {
+        categoryIds,
+        bankCode,
+        accountNo: values.accountNumber,
+        email: user.email,
+        hash: secretKey,
+      });
+
+      // 회원가입 완료 - 사용자 정보 업데이트 (isAnonymous를 false로 변경)
+      updateUserInfo({ isAnonymous: false });
+      
+      console.log('회원가입 완료!');
+      // 홈페이지로 이동
+      router.push('/home');
+    } catch (error: any) {
+      console.error('회원가입 완료 실패:', error);
+      alert('회원가입 완료에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    }
   };
 
   const handleEmailSend = async (e: React.MouseEvent) => {
@@ -245,6 +360,7 @@ export default function Step2Page() {
       if (result.code === 0) {
         setIsVerificationSuccess(true);
         setIsVerificationSent(true);
+        setSecretKey(result.data.secretKey);
         console.log('인증 완료, secretKey:', result.data.secretKey);
       } else {
         setVerificationCodeError(result.message || '인증에 실패했습니다.');
@@ -360,6 +476,7 @@ export default function Step2Page() {
                   if (isVerificationSent) {
                     setIsVerificationSent(false);
                     setIsVerificationSuccess(false);
+                    setSecretKey(''); // secretKey도 초기화
                   }
                 },
               })}
