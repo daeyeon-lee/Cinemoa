@@ -1,18 +1,22 @@
 import { CreateFundingParams, CreateFundingResponse } from '@/types/funding';
-
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
-export const createFunding = async (data: CreateFundingParams): Promise<CreateFundingResponse> => {
+export const createFunding = async (data: CreateFundingParams, posterUrl: string): Promise<CreateFundingResponse> => {
+  const formData = new FormData();
+  formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  formData.append('bannerImg', posterUrl);
+
   try {
     console.log('=== 펀딩 생성 API 요청 시작 ===');
-    console.log('요청 데이터:', data);
-
-    const response = await fetch('https://j13a110.p.ssafy.io:8443/api/funding', {
+    console.log('요청 데이터 data:', data);
+    console.log('bannerImg:', posterUrl);
+    const response = await fetch(`${BaseUrl}funding`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
       credentials: 'include',
-      body: JSON.stringify(data),
+      body: formData,
     });
 
     if (!response.ok) {

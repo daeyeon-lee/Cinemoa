@@ -215,7 +215,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     const movieData: movieinfo = {
       categoryId: parseInt(selectedCategoryId), // 선택한 카테고리
       videoName: movieTitle, // 상영물 제목
-      posterUrl: selectedImage, // 상영물 이미지
+      posterUrl: selectedImage, // 상영물 이미지 배너
     };
 
     console.log('=== MovieInfoTab 제출 ===');
@@ -337,7 +337,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   </DialogHeader>
                   <div className="w-full space-y-4 min-h-[300px] max-h-[60vh] overflow-hidden">
                     <Input
-                      placeholder="상영물 제목 검색"
+                      placeholder="원하는 상영물 제목 2글자 이상 입력해주세요"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full border border-stroke-2 rounded-[6px] placeholder:text-p2-b"

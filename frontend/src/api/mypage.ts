@@ -1,9 +1,9 @@
 import { UserInfoResponse, UserInfoErrorResponse } from '@/types/mypage';
-
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 회원 정보 조회 API
 export const getUserInfo = async (userId: number = 2): Promise<UserInfoResponse> => {
   try {
-    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}`, {
+    const response = await fetch(`${BaseUrl}user/${userId}`, {
       credentials: 'include',
       method: 'GET',
       headers: {

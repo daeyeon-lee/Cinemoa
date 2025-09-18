@@ -1,9 +1,10 @@
 import { CategoryResponse } from '@/types/category';
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 // 카테고리 목록 조회 API
 export const getCategories = async (): Promise<CategoryResponse[]> => {
   try {
-    const url = 'https://j13a110.p.ssafy.io:8443/api/category';
+    const url = `${BaseUrl}category`;
     const response = await fetch(url, {
       method: 'GET',
       headers: {

@@ -53,14 +53,14 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       title: fundingData?.title,
       categoryId: movieData?.categoryId,
       videoName: movieData?.videoName,
-      posterUrl: movieData?.posterUrl,
+      // posterUrl: movieData?.posterUrl,
       cinemaId: selectedCinemaId || 0,
       screenMinDate: selectedStartDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
       screenMaxDate: selectedEndDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
     };
-
+    const posterUrl = movieData?.posterUrl;
     try {
-      const result = await creatVoteFunding(completeData);
+      const result = await creatVoteFunding(completeData, posterUrl || '');
       console.log('=== 펀딩 생성 성공 ===');
       console.log('응답:', result);
 

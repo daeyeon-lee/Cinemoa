@@ -1,18 +1,21 @@
 import { CreateVoteFundingParams, CreateVoteFundingResponse } from '@/types/vote';
-
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
-export const creatVoteFunding = async (data: CreateVoteFundingParams): Promise<CreateVoteFundingResponse> => {
+export const creatVoteFunding = async (data: CreateVoteFundingParams, posterUrl: string): Promise<CreateVoteFundingResponse> => {
   try {
     console.log('=== 투표 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터:', data);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    formData.append('bannerImg', posterUrl);
 
-    const response = await fetch('https://j13a110.p.ssafy.io:8443/api/vote', {
+    const response = await fetch(`${BaseUrl}vote`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
       credentials: 'include',
-      body: JSON.stringify(data),
+      body: formData,
     });
 
     if (!response.ok) {
