@@ -73,8 +73,8 @@ export default function Step1Page() {
 
   const handleNextStep = () => {
     // 선택한 카테고리 정보를 사용자 정보에 저장
-    updateUserInfo({ 
-      preferences: selectedCategories 
+    updateUserInfo({
+      preferences: selectedCategories,
     });
     // 다음 단계로 이동
     router.push('/auth/info/step2');
@@ -92,18 +92,17 @@ export default function Step1Page() {
       </div>
 
       {/* 카테고리 섹션들 */}
-      <div className="space-y-4 sm:space-y-6">
+      <div className="sm:space-y-6">
         {Object.entries(categories).map(([key, category]) => (
           <div key={key}>
             <div className="flex items-center mb-2">
               <category.icon className="w-4 h-4 mr-1" />
               <h3 className="text-sm sm:text-p2-b text-Brand1-Primary">{category.title}</h3>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-1">
+            <div className="flex gap-1 sm:gap-1">
               {category.items.map((item) => {
                 const isSelected = selectedCategories[key as keyof typeof selectedCategories].includes(item as string);
-                const isDisabled =
-                  !isSelected && selectedCategories[key as keyof typeof selectedCategories].length >= 3;
+                const isDisabled = !isSelected && selectedCategories[key as keyof typeof selectedCategories].length >= 3;
                 return (
                   <Button
                     variant="outline"
@@ -112,7 +111,7 @@ export default function Step1Page() {
                     textSize="sm"
                     onClick={() => handleCategorySelect(key, item)}
                     disabled={isDisabled}
-                    className={`w-full rounded-[6px] max-sm:text-xs ${
+                    className={`w-full rounded-[6px] max-sm:p1 ${
                       isSelected
                         ? 'text-Brand1-Strong border-Brand1-Strong hover:border-Brand1-Secondary'
                         : isDisabled

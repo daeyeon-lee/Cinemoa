@@ -115,49 +115,49 @@ type FormData = z.infer<typeof formSchema>;
 export default function Step2Page() {
   const router = useRouter();
   const { updateUserInfo, user } = useAuthStore();
-  
+
   // 카테고리 이름을 ID로 매핑하는 함수 (실제 DB 데이터 기준)
   const getCategoryIds = (preferences: any): number[] => {
     const categoryIds: number[] = [];
-    
+
     // 영화 카테고리 매핑 (parent_category_id = 1)
     const movieMap: { [key: string]: number } = {
-      '액션': 5,
+      액션: 5,
       '공포/스릴러': 6,
-      '음악': 7,
+      음악: 7,
       '판타지/SF': 8,
-      '애니메이션': 9,
-      '기타': 10,
+      애니메이션: 9,
+      기타: 10,
     };
-    
+
     // 시리즈 카테고리 매핑 (parent_category_id = 2)
     const seriesMap: { [key: string]: number } = {
-      '액션': 11,
+      액션: 11,
       '공포/스릴러': 12,
-      '음악': 13,
+      음악: 13,
       '판타지/SF': 14,
-      '애니메이션': 15,
-      '기타': 16,
+      애니메이션: 15,
+      기타: 16,
     };
-    
+
     // 공연 카테고리 매핑 (parent_category_id = 3)
     const performanceMap: { [key: string]: number } = {
-      '외국가수': 17,
-      '한국가수': 18,
-      '클래식': 19,
-      '뮤지컬 ': 20,    // 공백 포함
-      '기타': 21,
+      외국가수: 17,
+      한국가수: 18,
+      클래식: 19,
+      '뮤지컬 ': 20, // 공백 포함
+      기타: 21,
     };
-    
+
     // 스포츠 카테고리 매핑 (parent_category_id = 4)
     const sportsMap: { [key: string]: number } = {
-      '축구': 22,
-      '야구': 23,
-      'F1': 24,
-      'e스포츠': 25,    // 소문자 e
-      '기타': 26,
+      축구: 22,
+      야구: 23,
+      F1: 24,
+      e스포츠: 25, // 소문자 e
+      기타: 26,
     };
-    
+
     // 각 카테고리 타입별로 매핑
     if (preferences?.movie) {
       preferences.movie.forEach((category: string) => {
@@ -165,28 +165,28 @@ export default function Step2Page() {
         if (id) categoryIds.push(id);
       });
     }
-    
+
     if (preferences?.series) {
       preferences.series.forEach((category: string) => {
         const id = seriesMap[category];
         if (id) categoryIds.push(id);
       });
     }
-    
+
     if (preferences?.performance) {
       preferences.performance.forEach((category: string) => {
         const id = performanceMap[category];
         if (id) categoryIds.push(id);
       });
     }
-    
+
     if (preferences?.sports) {
       preferences.sports.forEach((category: string) => {
         const id = sportsMap[category];
         if (id) categoryIds.push(id);
       });
     }
-    
+
     return categoryIds;
   };
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
@@ -255,7 +255,7 @@ export default function Step2Page() {
     console.log('사용자 preferences:', user.preferences);
     const categoryIds = getCategoryIds(user.preferences);
     console.log('변환된 카테고리 IDs:', categoryIds);
-    
+
     if (categoryIds.length === 0) {
       console.error('선택된 카테고리가 없습니다.');
       return;
@@ -281,7 +281,7 @@ export default function Step2Page() {
 
       // 회원가입 완료 - 사용자 정보 업데이트 (isAnonymous를 false로 변경)
       updateUserInfo({ isAnonymous: false });
-      
+
       console.log('회원가입 완료!');
       // 홈페이지로 이동
       router.push('/home');
@@ -294,7 +294,7 @@ export default function Step2Page() {
   const handleEmailSend = async (e: React.MouseEvent) => {
     e.preventDefault(); // 폼 제출 방지
     e.stopPropagation(); // 이벤트 전파 방지
-    
+
     const accountNumber = form.getValues('accountNumber');
 
     if (!accountNumber || !user?.email) {
@@ -304,7 +304,7 @@ export default function Step2Page() {
 
     // 계좌번호 유효성 검사
     validateAccountNumber(accountNumber);
-    
+
     // 계좌번호가 유효하지 않으면 API 호출하지 않음
     if (!isAccountNumberValid) {
       setEmailError('계좌번호가 유효하지 않습니다.');
@@ -317,7 +317,7 @@ export default function Step2Page() {
         accountNo: accountNumber,
         userEmail: user.email,
       });
-      
+
       setIsEmailSent(true);
       setIsVerificationRequested(true); // 이메일 전송 성공 시 인증번호 입력 필드 활성화
       console.log('이메일 전송 완료');
@@ -330,7 +330,7 @@ export default function Step2Page() {
   const handleVerificationRequest = async (e: React.MouseEvent) => {
     e.preventDefault(); // 폼 제출 방지
     e.stopPropagation(); // 이벤트 전파 방지
-    
+
     // 인증번호 검증
     const verificationCode = form.getValues('verificationCode');
     const accountNumber = form.getValues('accountNumber');
@@ -356,7 +356,7 @@ export default function Step2Page() {
         accountNo: accountNumber,
         authCode: verificationCode,
       });
-      
+
       if (result.code === 0) {
         setIsVerificationSuccess(true);
         setIsVerificationSent(true);
@@ -400,9 +400,7 @@ export default function Step2Page() {
               ))}
             </SelectContent>
           </Select>
-          {form.formState.errors.bank && (
-            <p className="text-Brand1-Primary text-xs mt-1">{form.formState.errors.bank.message}</p>
-          )}
+          {form.formState.errors.bank && <p className="text-Brand1-Primary p2-b mt-1">{form.formState.errors.bank.message}</p>}
         </div>
 
         {/* 계좌 번호 */}
@@ -438,24 +436,12 @@ export default function Step2Page() {
               disabled={!isAccountNumberValid}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
-              {isEmailSent ? '전송 완료' : '이메일 전송'}
+              {isEmailSent ? '전송 완료' : '인증 번호 요청'}
             </Button>
           </div>
-          {(form.formState.errors.accountNumber || accountNumberError) && (
-            <p className="text-Brand1-Primary text-caption1-b mt-1">
-              {form.formState.errors.accountNumber?.message || accountNumberError}
-            </p>
-          )}
-          {isEmailSent && (
-            <p className="text-green-600 text-caption1-b mt-1">
-              인증 번호를 이메일에서 확인해주세요.
-            </p>
-          )}
-          {emailError && (
-            <p className="text-Brand1-Primary text-caption1-b mt-1">
-              {emailError}
-            </p>
-          )}
+          {(form.formState.errors.accountNumber || accountNumberError) && <p className="text-Brand1-Primary p2 mt-1">{form.formState.errors.accountNumber?.message || accountNumberError}</p>}
+          {isEmailSent && <p className="text-Brand2-Primary p2 mt-1">인증 번호를 이메일에서 확인해주세요.</p>}
+          {emailError && <p className="text-Brand1-Primary p2 mt-1">{emailError}</p>}
         </div>
 
         {/* 인증 번호 */}
@@ -496,15 +482,9 @@ export default function Step2Page() {
             </Button>
           </div>
           {(form.formState.errors.verificationCode || verificationCodeError) && !isVerificationSuccess && (
-            <p className="text-Brand1-Primary text-caption1-b mt-1">
-              {form.formState.errors.verificationCode?.message || verificationCodeError}
-            </p>
+            <p className="text-Brand1-Primary p2 mt-1">{form.formState.errors.verificationCode?.message || verificationCodeError}</p>
           )}
-          {isVerificationSuccess && !verificationCodeError && (
-            <p className="text-green-600 text-caption1-b mt-1">
-              인증 완료
-            </p>
-          )}
+          {isVerificationSuccess && !verificationCodeError && <p className="text-Brand2-Primary p2 mt-1">인증이 완료되었습니다.</p>}
         </div>
       </form>
 
@@ -515,13 +495,7 @@ export default function Step2Page() {
             이전
           </Button>
         </Link>
-        <Button
-          onClick={form.handleSubmit(onSubmit)}
-          disabled={!form.formState.isValid}
-          size="lg"
-          variant={form.formState.isValid ? 'brand1' : 'tertiary'}
-          className="w-full sm:flex-1 h-12 sm:h-14"
-        >
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={!form.formState.isValid} size="lg" variant={form.formState.isValid ? 'brand1' : 'tertiary'} className="w-full sm:flex-1 h-12 sm:h-14">
           회원가입 완료하기
         </Button>
       </div>
