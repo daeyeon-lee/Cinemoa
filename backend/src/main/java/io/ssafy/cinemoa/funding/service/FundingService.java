@@ -278,16 +278,22 @@ public class FundingService {
 
         Category category = funding.getCategory();
         Category parentCategory = category.getParentCategory();
+        int price = 0;
+        int progressRate = 0;
+        if (funding.getMaxPeople() != 0) {
+            price = screen.getPrice() / funding.getMaxPeople();
+            progressRate = stat.getParticipantCount() / funding.getMaxPeople();
+        }
 
         FundingInfo fundingInfo = FundingInfo.builder()
                 .fundingId(funding.getFundingId())
-                .progressRate(stat.getParticipantCount() * 100 / funding.getMaxPeople())
+                .progressRate(progressRate)
                 .title(funding.getTitle())
                 .bannerUrl(funding.getBannerUrl())
                 .content(funding.getContent())
                 .state(funding.getState())
                 .fundingEndsOn(funding.getEndsOn())
-                .price(screen.getPrice() / funding.getMaxPeople())
+                .price(price)
                 .build();
 
         CategoryInfo categoryInfo = CategoryInfo.builder()
