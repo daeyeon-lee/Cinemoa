@@ -74,7 +74,7 @@ export default function Home() {
                     categoryValue={category.value}
                     page="home"
                     uniformWidth={true}
-                    onClick={() => navigateToCategory({ category: category.value })}
+                    onClick={() => navigateToCategory({ categoryId: category.categoryId })}
                   >
                     {category.label}
                   </CategoryButton>
@@ -93,7 +93,7 @@ export default function Home() {
                   categoryValue={category.value}
                   page="home"
                   uniformWidth={true}
-                  onClick={() => navigateToCategory({ category: category.value })}
+                  onClick={() => navigateToCategory({ categoryId: category.categoryId })}
                 >
                   {category.label}
                 </CategoryButton>
