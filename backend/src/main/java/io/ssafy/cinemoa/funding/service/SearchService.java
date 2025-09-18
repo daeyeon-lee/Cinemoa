@@ -14,6 +14,10 @@ public class SearchService {
     private final FundingFilterRepository filterRepository;
 
     public CursorResponse<CardTypeFundingInfoDto> search(SearchRequest request) {
+        if (request.getSortBy() == null) {
+            return filterRepository.findLatestWithFilters(request);
+        }
+
         return switch (request.getSortBy()) {
             case RECOMMENDED -> filterRepository.findRecommendedWithFilters(request);
             case POPULAR -> filterRepository.findPopularWithFilters(request);
