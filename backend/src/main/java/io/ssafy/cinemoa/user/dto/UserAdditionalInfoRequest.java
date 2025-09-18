@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
