@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { startWonauth, verifyWonauth } from '@/api/wonauth';
 
 // 은행 목록
 const banks = [
@@ -112,10 +113,14 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function Step2Page() {
   const router = useRouter();
-  const { updateUserInfo } = useAuthStore();
+  const { updateUserInfo, user } = useAuthStore();
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [verificationCodeError, setVerificationCodeError] = useState('');
   const [accountNumberError, setAccountNumberError] = useState('');
+  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [isVerificationSuccess, setIsVerificationSuccess] = useState(false);
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -171,29 +176,82 @@ export default function Step2Page() {
     router.push('/home');
   };
 
-  const handleVerificationRequest = () => {
-    if (isVerificationRequested) {
-      // 인증 완료 버튼을 눌렀을 때 - 인증번호 검증
-      const verificationCode = form.getValues('verificationCode');
+  const handleEmailSend = async (e: React.MouseEvent) => {
+    e.preventDefault(); // 폼 제출 방지
+    e.stopPropagation(); // 이벤트 전파 방지
+    
+    const accountNumber = form.getValues('accountNumber');
 
-      if (!verificationCode) {
-        setVerificationCodeError('인증번호를 입력해주세요.');
-        return;
-      }
+    if (!accountNumber || !user?.email) {
+      setEmailError('계좌번호와 사용자 이메일이 필요합니다.');
+      return;
+    }
 
-      if (verificationCode.length !== 4) {
-        setVerificationCodeError('인증번호는 4자리여야 합니다.');
-        return;
-      }
+    // 계좌번호 유효성 검사
+    validateAccountNumber(accountNumber);
+    
+    // 계좌번호가 유효하지 않으면 API 호출하지 않음
+    if (!isAccountNumberValid) {
+      setEmailError('계좌번호가 유효하지 않습니다.');
+      return;
+    }
 
-      // 인증 완료 로직
+    try {
+      setEmailError('');
+      await startWonauth({
+        accountNo: accountNumber,
+        userEmail: user.email,
+      });
+      
+      setIsEmailSent(true);
+      setIsVerificationRequested(true); // 이메일 전송 성공 시 인증번호 입력 필드 활성화
+      console.log('이메일 전송 완료');
+    } catch (error: any) {
+      console.error('이메일 전송 실패:', error);
+      setEmailError(error.message || '이메일 전송에 실패했습니다.');
+    }
+  };
+
+  const handleVerificationRequest = async (e: React.MouseEvent) => {
+    e.preventDefault(); // 폼 제출 방지
+    e.stopPropagation(); // 이벤트 전파 방지
+    
+    // 인증번호 검증
+    const verificationCode = form.getValues('verificationCode');
+    const accountNumber = form.getValues('accountNumber');
+
+    if (!verificationCode) {
+      setVerificationCodeError('인증번호를 입력해주세요.');
+      return;
+    }
+
+    if (verificationCode.length !== 4) {
+      setVerificationCodeError('인증번호는 4자리여야 합니다.');
+      return;
+    }
+
+    if (!accountNumber) {
+      setVerificationCodeError('계좌번호가 필요합니다.');
+      return;
+    }
+
+    try {
       setVerificationCodeError('');
-      console.log('인증 완료');
-    } else {
-      // 인증 요청 버튼을 눌렀을 때
-      setIsVerificationRequested(true);
-      // 인증 요청 로직 추가
-      // 인증 요청 시 post 요청(인증번호 발송)
+      const result = await verifyWonauth({
+        accountNo: accountNumber,
+        authCode: verificationCode,
+      });
+      
+      if (result.code === 0) {
+        setIsVerificationSuccess(true);
+        setIsVerificationSent(true);
+        console.log('인증 완료, secretKey:', result.data.secretKey);
+      } else {
+        setVerificationCodeError(result.message || '인증에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('인증번호 검증 실패:', error);
+      setVerificationCodeError(error.message || '인증번호가 올바르지 않습니다.');
     }
   };
 
@@ -236,20 +294,50 @@ export default function Step2Page() {
           <Label htmlFor="accountNumber" className="text-p2-b text-primary mb-2 block">
             계좌 번호
           </Label>
-          <Input
-            id="accountNumber"
-            {...form.register('accountNumber', {
-              onChange: (e) => {
-                validateAccountNumber(e.target.value);
-              },
-            })}
-            placeholder="계좌번호 16자리를 -없이 입력해주세요"
-            maxLength={16}
-            className="w-full h-10 sm:h-12"
-          />
+          <div className="flex gap-2 sm:h-10 md:h-12">
+            <Input
+              id="accountNumber"
+              {...form.register('accountNumber', {
+                onChange: (e) => {
+                  validateAccountNumber(e.target.value);
+                  // 계좌번호가 변경되면 이메일 전송 상태 초기화
+                  if (isEmailSent) {
+                    setIsEmailSent(false);
+                    setIsVerificationRequested(false); // 인증번호 입력 필드도 비활성화
+                    setIsVerificationSuccess(false); // 인증 성공 상태도 초기화
+                  }
+                  if (emailError) {
+                    setEmailError('');
+                  }
+                },
+              })}
+              placeholder="계좌번호 16자리를 -없이 입력해주세요"
+              maxLength={16}
+              className="w-full h-10 sm:h-full sm:flex-1"
+            />
+            <Button
+              type="button"
+              onClick={handleEmailSend}
+              variant={isEmailSent ? 'outline' : 'tertiary'}
+              disabled={!isAccountNumberValid}
+              className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
+            >
+              {isEmailSent ? '전송 완료' : '이메일 전송'}
+            </Button>
+          </div>
           {(form.formState.errors.accountNumber || accountNumberError) && (
             <p className="text-Brand1-Primary text-caption1-b mt-1">
               {form.formState.errors.accountNumber?.message || accountNumberError}
+            </p>
+          )}
+          {isEmailSent && (
+            <p className="text-green-600 text-caption1-b mt-1">
+              인증 번호를 이메일에서 확인해주세요.
+            </p>
+          )}
+          {emailError && (
+            <p className="text-Brand1-Primary text-caption1-b mt-1">
+              {emailError}
             </p>
           )}
         </div>
@@ -268,6 +356,11 @@ export default function Step2Page() {
                   if (verificationCodeError) {
                     setVerificationCodeError('');
                   }
+                  // 인증번호가 변경되면 인증 상태 초기화
+                  if (isVerificationSent) {
+                    setIsVerificationSent(false);
+                    setIsVerificationSuccess(false);
+                  }
                 },
               })}
               placeholder="인증번호 4자리를 입력해주세요"
@@ -276,17 +369,23 @@ export default function Step2Page() {
               className="w-full h-10 sm:h-full sm:flex-1"
             />
             <Button
+              type="button"
               onClick={handleVerificationRequest}
-              variant={isVerificationRequested ? 'outline' : 'tertiary'}
-              disabled={!isAccountNumberValid}
+              variant={isVerificationSent ? 'outline' : 'tertiary'}
+              disabled={!isVerificationRequested}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
-              {isVerificationRequested ? '인증 완료' : '인증 요청'}
+              {isVerificationSent ? '인증 완료' : '인증 요청'}
             </Button>
           </div>
-          {(form.formState.errors.verificationCode || verificationCodeError) && (
+          {(form.formState.errors.verificationCode || verificationCodeError) && !isVerificationSuccess && (
             <p className="text-Brand1-Primary text-caption1-b mt-1">
               {form.formState.errors.verificationCode?.message || verificationCodeError}
+            </p>
+          )}
+          {isVerificationSuccess && !verificationCodeError && (
+            <p className="text-green-600 text-caption1-b mt-1">
+              인증 완료
             </p>
           )}
         </div>
