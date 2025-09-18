@@ -80,13 +80,12 @@ public class AccountDepositApiClient {
 
         // 5. 성공/실패에 따른 로깅
         if (errorCode.isSuccess()) {
-          log.info("■■■■■■■■계좌 입금 성공 - 거래번호: {}, 거래일자: {}, 금액: {}, 내부코드: {}■■■■■■■■",
+          log.info("■■■■■■■■ 계좌 입금 성공 - 거래번호: {}, 거래일자: {}, 금액: {} ■■■■■■■■",
               result.getTransactionUniqueNo(),
               result.getTransactionDate(),
-              transactionBalance,
-              errorCode.getCode());
+              transactionBalance);
         } else {
-          log.warn("■■■■■■■■계좌 입금 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 계좌: {}, 금액: {}■■■■■■■■",
+          log.warn("■■■■■■■■ 계좌 입금 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 계좌: {}, 금액: {}■■■■■■■■ ",
               apiCode,
               apiMsg,
               errorCode.getCode(),

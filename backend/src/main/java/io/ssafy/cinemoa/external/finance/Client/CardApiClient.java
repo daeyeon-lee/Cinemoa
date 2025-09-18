@@ -79,12 +79,12 @@ public class CardApiClient {
 
                 // 6. 성공/실패에 따른 로깅
                 if (errorCode.isSuccess()) {
-                    log.info("■■■■■■■■카드 결제 성공 - 거래번호: {}, 금액: {}, 내부코드: {}■■■■■■■■",
+                    log.info("■■■■■■■■ 카드 결제 성공 - 거래번호: {}, 금액: {} ■■■■■■■■",
                             result.getTransactionUniqueNo(),
-                            result.getPaymentBalance(),
-                            errorCode.getCode());
+                            result.getPaymentBalance());
                 } else {
-                    log.warn("■■■■■■■■카드 결제 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 카드: {}, 금액: {}■■■■■■■■",
+                    log.warn(
+                            "■■■■■■■■ 카드 결제 실패 - 금융망API코드: {}, 금융망API메시지: {} 내부코드: {}, 메시지: {}, 카드: {}, 금액: {}■■■■■■■■ ",
                             apiCode,
                             apiMsg,
                             errorCode.getCode(),
