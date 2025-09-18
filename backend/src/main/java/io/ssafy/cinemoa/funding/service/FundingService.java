@@ -34,6 +34,8 @@ import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
+import io.ssafy.cinemoa.image.enums.ImageCategory;
+import io.ssafy.cinemoa.image.service.ImageService;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import java.time.LocalDate;
@@ -48,6 +50,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -114,6 +117,8 @@ public class FundingService {
     private final ScreenRepository screenRepository;
     private final CinemaRepository cinemaRepository;
 
+    private final ImageService imageService;
+
     private final UserRepository userRepository;
     private final UserFavoriteRepository userFavoriteRepository;
     private final RedisService redisService;
@@ -121,7 +126,7 @@ public class FundingService {
 
 
     @Transactional
-    public FundingCreationResult createFunding(FundingCreateRequest request) {
+    public FundingCreationResult createFunding(MultipartFile image, FundingCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
@@ -137,6 +142,12 @@ public class FundingService {
         if (!unavailableTImeBatchRepository.insertRangeIfAvailable(screen.getScreenId(), request.getScreenDay(),
                 request.getScreenStartsOn(), request.getScreenEndsOn())) {
             throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
+        }
+
+        if (image != null && request.getPosterUrl() != null && !request.getPosterUrl().isEmpty()) {
+            String localPath = imageService.saveImage(image, ImageCategory.BANNER);
+            String imagePath = imageService.translatePath(localPath);
+            request.setPosterUrl(imagePath);
         }
 
         Funding funding = Funding.builder()
@@ -207,7 +218,7 @@ public class FundingService {
     }
 
     @Transactional
-    public void createVote(VoteCreateRequest request) {
+    public void createVote(MultipartFile image, VoteCreateRequest request) {
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
@@ -217,6 +228,12 @@ public class FundingService {
 
         Cinema cinema = cinemaRepository.findById(request.getCinemaId())
                 .orElseThrow(ResourceNotFoundException::ofCinema);
+
+        if (image != null && request.getPosterUrl() != null && !request.getPosterUrl().isEmpty()) {
+            String localPath = imageService.saveImage(image, ImageCategory.BANNER);
+            String imagePath = imageService.translatePath(localPath);
+            request.setPosterUrl(imagePath);
+        }
 
         Funding vote = Funding.builder()
                 .fundingType(FundingType.VOTE)
