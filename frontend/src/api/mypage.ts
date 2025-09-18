@@ -1,9 +1,10 @@
 import { UserInfoResponse, UserInfoErrorResponse } from '@/types/mypage';
 
 // 회원 정보 조회 API
-export const getUserInfo = async (userId: number = 1): Promise<UserInfoResponse> => {
+export const getUserInfo = async (userId: number = 2): Promise<UserInfoResponse> => {
   try {
     const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}`, {
+      credentials: 'include',
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
