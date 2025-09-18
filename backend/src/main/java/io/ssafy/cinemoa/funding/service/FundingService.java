@@ -55,54 +55,53 @@ import org.springframework.transaction.annotation.Transactional;
 public class FundingService {
     private final CategoryRepository categoryRepository;
 
-
     private static final String SEAT_RESERVATION_SCRIPT = """
             local fundingId = KEYS[1]
             local userId = KEYS[2]
             local initialSeats = tonumber(ARGV[1])
             local ttl = tonumber(ARGV[2])
-            
+
             local seatKey = "seat:" .. fundingId .. ":" .. userId
             local remainSeatKey = "remain_seat:" .. fundingId
-            
+
             -- 잔여 좌석 키가 없는 경우 초기화
             if redis.call("exists", remainSeatKey) == 0 then
                 redis.call("set", remainSeatKey, initialSeats)
             end
-            
+
             local remainSeats = tonumber(redis.call("get", remainSeatKey))
-            
+
             if remainSeats <= 0 then
                 return {0, "NO_SEATS_LEFT", 0}
             end
-            
+
             -- 사용자가 이미 점유했는지 확인
             if redis.call("exists", seatKey) == 1 then
                 return {0, "ALREADY_HOLDING", remainSeats}
             end
-            
+
             -- 잔여 좌석 1 감소 및 사용자 점유 등록
             redis.call("decr", remainSeatKey)
             redis.call("setex", seatKey, ttl, "true")
-            
+
             return {1, "SUCCESS", remainSeats - 1}
             """;
     private static final String RELEASE_SEAT_SCRIPT = """
             local fundingId = KEYS[1]
             local userId = KEYS[2]
-            
+
             local seatKey = "seat:" .. fundingId .. ":" .. userId
             local remainSeatKey = "remain_seat:" .. fundingId
-            
+
             -- 점유한 좌석이 있는지 확인
             if redis.call("exists", seatKey) == 0 then
                 return {0}
             end
-            
+
             -- 원자적으로 좌석 해제 및 잔여 좌석 수 증가
             redis.call("del", seatKey)
             local remainSeats = redis.call("incr", remainSeatKey)
-            
+
             return {1}
             """;
 
@@ -118,7 +117,6 @@ public class FundingService {
     private final UserFavoriteRepository userFavoriteRepository;
     private final RedisService redisService;
     private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
-
 
     @Transactional
     public FundingCreationResult createFunding(FundingCreateRequest request) {
@@ -170,7 +168,7 @@ public class FundingService {
 
     @Transactional
     public void holdSeatOf(Long userId, Long fundingId) {
-        //put seat info on redis, then reduce remaining seats.
+        // put seat info on redis, then reduce remaining seats.
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(ResourceNotFoundException::ofFunding);
 
@@ -178,8 +176,7 @@ public class FundingService {
                 RedisScript.of(SEAT_RESERVATION_SCRIPT, List.class),
                 Arrays.asList(fundingId.toString(), userId.toString()),
                 funding.getMaxPeople().toString(),
-                "180"
-        );
+                "180");
 
         Integer success = (Integer) result.get(0);
         String message = (String) result.get(1);
@@ -197,8 +194,7 @@ public class FundingService {
     public void unholdSeatOf(Long userId, Long fundingId) {
         List<Object> result = redisService.execute(
                 RedisScript.of(RELEASE_SEAT_SCRIPT, List.class),
-                Arrays.asList(fundingId.toString(), userId.toString())
-        );
+                Arrays.asList(fundingId.toString(), userId.toString()));
 
         Integer success = (Integer) result.get(0);
         if (success == 0) {
@@ -248,8 +244,8 @@ public class FundingService {
         FundingStat stat = statRepository.findByFunding_FundingId(fundingId)
                 .orElseThrow(InternalServerException::ofUnknown);
 
-        Boolean isLiked =
-                userId != null && userFavoriteRepository.existsByUser_IdAndFunding_FundingId(userId, fundingId);
+        Boolean isLiked = userId != null
+                && userFavoriteRepository.existsByUser_IdAndFunding_FundingId(userId, fundingId);
 
         Screen screen = funding.getScreen();
         Cinema cinema = funding.getCinema();
@@ -332,7 +328,16 @@ public class FundingService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void updateViewCount(Long fundingId) {
+        // DB 전체 조회수 증가
         statRepository.incrementViewCount(fundingId);
+
+        // Redis 버킷에 조회수 카운트 증가
+        try {
+            redisService.incrementViewBucket(fundingId);
+            log.debug("Redis 버킷 조회수 증가: fundingId={}", fundingId);
+        } catch (Exception e) {
+            log.warn("Redis 버킷 조회수 업데이트 실패: fundingId={}, error={}", fundingId, e.getMessage());
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -343,7 +348,7 @@ public class FundingService {
         fundingRepository.saveAndFlush(funding);
     }
 
-    //wilson-score 기반 점수 계산
+    // wilson-score 기반 점수 계산
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recalculateScore(Long fundingId) {
         FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
