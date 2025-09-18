@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/stores/authStore';
 
 // 은행 목록
 const banks = [
@@ -109,6 +111,8 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function Step2Page() {
+  const router = useRouter();
+  const { updateUserInfo } = useAuthStore();
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [verificationCodeError, setVerificationCodeError] = useState('');
   const [accountNumberError, setAccountNumberError] = useState('');
@@ -159,7 +163,12 @@ export default function Step2Page() {
       ...values,
       bankCode: bankCode,
     });
-    // 여기에 회원가입 완료 로직 추가
+    
+    // 회원가입 완료 - 사용자 정보 업데이트 (isAnonymous를 false로 변경)
+    updateUserInfo({ isAnonymous: false });
+    
+    // 홈페이지로 이동
+    router.push('/home');
   };
 
   const handleVerificationRequest = () => {

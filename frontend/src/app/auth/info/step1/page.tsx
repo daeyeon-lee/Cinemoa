@@ -6,6 +6,8 @@ import MovieIcon from '@/component/icon/movieIcon';
 import SeriesIcon from '@/component/icon/seriesIcon';
 import ConcertIcon from '@/component/icon/concertIcon';
 import SportsIcon from '@/component/icon/sportsIcon';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'next/navigation';
 
 // 카테고리 데이터(더미데이터)
 const categories = {
@@ -32,6 +34,8 @@ const categories = {
 };
 
 export default function Step1Page() {
+  const router = useRouter();
+  const { updateUserInfo } = useAuthStore();
   const [selectedCategories, setSelectedCategories] = useState<{
     movie: string[];
     series: string[];
@@ -66,6 +70,15 @@ export default function Step1Page() {
   };
 
   const isAllCategoriesSelected = Object.values(selectedCategories).every((category) => category.length > 0);
+
+  const handleNextStep = () => {
+    // 선택한 카테고리 정보를 사용자 정보에 저장
+    updateUserInfo({ 
+      preferences: selectedCategories 
+    });
+    // 다음 단계로 이동
+    router.push('/auth/info/step2');
+  };
 
   return (
     <div className="w-max mx-auto px-4 py-8 sm:py-12">
@@ -118,16 +131,15 @@ export default function Step1Page() {
 
       {/* 다음 단계 버튼 */}
       <div className="mt-6 sm:mt-8">
-        <Link href="/auth/info/step2">
-          <Button
-            disabled={!isAllCategoriesSelected}
-            size="lg"
-            variant={isAllCategoriesSelected ? 'brand1' : 'secondary'}
-            className={`w-full text-h6-b ${isAllCategoriesSelected ? 'text-primary' : 'text-tertiary'}`}
-          >
-            다음 단계 &gt;
-          </Button>
-        </Link>
+        <Button
+          onClick={handleNextStep}
+          disabled={!isAllCategoriesSelected}
+          size="lg"
+          variant={isAllCategoriesSelected ? 'brand1' : 'secondary'}
+          className={`w-full text-h6-b ${isAllCategoriesSelected ? 'text-primary' : 'text-tertiary'}`}
+        >
+          다음 단계 &gt;
+        </Button>
       </div>
     </div>
   );
