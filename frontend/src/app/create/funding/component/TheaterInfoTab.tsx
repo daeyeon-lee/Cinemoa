@@ -58,9 +58,17 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
 
     const completeData: CreateFundingParams = {
       userId: 1,
-      fundinginfo: fundingData,
-      movieinfo: movieData,
-      theaterinfo: theaterData,
+      content: fundingData?.content,
+      title: fundingData?.title,
+      categoryId: movieData?.categoryId,
+      videoName: movieData?.videoName,
+      posterUrl: movieData?.posterUrl,
+      cinemaId: selectedCinemaId || 0,
+      screenId: selectedScreenId || 0,
+      screenDay: selectedDate,
+      screenStartsOn: selectedStartTime ? parseInt(selectedStartTime.split(':')[0]) : 0,
+      screenEndsOn: selectedEndTime ? parseInt(selectedEndTime.split(':')[0]) : 0,
+      maxPeople: participantCount,
     };
 
     try {

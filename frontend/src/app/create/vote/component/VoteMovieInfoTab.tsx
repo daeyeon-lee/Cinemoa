@@ -265,7 +265,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                       }
                     };
                     const IconComponent = getIcon(category.categoryName);
-                    return <IconComponent className="w-4 h-4 mr-1 text-Brand2-Primary" />;
+                    return <IconComponent className="w-4 h-4 mr-1" fill="#71E5DE" />;
                   })()}
                   <h3 className="text-sm sm:text-p2-b text-Brand2-Strong">{category.categoryName}</h3>
                 </div>
@@ -515,11 +515,11 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
         </div>
       </div>
       {/* 이전 다음 바튼 */}
-      <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+      <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
+        <Button variant="tertiary" size="lg" className="w-[138px]" onClick={onPrev}>
           이전
         </Button>
-        <Button type="button" variant="brand2" size="lg" className="w-full" onClick={handleNext}>
+        <Button type="button" variant="brand2" size="lg" className="w-[138px]" onClick={handleNext}>
           다음
         </Button>
       </div>

@@ -1,45 +1,39 @@
 // 펀딩 생성
 // 파라미터
-export interface fundinginfo {
+export interface VoteFundinginfo {
   title?: string;
   content?: string;
 }
 
-export interface movieinfo {
+export interface VoteMovieinfo {
   categoryId?: number;
   videoName?: string;
   posterUrl?: string;
 }
 
-export interface theaterinfo {
+export interface VoteTheaterinfo {
   cinemaId?: number;
-  screenId?: number;
-  screenday?: string;
-  scrrenStartsOn?: number;
-  scrrenEndsOn?: number;
-  maxPeople?: number;
+  screenMinDate?: string;
+  screenMaxDate?: string;
 }
 
-export interface CreateFundingParams {
+export interface CreateVoteFundingParams {
   userId?: number;
   // 펀딩 정보
-  title?: string;
   content?: string;
+  title?: string;
   // 영화 정보
   categoryId?: number;
   videoName?: string;
   posterUrl?: string;
   // 상영 정보
   cinemaId?: number;
-  screenId?: number;
-  screenDay?: string;
-  screenStartsOn?: number;
-  screenEndsOn?: number;
-  maxPeople?: number;
+  screenMinDate?: string;
+  screenMaxDate?: string;
 }
 
 // 응답
-export interface CreateFundingResponse {
+export interface CreateVoteFundingResponse {
   state: string;
   message: string;
   code: number;
