@@ -1,12 +1,70 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import type { ListCardData } from '@/components/cards/CineCardVertical';
+import { getUserInfo } from '@/api/mypage';
+import type { UserInfo } from '@/types/mypage';
+
+// 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
+function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
+  // 기본 이미지(플레이스홀더) 설정
+  const url = src || 'https://placehold.co/72x72';
+
+  return (
+    <div
+      // 동그란 아바타 프레임 + 잘림 처리
+      className="rounded-full overflow-hidden flex-shrink-0 bg-center bg-cover bg-no-repeat border border-slate-700"
+      // 크기와 배경 이미지 동적 지정
+      style={{
+        width: size,
+        height: size,
+        backgroundImage: `url("${url}")`,
+      }}
+      aria-label="프로필 이미지" // 접근성 라벨
+      role="img"                 // 접근성 역할
+    />
+  );
+}
 
 export default function MyPage() {
+  // 사용자 정보 상태
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // const [imageurl,setImageurl] = useState<string>('');
+  // 사용자 정보 조회
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getUserInfo();
+        // response.data 예시: { nickname: '펀딩 테스트 유저', profile_img_url: 'https://picsum.photos/id/1/200' }
+        const { nickname, profile_img_url } = response.data as any; // ← 서버 응답 키  // 서버 응답 키 설명: 스네이크 케이스로 내려옴
+        setUserInfo({
+          nickname,                         // ← 동일 키라 그대로 할당
+          profileImgUrl: profile_img_url,   // ← 여기가 핵심: camelCase로 변환 저장
+        });
+        // setUserInfo(response.data);
+        // setImageurl(response.data.profileImgUrl);
+        console.log(response.data);
+      } catch (err) {
+        // API 서버가 준비되지 않은 경우 기본값 사용 (console 에러 방지)
+        setUserInfo({
+          nickname: '사용자',
+          profileImgUrl: 'https://placehold.co/72x72'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
   // 샘플 데이터
   const sampleCardData: ListCardData = {
     funding: {
@@ -67,18 +125,14 @@ export default function MyPage() {
         <div className="col-span-12 min-w-[376px] px-3.5 sm:px-6 sm:px-14 py-3.5 sm:py-7 my-14 bg-slate-800 rounded-2xl flex flex-col justify-start items-start gap-6">
           {/* PC: 한 줄 레이아웃 */}
           <div className="hidden sm:flex w-full justify-between items-center">
-            <div className="w-96 flex flex-col justify-start items-start gap-2.5">
+            <div className="w-full flex flex-col justify-start items-start gap-2.5">
               <div className="flex justify-start items-center gap-6">
-                <div className="w-16 h-16 relative rounded-full overflow-hidden flex-shrink-0">
-                  <img
-                    src="https://placehold.co/87x72"
-                    alt="프로필"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-64 px-1 flex flex-col justify-center items-start gap-2.5">
-                  <div className="text-slate-50 text-2xl font-bold leading-loose">닉네임님, 안녕하세요</div>
-                  <div className="w-64 h-8 flex justify-between items-center">
+                <Avatar src={userInfo?.profileImgUrl} size={72} />
+                <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
+                  <div className="text-slate-50 text-2xl font-bold leading-loose">
+                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}, 안녕하세요`}
+                  </div>
+                  <div className="h-8 flex justify-start items-center gap-[14px]">
                     <Button
                       variant="secondary"
                       size="sm"
@@ -108,16 +162,12 @@ export default function MyPage() {
 
           {/* 모바일: 두 줄 레이아웃 */}
           <div className="w-full sm:hidden flex justify-start items-center gap-5">
-            <div className="w-16 h-16 relative rounded-full overflow-hidden flex-shrink-0">
-              <img
-                src="https://placehold.co/87x72"
-                alt="프로필"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <Avatar src={userInfo?.profileImgUrl} size={72} />
             <div className="flex flex-col flex-1 justify-start items-start gap-2">
               <div className="w-full flex justify-between items-center">
-                <div className="text-slate-50 text-2xl font-bold leading-loose">닉네임님, 안녕하세요</div>
+                <div className="text-slate-50 text-2xl font-bold leading-loose">
+                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
+                </div>
                 {/* <Button
                   variant="secondary"
                   size="sm"
