@@ -10,7 +10,7 @@ export default function Signup() {
   const { user } = useAuthStore();
 
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    console.log("GoogleLogin 응답:", credentialResponse);
+    // console.log("GoogleLogin 응답:", credentialResponse);
 
     const idToken = credentialResponse.credential;
     if (!idToken) {
@@ -20,7 +20,7 @@ export default function Signup() {
 
     try {
       const response = await googleLogin(idToken);
-      console.log("GoogleLogin Response:", response);
+      // console.log("GoogleLogin Response:", response);
 
       if (response && response.code === 0) {
         // 로그인 성공 후 isAnonymous 상태에 따른 라우팅
