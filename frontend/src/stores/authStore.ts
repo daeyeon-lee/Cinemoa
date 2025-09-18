@@ -15,7 +15,6 @@ interface User {
 
 interface AuthStore {
   user: User | null;
-  isLoggedIn: boolean;
 
   // Actions
   setUser: (user: User) => void;
@@ -27,18 +26,15 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       user: null,
-      isLoggedIn: false,
 
       setUser: (user) =>
         set({
           user,
-          isLoggedIn: true,
         }),
 
       clearUser: () =>
         set({
           user: null,
-          isLoggedIn: false,
         }),
 
       updateUserInfo: (updates) =>
