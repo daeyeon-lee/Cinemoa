@@ -70,11 +70,14 @@ public class UserAdditionalInfoService {
     }
 
     private List<Category> validateCategories(List<Long> categoryIds) {
-        // 카테고리 개수 검증 (최소 1개, 최대 3개)
+        // 카테고리 개수 검증 (최소 4개, 최대 12개)
         if (categoryIds == null || categoryIds.isEmpty()) {
             throw BadRequestException.ofInput();
         }
-        if (categoryIds.size() > 3) {
+        if (categoryIds.size() < 4) {
+            throw BadRequestException.ofInput();
+        }
+        if (categoryIds.size() > 12) {
             throw BadRequestException.ofInput();
         }
 
