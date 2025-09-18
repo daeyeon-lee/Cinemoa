@@ -323,15 +323,19 @@ public class FundingService {
                 .viewCount(stat.getViewCount())
                 .build();
 
-        ScreenInfo screenInfo = ScreenInfo.builder()
-                .screenId(screen.getScreenId())
-                .screenName(screen.getScreenName())
-                .is4dx(screen.getIs4dx())
-                .isRecliner(screen.getIsRecliner())
-                .isScreenx(screen.getIsScreenX())
-                .isDolby(screen.getIsDolby())
-                .isImax(screen.getIsImax())
-                .build();
+        ScreenInfo screenInfo = null;
+
+        if (screen != null) {
+            screenInfo = ScreenInfo.builder()
+                    .screenId(screen.getScreenId())
+                    .screenName(screen.getScreenName())
+                    .is4dx(screen.getIs4dx())
+                    .isRecliner(screen.getIsRecliner())
+                    .isScreenx(screen.getIsScreenX())
+                    .isDolby(screen.getIsDolby())
+                    .isImax(screen.getIsImax())
+                    .build();
+        }
 
         CinemaInfo cinemaInfo = CinemaInfo.builder()
                 .city(cinema.getCity())
