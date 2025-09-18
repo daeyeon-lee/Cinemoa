@@ -27,7 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private static final String[] PERMIT_ALL_PATHS = {
-            "/api/login/oauth2/code/**",
+            "/api/auth/login/oauth2/code/**",
             "/api/funding/search",
             "/api/funding/recommended-funding",
             "/api/funding/expiring",

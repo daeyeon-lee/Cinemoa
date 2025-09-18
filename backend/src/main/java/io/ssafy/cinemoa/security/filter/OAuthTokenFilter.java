@@ -31,7 +31,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 @RequiredArgsConstructor
 public class OAuthTokenFilter extends OncePerRequestFilter {
-    private static final String PATH = "/api/login/oauth2/code/**";
+    private static final String PATH = "/api/auth/login/oauth2/code/**";
     private static final PathPatternRequestMatcher PATH_REQUEST_MATCHER = PathPatternRequestMatcher.withDefaults()
             .matcher(HttpMethod.POST, PATH);
     private final ObjectMapper objectMapper;
