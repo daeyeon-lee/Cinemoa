@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 import { SortBar } from '@/components/filters/SortBar';
 import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import type { CardItem } from '@/components/lists/ResponsiveCardList';
-import { STANDARD_CATEGORIES } from '@/constants/categories';
+import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
+import SearchIcon from '@/component/icon/searchIcon';
 /**
  * 검색 페이지 컴포넌트
  *
@@ -21,16 +25,26 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
 export default function Search() {
   console.log('🔍 [Search] 컴포넌트 렌더링');
 
+  const urlSearchParams = useSearchParams();
+
   // 필터 상태 관리
-  const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryValue | null>('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortBy>('LATEST');
   const [showClosed, setShowClosed] = useState<boolean>(false);
 
-  // 검색어 상태 추가 (TODO: 실제 검색 기능 추가 시 사용)
+  // 검색어 상태 (URL에서 초기값 설정)
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [inputQuery, setInputQuery] = useState<string>(''); // 검색창 입력용
+
+  // URL 쿼리 파라미터에서 검색어 초기화
+  useEffect(() => {
+    const urlQuery = urlSearchParams.get('q') || '';
+    setSearchQuery(urlQuery);
+    setInputQuery(urlQuery);
+  }, [urlSearchParams]);
 
   const categories = STANDARD_CATEGORIES;
   const regions = REGIONS;
@@ -59,7 +73,7 @@ export default function Search() {
       params.category = selectedSubCategory;
     } else if (selectedCategory) {
       // 1차 카테고리 선택했지만 서브카테고리 선택 안함 (예: "영화-전체")
-      const categoryInfo = categories.find(cat => cat.value === selectedCategory);
+      const categoryInfo = categories.find((cat) => cat.value === selectedCategory);
       if (categoryInfo?.categoryId) {
         params.category = categoryInfo.categoryId;
       }
@@ -73,9 +87,7 @@ export default function Search() {
     // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
     // selectedTheaterType에는 한글 label이 들어있으므로 백엔드용 value로 변환
     if (selectedTheaterType.length > 0) {
-      const theaterValues = selectedTheaterType.map(label =>
-        theaterTypes.find(type => type.label === label)?.value
-      ).filter(Boolean);
+      const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean);
       if (theaterValues.length > 0) {
         params.theaterType = theaterValues as string[];
       }
@@ -90,15 +102,7 @@ export default function Search() {
     return params;
   }, [searchQuery, sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes]);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-    refetch
-  } = useSearch(searchParams);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
   const items = data?.content || [];
 
@@ -108,8 +112,24 @@ export default function Search() {
     isFetchingNextPage,
     isLoading,
     error: !!error,
-    searchQuery
+    searchQuery,
   });
+
+  // 검색 실행 핸들러
+  const handleSearch = useCallback(() => {
+    // URL 변경 없이 내부 상태만 업데이트
+    setSearchQuery(inputQuery.trim());
+  }, [inputQuery]);
+
+  // 엔터키 핸들러
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
 
   // 필터 초기화 핸들러
   const handleResetFilters = () => {
@@ -119,7 +139,7 @@ export default function Search() {
     setSelectedTheaterType([]);
     setSortBy('LATEST');
     setShowClosed(false);
-    setSearchQuery(''); // 검색어도 초기화
+    // 검색어는 초기화하지 않음 (URL 기준 유지)
   };
 
   // 🔄 재시도 핸들러
@@ -149,58 +169,59 @@ export default function Search() {
   }, []);
 
   return (
-    <ListShell
-      header={
-        <CategorySelectSection
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedSubCategory={selectedSubCategory}
-          onSubCategoryChange={setSelectedSubCategory}
-          variant="brand1"
-        />
-      }
-      sidebar={
-        <div className="space-y-10">
-          {/* 지역 필터 */}
-          <RegionFilterPanel
-            regions={regions}
-            value={selectedRegions}
-            onChange={setSelectedRegions}
-            onReset={() => setSelectedRegions([])}
-          />
+    <div>
+      {/* 상단 검색창 */}
+      <div className="w-full max-w-2xl mx-auto mt-16 mb-10 flex items-center gap-2">
+        <Input type="search" placeholder="검색어 입력하기" value={inputQuery} onChange={(e) => setInputQuery(e.target.value)} onKeyDown={handleKeyDown} className="flex-1" />
+        <Button onClick={handleSearch} variant="ghost" className="hover:bg-BG-0">
+          <SearchIcon width={36} height={36} stroke="#cbd5e1" />
+        </Button>
+      </div>
 
-          {/* 상영관 타입 필터 */}
-          <TheaterTypeFilterPanel
-            types={theaterTypes}
-            value={selectedTheaterType}
-            onChange={setSelectedTheaterType}
-            onReset={() => setSelectedTheaterType([])}
+      <ListShell
+        className="mt-0"
+        header={
+          <CategorySelectSection
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedSubCategory={selectedSubCategory}
+            onSubCategoryChange={setSelectedSubCategory}
+            variant="brand1"
           />
-        </div>
-      }
-      content={
-        <div className="space-y-3">
-          {/* 정렬 바 */}
-          <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} />
+        }
+        sidebar={
+          <div className="space-y-10">
+            {/* 지역 필터 */}
+            <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} />
 
-          {/* 카드 목록 */}
-          <ResponsiveCardList
-            items={items}
-            mode="funding"
-            loading={isLoading}
-            empty={!isLoading && items.length === 0}
-            error={!!error}
-            onCardClick={handleCardClick}
-            onVoteClick={handleVoteClick}
-            onResetFilters={handleResetFilters}
-            onRetry={handleRetry}
-            onLoadMore={handleLoadMore}
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-          />
-        </div>
-      }
-    />
+            {/* 상영관 타입 필터 */}
+            <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} />
+          </div>
+        }
+        content={
+          <div className="space-y-3">
+            {/* 정렬 바 */}
+            <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} />
+
+            {/* 카드 목록 */}
+            <ResponsiveCardList
+              items={items}
+              mode="funding"
+              loading={isLoading}
+              empty={!isLoading && items.length === 0}
+              error={!!error}
+              onCardClick={handleCardClick}
+              onVoteClick={handleVoteClick}
+              onResetFilters={handleResetFilters}
+              onRetry={handleRetry}
+              onLoadMore={handleLoadMore}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+            />
+          </div>
+        }
+      />
+    </div>
   );
 }

@@ -31,6 +31,12 @@ interface ResponsiveCardListProps {
   onResetFilters?: () => void;
   /** 재시도 핸들러 */
   onRetry?: () => void;
+  /** 무한스크롤 로드 더보기 핸들러 */
+  onLoadMore?: () => void;
+  /** 다음 페이지 존재 여부 */
+  hasNextPage?: boolean;
+  /** 다음 페이지 로딩 중 여부 */
+  isFetchingNextPage?: boolean;
 }
 
 /**
@@ -75,6 +81,9 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   onVoteClick,
   onResetFilters,
   onRetry,
+  onLoadMore,
+  hasNextPage = false,
+  isFetchingNextPage = false,
 }) => {
   // 로딩 상태: 스켈레톤 카드 8개 표시 (개발 단계 UI 확인용)
   if (loading) {
@@ -194,6 +203,20 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
           </div>
         ))}
       </div>
+
+      {/* 무한스크롤 로드 더보기 버튼 */}
+      {hasNextPage && (
+        <div className="flex justify-center mt-8">
+          <Button
+            onClick={onLoadMore}
+            disabled={isFetchingNextPage}
+            variant="outline"
+            className="min-w-32"
+          >
+            {isFetchingNextPage ? '로딩중...' : '더보기'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
