@@ -3,9 +3,11 @@
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { googleLogin } from '@/api/auth';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function Signup() {
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
     console.log("GoogleLogin 응답:", credentialResponse);
@@ -20,14 +22,15 @@ export default function Signup() {
       const response = await googleLogin(idToken);
       console.log("GoogleLogin Response:", response);
 
-      if (response) {
-        // TODO: UserStore에 로그인 정보 저장 (googleLogin API에서 처리하도록 수정 필요)
-        // await login({
-        //   userId: response.userId?.toString() || "",
-        // });
-
-        // 로그인 성공 시 홈페이지로 이동
-        router.push("/home");
+      if (response && response.code === 0) {
+        // 로그인 성공 후 isAnonymous 상태에 따른 라우팅
+        if (response.data.isAnonymous) {
+          // 익명 사용자인 경우 추가 정보 입력 페이지로 이동
+          router.push("/auth/info/step1");
+        } else {
+          // 일반 사용자인 경우 홈페이지로 이동
+          router.push("/home");
+        }
       }
     } catch (error) {
       console.error("Google 로그인 에러:", error);
