@@ -281,7 +281,7 @@ public class FundingService {
 
         FundingInfo fundingInfo = FundingInfo.builder()
                 .fundingId(funding.getFundingId())
-                .progressRate(stat.getParticipantCount() / funding.getMaxPeople() * 100)
+                .progressRate(stat.getParticipantCount() * 100 / funding.getMaxPeople())
                 .title(funding.getTitle())
                 .bannerUrl(funding.getBannerUrl())
                 .content(funding.getContent())
