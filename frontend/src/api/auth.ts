@@ -3,7 +3,7 @@ export const googleLogin = async (idToken: string) => {
   try {
     // 서버로 Google OAuth 토큰 전송
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}auth/oauth/google`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}auth/login/oauth2/code/google`,
       {
         method: "POST",
         headers: {
@@ -11,8 +11,7 @@ export const googleLogin = async (idToken: string) => {
         },
         credentials: "include", // 쿠키 포함
         body: JSON.stringify({
-          provider: "google",
-          idToken,
+          token: idToken,
           // code: credential,
         }),
       }
