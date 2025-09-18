@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.security.config;
 
+import io.ssafy.cinemoa.security.enums.Role;
 import io.ssafy.cinemoa.security.filter.OAuthTokenFilter;
 import io.ssafy.cinemoa.security.handler.CustomAccessDeniedHandler;
 import io.ssafy.cinemoa.security.handler.CustomAuthenticationEntryPoint;
@@ -68,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(PERMIT_ALL_PATHS)
                         .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+                        .requestMatchers("/api/**").hasRole(Role.USER.getRole())
                         .anyRequest().authenticated())
                 .addFilterBefore(oAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
