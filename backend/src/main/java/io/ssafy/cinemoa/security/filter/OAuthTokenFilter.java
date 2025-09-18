@@ -21,7 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
@@ -36,6 +38,7 @@ public class OAuthTokenFilter extends OncePerRequestFilter {
             .matcher(HttpMethod.POST, PATH);
     private final ObjectMapper objectMapper;
     private final OAuthUserService userService;
+    private final SecurityContextRepository contextRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -56,7 +59,7 @@ public class OAuthTokenFilter extends OncePerRequestFilter {
             validateCredentials(vendor, dto);
 
             User user = userService.loadUserWithToken(vendor, dto.getToken());
-            setAuthentication(user);
+            setAuthentication(user, request, response);
 
             writeSuccessResponse(response, user);
 
@@ -85,13 +88,17 @@ public class OAuthTokenFilter extends OncePerRequestFilter {
         return uri.substring(uri.lastIndexOf("/") + 1);
     }
 
-    private void setAuthentication(User user) {
+    private void setAuthentication(User user, HttpServletRequest req, HttpServletResponse res) {
         // User를 UserDetails로 변환 (기존 UserDetails 구현체 사용)
         CustomUserDetails userDetails = CustomUserDetails.of(user); // 또는 기존 방식 사용
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
                 userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+        contextRepository.saveContext(context, req, res);
     }
 
     private void writeSuccessResponse(HttpServletResponse response, User user) throws IOException {
