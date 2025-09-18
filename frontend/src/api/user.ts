@@ -4,8 +4,8 @@ import { UpdateUserInfoRequest, UpdateUserInfoResponse } from '@/types/user';
 export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserInfoRequest): Promise<UpdateUserInfoResponse> => {
   try {
     console.log('=== 사용자 추가 정보 입력 시작 ===');
-    console.log('사용자 ID:', userId);
-    console.log('요청 데이터:', data);
+    // console.log('사용자 ID:', userId);
+    // console.log('요청 데이터:', data);
 
     const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}`, {
       method: 'PATCH',
@@ -26,7 +26,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
 
     const result: UpdateUserInfoResponse = await response.json();
     console.log('=== 사용자 추가 정보 입력 성공 ===');
-    console.log('응답 데이터:', result);
+    // console.log('응답 데이터:', result);
 
     return result;
   } catch (error) {
