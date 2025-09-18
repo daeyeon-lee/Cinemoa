@@ -27,7 +27,7 @@ interface ListShellProps {
  */
 const ListShell: React.FC<ListShellProps> = ({ header, sidebar, content }) => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen mt-16">
       {/* 상단 필터바 영역 */}
       <div className="w-full pb-7">{header}</div>
 
