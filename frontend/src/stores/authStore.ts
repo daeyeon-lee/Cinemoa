@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 
 interface User {
   userId: number;
@@ -15,8 +16,6 @@ interface User {
 
 interface AuthStore {
   user: User | null;
-
-  // Actions
   setUser: (user: User) => void;
   clearUser: () => void;
   updateUserInfo: (updates: Partial<User>) => void;
@@ -38,6 +37,10 @@ export const useAuthStore = create<AuthStore>()(
           user: null,
         }),
 
+      updateUserInfo: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
       updateUserInfo: (updates) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...updates } : null,

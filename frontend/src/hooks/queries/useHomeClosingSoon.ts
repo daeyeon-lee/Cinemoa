@@ -10,46 +10,44 @@
  * - 이동 시 QueryParams: { sortBy: 'deadline', type: 'funding', isClosed: false, ... }
  * 
  * queryKey: ['home', 'closingSoon']
- * 반환: CardItem[] | undefined
+ * 반환: ApiSearchItem[] | undefined
  * 
  * TODO: 서비스 연결, 에러 매핑, mapper 유지
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { CardItem } from '@/types/cardItem';
-import { mapFundingDtoToCardItem } from '@/mappers/cardItemMapper';
+import type { ApiSearchItem, ApiSearchResponse } from '@/types/searchApi';
+import { getExpiringSoonFunding } from '@/api/user';
+import { useAuthStore } from '@/stores/authStore';
 
 /**
  * 홈 종료 임박 상영회 조회 훅
- * 
+ *
  * 마감일이 임박한 순서로 정렬된 상영회 목록을 반환합니다.
- * 더보기 버튼을 통해 전체 목록 페이지로 이동할 수 있습니다.
- * 
- * @returns 종료 임박 상영회 8개 목록
+ * 현재는 search?sortBy=RECOMMENDED로 5개 대체
+ *
+ * @returns 종료 임박 상영회 5개 목록
  */
 export function useHomeClosingSoon() {
+  const { user } = useAuthStore();
+  const userId = user?.userId;
+
   return useQuery({
-    queryKey: ['home', 'closingSoon'],
+    queryKey: ['home', 'closingSoon', userId],
     queryFn: async () => {
-      // TODO: 서비스 함수 연결
-      // return await getHomeClosingSoon({ 
-      //   type: 'funding', 
-      //   sortBy: 'deadline', 
-      //   isClosed: false,
-      //   size: 8 
-      // });
-      throw new Error('Service not implemented yet');
+      return await getExpiringSoonFunding(userId);
     },
-    select: (data) => {
-      // TODO: API 응답 구조에 맞게 수정
-      // return data.data.content.slice(0, 8).map(item => 
-      //   mapFundingDtoToCardItem({ funding: item.funding, cinema: item.cinema })
-      // );
-      return [] as CardItem[];
+    select: (data: ApiSearchResponse) => {
+      return data.data?.content?.slice(0, 5) || [] as ApiSearchItem[];
     },
-    staleTime: 60_000, // 1분 (마감일이 중요하므로 자주 업데이트)
-    gcTime: 300_000,   // 5분
-    retry: 1,
+    staleTime: 60_000,
+    gcTime: 300_000,
+    retry: (failureCount, error) => {
+      if (error instanceof Error && error.message.includes('401')) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 }
 

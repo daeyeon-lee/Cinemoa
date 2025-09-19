@@ -34,6 +34,12 @@ function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
 
 export default function MyPage() {
   const router = useRouter();
+
+  // 카드 클릭 핸들러 - 상세페이지로 이동
+  const handleCardClick = (fundingId: number) => {
+    console.log('카드 클릭:', fundingId);
+    router.push(`/detail/${fundingId}`);
+  };
   
   // 사용자 정보 상태
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -394,7 +400,7 @@ export default function MyPage() {
                     <div key={proposal.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
                       <CineCardVertical
                         data={convertToCardData(proposal)}
-                        onCardClick={(id) => console.log('카드 클릭:', id)}
+                        onCardClick={handleCardClick}
                         onVoteClick={(id) => console.log('투표 클릭:', id)}
                         showStateTag={true}
                         stateTagClassName="state state-active"
@@ -447,7 +453,7 @@ export default function MyPage() {
                   <div key={index} className="w-[172px] h-80 flex-shrink-0">
                     <CineCardVertical
                       data={item}
-                      onCardClick={(id) => console.log('카드 클릭:', id)}
+                      onCardClick={handleCardClick}
                       onVoteClick={(id) => console.log('투표 클릭:', id)}
                       showStateTag={true}
                       stateTagClassName="state state-active"
@@ -498,7 +504,7 @@ export default function MyPage() {
                   <div key={index} className="w-[172px] h-80 flex-shrink-0">
                     <CineCardVertical
                       data={item}
-                      onCardClick={(id) => console.log('카드 클릭:', id)}
+                      onCardClick={handleCardClick}
                       onVoteClick={(id) => console.log('투표 클릭:', id)}
                       showStateTag={true}
                       stateTagClassName="state state-active"

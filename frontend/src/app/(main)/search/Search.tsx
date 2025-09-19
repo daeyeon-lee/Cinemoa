@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
@@ -26,6 +26,7 @@ export default function Search() {
   console.log('🔍 [Search] 컴포넌트 렌더링');
 
   const urlSearchParams = useSearchParams();
+  const router = useRouter();
 
   // 필터 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<CategoryValue | null>('all');
@@ -159,8 +160,8 @@ export default function Search() {
   // 🖱️ 카드 클릭 핸들러
   const handleCardClick = useCallback((id: number) => {
     console.log('🔍 [Search] 카드 클릭:', id);
-    // TODO: 상세 페이지 이동 로직 구현
-  }, []);
+    router.push(`/detail/${id}`);
+  }, [router]);
 
   // ❤️ 좋아요 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {
