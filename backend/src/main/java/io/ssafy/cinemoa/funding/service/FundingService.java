@@ -283,7 +283,7 @@ public class FundingService {
         int progressRate = 0;
         if (funding.getMaxPeople() != 0) {
             price = screen.getPrice() / funding.getMaxPeople();
-            progressRate = stat.getParticipantCount() / funding.getMaxPeople();
+            progressRate = stat.getParticipantCount() * 100 / funding.getMaxPeople();
         }
 
         FundingInfo fundingInfo = FundingInfo.builder()
