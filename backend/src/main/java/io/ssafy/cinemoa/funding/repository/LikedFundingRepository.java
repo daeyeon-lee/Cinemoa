@@ -125,6 +125,17 @@ public class LikedFundingRepository {
         // 좋아요 여부 (항상 true)
         boolean isLiked = true;
 
+        // 날짜 필드 null 체크 및 파싱
+        String endsOnStr = rs.getString("ends_on");
+        String screenDayStr = rs.getString("screen_day");
+        String screenMaxDateStr = rs.getString("screen_max_date");
+        String screenMinDateStr = rs.getString("screen_min_date");
+        
+        LocalDate fundingEndsOn = endsOnStr != null ? LocalDate.parse(endsOnStr) : null;
+        LocalDate screenDate = screenDayStr != null ? LocalDate.parse(screenDayStr) : null;
+        LocalDate screenMaxDate = screenMaxDateStr != null ? LocalDate.parse(screenMaxDateStr) : null;
+        LocalDate screenMinDate = screenMinDateStr != null ? LocalDate.parse(screenMinDateStr) : null;
+
         CardTypeFundingInfoDto.BriefFundingInfo funding = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
                 .title(rs.getString("title"))
@@ -132,10 +143,10 @@ public class LikedFundingRepository {
                 .state(FundingState.valueOf(rs.getString("state")))
                 .progressRate(progressRate)
                 .videoName(rs.getString("video_name"))
-                .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
-                .screenDate(LocalDate.parse(rs.getString("screen_day")))
-                .screenMaxDate(LocalDate.parse(rs.getString("screen_max_date")))
-                .screenMinDate(LocalDate.parse(rs.getString("screen_min_date")))
+                .fundingEndsOn(fundingEndsOn)
+                .screenDate(screenDate)
+                .screenMaxDate(screenMaxDate)
+                .screenMinDate(screenMinDate)
                 .price(perPersonPrice)
                 .maxPeople(maxPeople)
                 .participantCount(participantCount)
