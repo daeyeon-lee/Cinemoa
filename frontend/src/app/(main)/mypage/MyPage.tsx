@@ -40,11 +40,11 @@ export default function MyPage() {
     console.log('카드 클릭:', fundingId);
     router.push(`/detail/${fundingId}`);
   };
-  
+
   // 사용자 정보 상태
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // 내가 제안한 상영회 상태
   const [myProposals, setMyProposals] = useState<FundingProposal[]>([]);
   const [isProposalsLoading, setIsProposalsLoading] = useState(true);
@@ -64,7 +64,7 @@ export default function MyPage() {
   const [likedType, setLikedType] = useState<'funding' | 'vote' | undefined>(undefined);
 
   // const [imageurl,setImageurl] = useState<string>('');
-  
+
   // state에 따른 뱃지 색상과 문구 매핑
   const getStateBadgeInfo = (state: string, fundingType: 'FUNDING' | 'VOTE') => {
     switch (state) {
@@ -86,14 +86,14 @@ export default function MyPage() {
         return { text: '알 수 없음', className: 'bg-slate-500 text-white' };
     }
   };
-  
+
   // 사용자 정보 조회
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         setIsLoading(true);
         const { user, isLoggedIn } = useAuthStore.getState();
-        
+
         // 로그인하지 않은 경우 기본값 설정
         if (!isLoggedIn() || !user?.userId) {
           setUserInfo({
@@ -105,12 +105,14 @@ export default function MyPage() {
 
         const response = await getUserInfo(user.userId);
         // response.data 예시: { nickname: '펀딩 테스트 유저', profile_img_url: 'https://picsum.photos/id/1/200' }
-        const { nickname, profile_img_url } = response.data as any; // ← 서버 응답 키  // 서버 응답 키 설명: 스네이크 케이스로 내려옴
+        // const { nickname, profile_img_url } = response.data as any; // 서버 응답 키가 스네이크 케이스로 내려온다고 보았는데
+        console.log('response.data:', response.data);
+        const { nickname, profileImgUrl } = response.data as any; // 서버 응답 키 카멜 케이스로 내려옴
         setUserInfo({
-          nickname,                         // ← 동일 키라 그대로 할당
-          profileImgUrl: profile_img_url,   // ← 여기가 핵심: camelCase로 변환 저장
+          nickname,
+          // profileImgUrl: profile_img_url,   // 원래 camelCase로 변환 저장했는데 이미지가 렌더링 안 됨
+          profileImgUrl: profileImgUrl,
         });
-        console.log(response.data);
       } catch (err) {
         console.error('사용자 정보 조회 오류:', err);
         // API 서버가 준비되지 않은 경우 기본값 사용 (console 에러 방지)
@@ -131,7 +133,7 @@ export default function MyPage() {
     try {
       setIsProposalsLoading(true);
       const { user, isLoggedIn } = useAuthStore.getState();
-      
+
       // 로그인하지 않은 경우 빈 배열 설정
       if (!isLoggedIn() || !user?.userId) {
         setMyProposals([]);
@@ -142,20 +144,20 @@ export default function MyPage() {
       // API에서 모든 데이터 가져오기 
       const response = await getFundingProposals(user.userId, undefined, undefined, 7);
       let proposalsData = response.data.content;
-      
+
       // 클라이언트에서 타입별 필터링 (fundingType 기준)
       if (type === 'funding') {
         proposalsData = proposalsData.filter(item => item.funding.fundingType === 'FUNDING');
       } else if (type === 'vote') {
         proposalsData = proposalsData.filter(item => item.funding.fundingType === 'VOTE');
       }
-      
+
       setMyProposals(proposalsData);
       setHasMoreProposals(response.data.hasNextPage);
     } catch (err) {
       console.error('내가 제안한 상영회 조회 오류:', err);
       setMyProposals([]);
-      setHasMoreProposals(false); 
+      setHasMoreProposals(false);
     } finally {
       setIsProposalsLoading(false);
     }
@@ -178,7 +180,7 @@ export default function MyPage() {
     try {
       setIsParticipatedLoading(true);
       const { user, isLoggedIn } = useAuthStore.getState();
-      
+
       // 로그인하지 않은 경우 빈 배열 설정
       if (!isLoggedIn() || !user?.userId) {
         setMyParticipated([]);
@@ -215,7 +217,7 @@ export default function MyPage() {
     try {
       setIsLikedLoading(true);
       const { user, isLoggedIn } = useAuthStore.getState();
-      
+
       // 로그인하지 않은 경우 빈 배열 설정
       if (!isLoggedIn() || !user?.userId) {
         setMyLiked([]);
@@ -226,14 +228,14 @@ export default function MyPage() {
       // API에서 데이터 가져오기 (type 파라미터 전달)
       const response = await getLikedFunding(user.userId, type, undefined, 7);
       let likedData = response.data?.content || [];
-      
+
       // 클라이언트에서 추가 필터링 (price 기준으로 한 번 더 확인)
       if (type === 'funding') {
         likedData = likedData.filter(item => item.funding.price > 0);
       } else if (type === 'vote') {
         likedData = likedData.filter(item => item.funding.price === 0);
       }
-      
+
       setMyLiked(likedData);
       setHasMoreLiked(response.data?.hasNextPage || false);
     } catch (err) {
@@ -315,7 +317,7 @@ export default function MyPage() {
   const convertLikedToCardData = (liked: LikedFunding): ListCardData => {
     // price가 0보다 크면 FUNDING, 아니면 VOTE로 구분
     const fundingType = liked.funding.price > 0 ? 'FUNDING' : 'VOTE';
-    
+
     return {
       funding: {
         fundingId: liked.funding.fundingId,
@@ -503,11 +505,10 @@ export default function MyPage() {
               <Button
                 variant={proposalType === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  proposalType === undefined 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${proposalType === undefined
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setProposalType(undefined)}
               >
                 전체
@@ -515,11 +516,10 @@ export default function MyPage() {
               <Button
                 variant={proposalType === 'funding' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  proposalType === 'funding' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${proposalType === 'funding'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setProposalType('funding')}
               >
                 펀딩
@@ -527,11 +527,10 @@ export default function MyPage() {
               <Button
                 variant={proposalType === 'vote' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  proposalType === 'vote' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${proposalType === 'vote'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setProposalType('vote')}
               >
                 투표
@@ -589,11 +588,10 @@ export default function MyPage() {
               <Button
                 variant={participatedState === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  participatedState === undefined 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${participatedState === undefined
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setParticipatedState(undefined)}
               >
                 전체
@@ -601,11 +599,10 @@ export default function MyPage() {
               <Button
                 variant={participatedState === 'ON_PROGRESS' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  participatedState === 'ON_PROGRESS' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${participatedState === 'ON_PROGRESS'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setParticipatedState('ON_PROGRESS')}
               >
                 진행중
@@ -613,11 +610,10 @@ export default function MyPage() {
               <Button
                 variant={participatedState === 'CLOSE' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  participatedState === 'CLOSE' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${participatedState === 'CLOSE'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setParticipatedState('CLOSE')}
               >
                 진행 완료
@@ -675,11 +671,10 @@ export default function MyPage() {
               <Button
                 variant={likedType === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  likedType === undefined 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${likedType === undefined
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setLikedType(undefined)}
               >
                 전체
@@ -687,11 +682,10 @@ export default function MyPage() {
               <Button
                 variant={likedType === 'funding' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  likedType === 'funding' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${likedType === 'funding'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setLikedType('funding')}
               >
                 펀딩
@@ -699,11 +693,10 @@ export default function MyPage() {
               <Button
                 variant={likedType === 'vote' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  likedType === 'vote' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${likedType === 'vote'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setLikedType('vote')}
               >
                 투표
