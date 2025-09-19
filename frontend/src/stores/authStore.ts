@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useCardStore } from './cardStore';
 
 interface User {
   userId: number;
@@ -31,10 +32,13 @@ export const useAuthStore = create<AuthStore>()(
           user,
         }),
 
-      clearUser: () =>
+      clearUser: () => {
         set({
           user: null,
-        }),
+        });
+        // 로그아웃 시 카드 정보도 함께 삭제
+        useCardStore.getState().clearCards();
+      },
 
       updateUserInfo: (updates) =>
         set((state) => ({
