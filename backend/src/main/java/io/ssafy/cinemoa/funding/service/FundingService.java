@@ -144,6 +144,7 @@ public class FundingService {
             throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
         }
 
+        log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
         if (image != null) {
             String localPath = imageService.saveImage(image, ImageCategory.BANNER);
             String imagePath = imageService.translatePath(localPath);
