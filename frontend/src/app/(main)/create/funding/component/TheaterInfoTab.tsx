@@ -64,6 +64,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
       title: fundingData?.title,
       categoryId: movieData?.categoryId,
       videoName: movieData?.videoName,
+      videoContent: movieData?.videoContent,
       // posterUrl: movieData?.posterUrl,
       cinemaId: theaterData?.cinemaId || 0,
       screenId: theaterData?.screenId || 0,
@@ -347,7 +348,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
               </Select>
             </div>
           </div>
-          <div className="flex gap-2 w-full items-end">
+          <div className="flex gap-2 w-full items-start">
             {/* 상영관 선택 */}
             <div className="flex flex-col gap-2 w-full">
               <div className="space-y-1">
@@ -409,7 +410,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
             <div className="flex flex-col gap-2 w-full">
               <div className="space-y-1">
                 <h4 className="h5-b text-primary">
-                  날짜 선택 <span className="text-Brand1-Primary">*</span>
+                  대관 희망일 <span className="text-Brand1-Primary">*</span>
                 </h4>
               </div>
               <CalendarDemo
@@ -417,8 +418,9 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                 onChange={setSelectedDate}
                 disabled={!selectedScreenName}
                 min={new Date().toISOString().split('T')[0]} // 오늘부터 선택 가능
-                placeholder="날짜를 선택해주세요"
+                placeholder={!selectedScreenName ? '상영관을 먼저 선택해주세요' : '대관 희망일을 선택해주세요'}
               />
+              {selectedScreenName ? <p className="p2 text-Brand1-Primary">상영회는 대관 희망일의 7일 전까지 활성화됩니다.</p> : ''}
             </div>
           </div>
           {/* 시간 선택 */}

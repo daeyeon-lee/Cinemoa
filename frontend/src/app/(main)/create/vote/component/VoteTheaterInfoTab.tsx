@@ -53,6 +53,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       title: fundingData?.title,
       categoryId: movieData?.categoryId,
       videoName: movieData?.videoName,
+      videoContent: movieData?.videoContent,
       // posterUrl: movieData?.posterUrl,
       cinemaId: selectedCinemaId || 0,
       screenMinDate: selectedStartDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
@@ -68,8 +69,6 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       alert('투표가 성공적으로 생성되었습니다!');
       router.push('/');
     } catch (error) {
-      console.error('=== 펀딩 생성 실패 ===');
-      console.error('에러:', error);
       alert('투표 생성에 실패했습니다. 다시 시도해주세요.');
     }
   };
@@ -185,42 +184,59 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
               </Select>
             </div>
           </div>
-          <div className="flex gap-2 w-full items-end">
-            {/* 시작 날짜, 우측 날짜 선택 */}
-            <div className="flex flex-col gap-2 w-full">
-              <div className="space-y-1">
-                <h4 className="h5-b text-primary">
-                  대관 예정일 시작 날짜 선택 <span className="text-Brand1-Primary">*</span>
-                </h4>
-              </div>
-              <CalendarDemo
-                value={selectedStartDate}
-                onChange={setSelectedStartDate}
-                disabled={!selectedTheater}
-                min={new Date().toISOString().split('T')[0]} // 오늘 이후 날짜만 선택 가능
-                placeholder="시작 날짜를 선택해주세요"
-              />
+          <div className="flex flex-col gap-2 w-full">
+            {/* 대관 예정 기간 제목 */}
+            <div className="space-y-1">
+              <h4 className="h5-b text-primary">
+                대관 예정 기간 <span className="text-Brand1-Primary">*</span>
+              </h4>
             </div>
-            <div className="flex flex-col gap-2 w-full">
-              <div className="space-y-1">
-                <h4 className="h5-b text-primary">
-                  종료 날짜 선택 <span className="text-Brand1-Primary">*</span>
-                </h4>
+
+            {/* 날짜 선택 영역 */}
+            <div className="flex gap-2 w-full">
+              <div className="flex-1">
+                <CalendarDemo
+                  value={selectedStartDate}
+                  onChange={(date) => {
+                    setSelectedStartDate(date);
+
+                    if (date) {
+                      // 시작일로부터 5일 후 계산
+                      const startDate = new Date(date.split(' ')[0]); // "2024-01-15 (월)" -> "2024-01-15"
+                      const endDate = new Date(startDate);
+                      endDate.setDate(startDate.getDate() + 5);
+
+                      const year = endDate.getFullYear();
+                      const month = String(endDate.getMonth() + 1).padStart(2, '0');
+                      const day = String(endDate.getDate()).padStart(2, '0');
+                      const dayOfWeek = endDate.toLocaleDateString('ko-KR', { weekday: 'short' });
+
+                      setSelectedEndDate(`${year}-${month}-${day} (${dayOfWeek})`);
+                    } else {
+                      setSelectedEndDate('');
+                    }
+                  }}
+                  disabled={!selectedTheater}
+                  min={new Date().toISOString().split('T')[0]} // 오늘 이후 날짜만 선택 가능
+                  placeholder={!selectedTheater ? '상영관을 먼저 선택해주세요' : '시작일을 선택해주세요'}
+                />
               </div>
-              <CalendarDemo
-                value={selectedEndDate}
-                onChange={setSelectedEndDate}
-                disabled={!selectedTheater || !selectedStartDate}
-                min={selectedStartDate ? selectedStartDate.split(' ')[0] : new Date().toISOString().split('T')[0]} // 시작 날짜 이후만 선택 가능
-                placeholder="종료 날짜를 선택해주세요"
-              />
+
+              <div className="flex-1">
+                <CalendarDemo
+                  value={selectedEndDate}
+                  onChange={() => {}} // 종료일은 자동 설정되므로 변경 불가
+                  disabled={true} // 항상 비활성화 (읽기 전용)
+                  placeholder={!selectedStartDate ? '시작일 선택 시 자동 설정됩니다' : '종료일 (시작일 + 5일)'}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div className="flex justify-start items-start gap-2">
         <InformationIcon width={20} height={20} />
-        <p className="p2 text-tertiary">투표는 생성 후 5일간 진행되며 이후 펀딩 생성 여부를 선택할 수 있습니다.</p>
+        <p className="p2 text-tertiary">수요조사는 생성 후 5일간 진행되며 이후 펀딩 생성 여부를 선택할 수 있습니다.</p>
       </div>
       {/* 이전 다음 바튼 */}
 

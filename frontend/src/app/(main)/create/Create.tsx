@@ -46,19 +46,19 @@ export default function Create() {
             <div className="self-stretch pb-[0.68px] flex flex-col justify-start items-start">
               <div className="self-stretch justify-center">
                 <span className="p2 text-secondary">• 정산을 위해 </span>
-                <span className="p2 text-Brand2-Primary">신분증 또는 사업자 등록증, 국내 은행 계좌</span>
+                <span className="p2 text-Brand1-Strong">신분증 또는 사업자 등록증, 국내 은행 계좌</span>
                 <span className="p2 text-secondary">를 준비해주세요.</span>
-                <br />• 펀딩은 <span className="p2 text-Brand2-Primary">희망 대관 날짜의 7일 전까지 </span>
+                <br />• 상영회는 <span className="p2 text-Brand1-Strong">희망 대관 날짜의 7일 전까지 </span>
                 <span className="p2 text-secondary">
                   활성화됩니다.
-                  <br />• 펀딩이 실패하면 사전에 입력한{' '}
+                  <br />• 상영회 인원 모집이 실패하면 사전에 입력한{' '}
                 </span>
-                <span className="p2 text-Brand2-Primary">환불 계좌로 전액 환불</span>
+                <span className="p2 text-Brand1-Strong">환불 계좌로 전액 환불</span>
                 <span className="p2 text-secondary">
                   됩니다.
                   <br />• 대관한 장소는{' '}
                 </span>
-                <span className="p2 text-Brand2-Primary">책임감 있는 자세로 이용</span>
+                <span className="p2 text-Brand1-Strong">책임감 있는 자세로 이용</span>
                 <span className="p2 text-secondary">해주세요.</span>
               </div>
             </div>

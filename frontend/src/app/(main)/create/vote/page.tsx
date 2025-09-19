@@ -83,7 +83,7 @@ export default function VotePage() {
         <Card className="flex flex-col gap-4 px-4 sm:px-6">
           <CardHeader className="max-sm:text-center">
             <CardTitle>수요조사 만들기</CardTitle>
-            <CardDescription>원하는 영화의 상영회의 수요조사를 만들어 보세요</CardDescription>
+            <CardDescription>원하는 영화의 수요조사를 만들어 보세요</CardDescription>
           </CardHeader>
         </Card>
 

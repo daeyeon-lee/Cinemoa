@@ -39,6 +39,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const [searchQuery, setSearchQuery] = useState(''); // 검색어를 저장하는 상태
   const [categoryError, setCategoryError] = useState<string>(''); // 카테고리 선택 에러 메시지를 저장하는 상태
   const [titleError, setTitleError] = useState<string>(''); // 제목 입력 에러 메시지를 저장하는 상태
+  const [descriptionError, setDescriptionError] = useState<string>(''); // 상영물 소개 에러 메시지를 저장하는 상태
   const [imageError, setImageError] = useState<string>(''); // 이미지 선택 에러 메시지를 저장하는 상태
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 검색 디바운싱을 위한 타이머 ref
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 요소에 대한 ref
@@ -172,7 +173,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
   // 유효성 검사 함수
   const isFormValid = () => {
-    return selectedCategoryId && movieTitle.trim() && selectedImage;
+    return selectedCategoryId && movieTitle.trim() && movieDescription.trim() && selectedImage;
   };
 
   // 다음 단계로 넘어가는 핸들러
@@ -180,6 +181,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     // 에러 메시지 초기화
     setCategoryError('');
     setTitleError('');
+    setDescriptionError('');
     setImageError('');
 
     let hasError = false;
@@ -192,6 +194,11 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
     if (!movieTitle.trim()) {
       setTitleError('상영물 제목을 입력하거나 검색해주세요.');
+      hasError = true;
+    }
+
+    if (!movieDescription.trim()) {
+      setDescriptionError('상영물 소개를 입력해주세요.');
       hasError = true;
     }
 
@@ -433,7 +440,17 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               </h4>
               <p className="p3 text-tertiary">상영물에 대한 소개를 입력해주세요.</p>
             </div>
-            <Textarea placeholder="상영물에 대한 소개를 입력해주세요." value={movieDescription} onChange={(e) => setMovieDescription(e.target.value)} className="min-h-[135px] resize-none" />
+            <Textarea
+              placeholder="상영물에 대한 소개를 입력해주세요."
+              value={movieDescription}
+              onChange={(e) => {
+                setMovieDescription(e.target.value);
+                setDescriptionError(''); // 상영물 소개 에러 메시지 초기화
+              }}
+              className="min-h-[135px] resize-none"
+            />
+            {/* 상영물 소개 에러 메시지 */}
+            {descriptionError && <div className="text-Brand1-Primary p3 mt-2">{descriptionError}</div>}
           </div>
         </div>
 
@@ -491,8 +508,8 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               ) : (
                 <div className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-BG-2 rounded-[6px] transition-colors" onClick={handleUploadClick}>
                   <Upload className="w-11 h-11 text-tertiary mb-3" size={44} />
-                  <p className="p2-b text-tertiary text-center mb-1">이미지를 업로드하거나 드래그하세요</p>
-                  <p className="p2 text-subtle text-center">JPG, PNG 파일을 지원합니다</p>
+                  <p className="p2-b text-tertiary text-center mb-1">이미지는 1개 이상 필수로 업로드 해주세요.</p>
+                  <p className="p2 text-subtle text-center">JPG, PNG, WEBP 파일을 지원합니다</p>
                 </div>
               )}
             </CardContent>
