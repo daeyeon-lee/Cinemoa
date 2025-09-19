@@ -73,7 +73,7 @@ public class ImageService {
 
         try {
             Files.copy(image.getInputStream(), fullPath, StandardCopyOption.REPLACE_EXISTING);
-            return Paths.get(midPath, filename).toString();
+            return Paths.get(filename).toString();
         } catch (IOException e) {
             throw InternalServerException.ofUnknown();
         }
