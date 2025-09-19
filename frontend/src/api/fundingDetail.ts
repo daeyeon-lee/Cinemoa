@@ -14,7 +14,7 @@ export const getFundingDetail = async (
 ): Promise<ApiResponse<DetailData>> => {
   try {
     const searchParams = new URLSearchParams();
-    if (userId) searchParams.set("user_id", userId);
+    if (userId) searchParams.set("userId", userId);
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}funding/${fundingId}?${searchParams.toString()}`,
