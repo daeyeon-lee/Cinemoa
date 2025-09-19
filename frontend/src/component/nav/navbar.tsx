@@ -61,7 +61,7 @@ export default function Navbar() {
     }
   };
   return (
-    <header className="bg-slate-900 border-b border-slate-900 py-3 pt-[108px] lg:pt-4">
+    <header className="bg-slate-900 border-b border-slate-900 py-5 lg:pt-4">
       {/* 모바일 레이아웃 - 두 줄 */}
       <div className="border-b border-1 border-[#1E293B] lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
