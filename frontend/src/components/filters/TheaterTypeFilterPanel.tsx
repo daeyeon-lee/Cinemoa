@@ -51,13 +51,7 @@ interface TheaterTypeFilterPanelProps {
  * @param props.onChange - 상영관 타입 선택 변경 핸들러
  * @param props.onReset - 필터 초기화 핸들러
  */
-const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({
-  types,
-  value,
-  onChange,
-  onReset,
-  variant = 'brand1',
-}) => {
+const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({ types, value, onChange, onReset, variant = 'brand1' }) => {
   /**
    * 상영관 타입 선택/해제를 토글하는 핸들러
    * @param label - 토글할 상영관 타입 라벨
@@ -86,27 +80,15 @@ const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({
           const isSelected = value.includes(type.label);
 
           return (
-            <div
-              key={type.value}
-              className="flex items-center justify-between py-3 border-b border-stroke-3 text-p2 cursor-pointer"
-              onClick={() => handleToggle(type.label)}
-            >
-              <Label className="text-sm text-slate-200 cursor-pointer">
-                {type.label}
-              </Label>
+            <div key={type.value} className="flex items-center justify-between py-3 border-b border-stroke-3 text-p2 cursor-pointer" onClick={() => handleToggle(type.label)}>
+              <Label className="text-sm text-slate-200 cursor-pointer">{type.label}</Label>
               <div
                 className={cn(
-                  "w-4 h-4 rounded-full border-2 cursor-pointer transition-colors flex items-center justify-center",
-                  isSelected
-                    ? variant === 'brand2'
-                      ? 'border-[#2cd8ce] bg-[#2cd8ce]'
-                      : 'border-[#e83045] bg-[#e83045]'
-                    : 'border-stroke-3 bg-transparent'
+                  'w-4 h-4 rounded-full border-2 cursor-pointer transition-colors flex items-center justify-center',
+                  isSelected ? (variant === 'brand2' ? 'border-[#2cd8ce] bg-[#2cd8ce]' : 'border-[#e83045] bg-[#e83045]') : 'border-stroke-3 bg-transparent',
                 )}
               >
-                {isSelected && (
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                )}
+                {isSelected && <div className="w-2 h-2 rounded-full bg-white"></div>}
               </div>
             </div>
           );

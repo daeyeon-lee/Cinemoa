@@ -57,5 +57,3 @@ export interface FundingProposalsErrorResponse {
   message: string;
   code: number;
 }
-
-

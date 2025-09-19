@@ -207,12 +207,7 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
       {/* 무한스크롤 로드 더보기 버튼 */}
       {hasNextPage && (
         <div className="flex justify-center mt-8">
-          <Button
-            onClick={onLoadMore}
-            disabled={isFetchingNextPage}
-            variant="outline"
-            className="min-w-32"
-          >
+          <Button onClick={onLoadMore} disabled={isFetchingNextPage} variant="outline" className="min-w-32">
             {isFetchingNextPage ? '로딩중...' : '더보기'}
           </Button>
         </div>

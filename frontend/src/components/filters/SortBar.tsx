@@ -66,13 +66,7 @@ const SortBar: React.FC<SortBarProps> = ({ sortBy, onSortChange, isClosed, onIsC
 
       {/* 우측: 종료된 상영회 안보기 체크박스 */}
       <div className="flex items-center space-x-2">
-        <Input
-          type="checkbox"
-          id="show-closed"
-          checked={isClosed}
-          onChange={(e) => onIsClosedChange(e.target.checked)}
-          className="w-4 h-4 bg-slate-800"
-        />
+        <Input type="checkbox" id="show-closed" checked={isClosed} onChange={(e) => onIsClosedChange(e.target.checked)} className="w-4 h-4 bg-slate-800" />
         <label htmlFor="show-closed" className="text-sm text-secondary cursor-pointer">
           종료된 상영회 포함
         </label>

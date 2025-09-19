@@ -45,15 +45,7 @@ type CineCardProps = {
   getStateBadgeInfo?: (state: string, fundingType: 'FUNDING' | 'VOTE') => { text: string; className: string };
 };
 
-const CineCardVertical: React.FC<CineCardProps> = ({
-  data,
-  loadingState = 'ready',
-  onVoteClick,
-  onCardClick,
-  showStateTag = false,
-  stateTagClassName = '',
-  getStateBadgeInfo,
-}) => {
+const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
   const formatDate = (dateString: string) => {
@@ -99,34 +91,22 @@ const CineCardVertical: React.FC<CineCardProps> = ({
   }
 
   return (
-    <div
-      className="w-full h-[300px] bg-slate-800 rounded-xl cursor-pointer transition-transform hover:scale-[1.02]"
-      onClick={handleCardClick}
-    >
+    <div className="w-full h-[300px] bg-slate-800 rounded-xl cursor-pointer transition-transform hover:scale-[1.02]" onClick={handleCardClick}>
       <div className="p-[11px] space-y-[7px] h-full flex flex-col">
         <div className="flex gap-[5px]">
           <div className="flex-1 h-24 relative">
-            <Media
-              src={data.funding.bannerUrl}
-              alt={data.funding.title}
-              aspect="auto"
-              height={96}
-              loadingState={loadingState}
-            />
+            <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="auto" height={96} loadingState={loadingState} />
             {/* 상태 태그 오버레이 */}
-            {showStateTag && (() => {
-              const badgeInfo = getStateBadgeInfo 
-                ? getStateBadgeInfo(data.funding.state, data.funding.fundingType)
-                : { text: '진행중', className: 'bg-amber-300 text-slate-900' };
-              
-              return (
-                <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] rounded-md ${badgeInfo.className}`}>
-                  <div className="text-[10px] font-medium leading-3">
-                    {badgeInfo.text}
+            {showStateTag &&
+              (() => {
+                const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '진행중', className: 'bg-amber-300 text-slate-900' };
+
+                return (
+                  <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] rounded-md ${badgeInfo.className}`}>
+                    <div className="text-[10px] font-medium leading-3">{badgeInfo.text}</div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
           </div>
           <div className="flex flex-col items-center justify-between p-0 gap-2 h-24">
             {isFunding ? (
@@ -152,20 +132,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({
           <h3 className="text-sm font-semibold leading-tight text-slate-50 line-clamp-2 h-10">{data.funding.title}</h3>
           {/* 배지 영역 */}
           <div className="flex gap-1 flex-wrap ">
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {formatLocation(data.cinema.city, data.cinema.district)}
-            </span>
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {formatDate(data.funding.fundingEndsOn)}
-            </span>
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {formatDate(data.funding.screenDate)}
-            </span>
+            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatLocation(data.cinema.city, data.cinema.district)}</span>
+            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.fundingEndsOn)}</span>
+            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.screenDate)}</span>
           </div>
           {/* 영화관 이름 */}
-          <h4 className="text-xs font-normal leading-tight text-slate-300 line-clamp-2 h-8">
-            {data.cinema.cinemaName}
-          </h4>
+          <h4 className="text-xs font-normal leading-tight text-slate-300 line-clamp-2 h-8">{data.cinema.cinemaName}</h4>
         </div>
 
         <PerforationLine />
@@ -181,12 +153,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({
               loadingState={loadingState}
             />
           ) : (
-            <VoteInfo
-              likeCount={data.funding.favoriteCount}
-              isLiked={data.funding.isLiked}
-              loadingState={loadingState}
-              onClick={() => handleVoteClick({} as React.MouseEvent)}
-            />
+            <VoteInfo likeCount={data.funding.favoriteCount} isLiked={data.funding.isLiked} loadingState={loadingState} onClick={() => handleVoteClick({} as React.MouseEvent)} />
           )}
         </div>
       </div>
