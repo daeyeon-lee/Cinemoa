@@ -99,4 +99,45 @@ export interface ParticipatedFundingErrorResponse {
   code: number;
 }
 
+// 내가 보고싶어요 한 상영회 관련 타입
+export interface LikedFunding {
+  funding: {
+    fundingId: number;
+    title: string;
+    bannerUrl: string;
+    state: string;
+    progressRate: number;
+    fundingEndsOn: string;
+    screenDate: string;
+    price: number;
+    maxPeople: number;
+    participantCount: number;
+    favoriteCount: number;
+    isLiked: boolean;
+    fundingType: 'FUNDING' | 'VOTE';
+  };
+  cinema: {
+    cinemaId: number;
+    cinemaName: string;
+    city: string;
+    district: string;
+  };
+}
+
+export interface LikedFundingResponse {
+  state: string;
+  message: string;
+  code: number;
+  data: {
+    content: LikedFunding[];
+    hasNextPage: boolean;
+  };
+}
+
+export interface LikedFundingErrorResponse {
+  state: string;
+  message: string;
+  code: number;
+}
+
 
