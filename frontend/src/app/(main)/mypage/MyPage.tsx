@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import type { ListCardData } from '@/components/cards/CineCardVertical';
-import { getUserInfo, getFundingProposals, getParticipatedFunding } from '@/api/mypage';
-import type { UserInfo, FundingProposal, ParticipatedFunding } from '@/types/mypage';
+import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFunding } from '@/api/mypage';
+import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 
@@ -50,6 +50,12 @@ export default function MyPage() {
   const [isParticipatedLoading, setIsParticipatedLoading] = useState(true);
   const [hasMoreParticipated, setHasMoreParticipated] = useState(false);
   const [participatedState, setParticipatedState] = useState<'ALL' | 'ON_PROGRESS' | 'CLOSE' | undefined>(undefined);
+
+  // 내가 보고싶어요 한 상영회 상태
+  const [myLiked, setMyLiked] = useState<LikedFunding[]>([]);
+  const [isLikedLoading, setIsLikedLoading] = useState(true);
+  const [hasMoreLiked, setHasMoreLiked] = useState(false);
+  const [likedType, setLikedType] = useState<'funding' | 'vote' | undefined>(undefined);
 
   // const [imageurl,setImageurl] = useState<string>('');
   
@@ -127,12 +133,22 @@ export default function MyPage() {
         return;
       }
 
-      const response = await getFundingProposals(user.userId, type, undefined, 7);
-      setMyProposals(response.data.content); // 내가 제안한 상영회 목록 -> state 업데이트
+      // API에서 모든 데이터 가져오기 
+      const response = await getFundingProposals(user.userId, undefined, undefined, 7);
+      let proposalsData = response.data.content;
+      
+      // 클라이언트에서 타입별 필터링 (fundingType 기준)
+      if (type === 'funding') {
+        proposalsData = proposalsData.filter(item => item.funding.fundingType === 'FUNDING');
+      } else if (type === 'vote') {
+        proposalsData = proposalsData.filter(item => item.funding.fundingType === 'VOTE');
+      }
+      
+      setMyProposals(proposalsData);
       setHasMoreProposals(response.data.hasNextPage);
     } catch (err) {
       console.error('내가 제안한 상영회 조회 오류:', err);
-      setMyProposals([]); // 내가 제안한 상영회 목록 -> state 초기화
+      setMyProposals([]);
       setHasMoreProposals(false); 
     } finally {
       setIsProposalsLoading(false);
@@ -188,6 +204,53 @@ export default function MyPage() {
     }
   }, [participatedState]);
 
+  // 내가 보고싶어요 한 상영회 조회
+  const fetchMyLiked = async (type?: 'funding' | 'vote') => {
+    try {
+      setIsLikedLoading(true);
+      const { user, isLoggedIn } = useAuthStore.getState();
+      
+      // 로그인하지 않은 경우 빈 배열 설정
+      if (!isLoggedIn() || !user?.userId) {
+        setMyLiked([]);
+        setHasMoreLiked(false);
+        return;
+      }
+
+      // API에서 데이터 가져오기 (type 파라미터 전달)
+      const response = await getLikedFunding(user.userId, type, undefined, 7);
+      let likedData = response.data?.content || [];
+      
+      // 클라이언트에서 추가 필터링 (price 기준으로 한 번 더 확인)
+      if (type === 'funding') {
+        likedData = likedData.filter(item => item.funding.price > 0);
+      } else if (type === 'vote') {
+        likedData = likedData.filter(item => item.funding.price === 0);
+      }
+      
+      setMyLiked(likedData);
+      setHasMoreLiked(response.data?.hasNextPage || false);
+    } catch (err) {
+      console.error('내가 보고싶어요 한 상영회 조회 오류:', err);
+      setMyLiked([]);
+      setHasMoreLiked(false);
+    } finally {
+      setIsLikedLoading(false);
+    }
+  };
+
+  // 내가 보고싶어요 한 상영회 조회 (초기 로드)
+  useEffect(() => {
+    fetchMyLiked();
+  }, []);
+
+  // 타입 필터 변경 시 API 재요청
+  useEffect(() => {
+    if (likedType !== undefined) {
+      fetchMyLiked(likedType);
+    }
+  }, [likedType]);
+
   // API 데이터를 ListCardData 형식으로 변환
   const convertToCardData = (proposal: FundingProposal): ListCardData => {
     return {
@@ -242,6 +305,36 @@ export default function MyPage() {
     };
   };
 
+  // 보고싶어요 한 상영회 데이터를 ListCardData 형식으로 변환
+  const convertLikedToCardData = (liked: LikedFunding): ListCardData => {
+    // price가 0보다 크면 FUNDING, 아니면 VOTE로 구분
+    const fundingType = liked.funding.price > 0 ? 'FUNDING' : 'VOTE';
+    
+    return {
+      funding: {
+        fundingId: liked.funding.fundingId,
+        title: liked.funding.title,
+        bannerUrl: liked.funding.bannerUrl,
+        state: liked.funding.state,
+        progressRate: liked.funding.progressRate,
+        fundingEndsOn: liked.funding.fundingEndsOn,
+        screenDate: liked.funding.screenDate,
+        price: liked.funding.price,
+        maxPeople: liked.funding.maxPeople,
+        participantCount: liked.funding.participantCount,
+        favoriteCount: liked.funding.favoriteCount,
+        isLiked: liked.funding.isLiked,
+        fundingType: fundingType,
+      },
+      cinema: {
+        cinemaId: liked.cinema.cinemaId,
+        cinemaName: liked.cinema.cinemaName,
+        city: liked.cinema.city,
+        district: liked.cinema.district,
+      },
+    };
+  };
+
   // 샘플 데이터
   const sampleCardData: ListCardData = {
     funding: {
@@ -291,7 +384,6 @@ export default function MyPage() {
     },
   };
 
-  const myWishlist = Array(7).fill(sampleCardData);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto">
@@ -566,49 +658,84 @@ export default function MyPage() {
             {/* 섹션 헤더 */}
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 보고 싶은 상영회</h2>
-              <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
-                더보기 →
-              </button>
+              {hasMoreLiked && (
+                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                  더보기 →
+                </button>
+              )}
             </div>
             {/* 필터 버튼 그룹 */}
             <div className="w-96 inline-flex justify-start items-center gap-2">
               <Button
-                variant="brand1"
+                variant={likedType === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-red-500 text-slate-300 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
+                  likedType === undefined 
+                    ? "bg-red-500 text-slate-300" 
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => setLikedType(undefined)}
               >
                 전체
               </Button>
               <Button
-                variant="secondary"
+                variant={likedType === 'funding' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
+                  likedType === 'funding' 
+                    ? "bg-red-500 text-slate-300" 
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => setLikedType('funding')}
               >
                 펀딩
               </Button>
               <Button
-                variant="secondary"
+                variant={likedType === 'vote' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
+                  likedType === 'vote' 
+                    ? "bg-red-500 text-slate-300" 
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => setLikedType('vote')}
               >
                 투표
               </Button>
             </div>
             {/* 상영회 카드 */}
             <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
-              <HorizontalScroller className="w-full">
-                {myWishlist.map((item, index) => (
-                  <div key={index} className="w-[172px] h-80 flex-shrink-0">
-                    <CineCardVertical
-                      data={item}
-                      onCardClick={(id) => console.log('카드 클릭:', id)}
-                      onVoteClick={(id) => console.log('투표 클릭:', id)}
-                      showStateTag={true}
-                      stateTagClassName="state state-active"
-                    />
+              {!myLiked || myLiked.length === 0 ? (
+                <div className="w-full flex justify-center items-center h-80">
+                  <div className="flex flex-col justify-center items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-slate-400 text-lg font-medium mb-2">보고 싶은 상영회가 없습니다</div>
+                      <div className="text-slate-500 text-sm">보고 싶은 상영회를 저장해보세요</div>
+                    </div>
+                    <Button
+                      onClick={() => router.push('/category')}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      둘러보기
+                    </Button>
                   </div>
-                ))}
-              </HorizontalScroller>
+                </div>
+              ) : (
+                <HorizontalScroller className="w-full">
+                  {myLiked && myLiked.map((liked, index) => (
+                    <div key={liked.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                      <CineCardVertical
+                        data={convertLikedToCardData(liked)}
+                        onCardClick={(id) => console.log('카드 클릭:', id)}
+                        onVoteClick={(id) => console.log('투표 클릭:', id)}
+                        showStateTag={true}
+                        stateTagClassName="state state-active"
+                        getStateBadgeInfo={getStateBadgeInfo}
+                      />
+                    </div>
+                  ))}
+                </HorizontalScroller>
+              )}
             </div>
           </div>
         </div>
