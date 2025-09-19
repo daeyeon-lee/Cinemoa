@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { useAuthStore } from "@/stores/authStore";
 import { useFundingDetail } from "@/hooks/queries";
 import { FundingDetailCard } from "@/app/(main)/detail/[fundingId]/components/FundingDetailCard"
 import FundingDetailInfo from "@/app/(main)/detail/[fundingId]/components/FundingDetailInfo"
@@ -11,10 +12,9 @@ interface FundingDetailProps {
   userId?: string;                             // 🆕 URL에서 받은 userId
 }
 
-const FundingDetail: React.FC<FundingDetailProps> = ({
-  fundingId,
-  userId,
-}) => {
+const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId }) => {
+  const { user } = useAuthStore();
+  const userId = user?.userId?.toString();
   // React Query로 펀딩 상세 데이터 조회
   const {
     data: detailData,
@@ -78,6 +78,7 @@ const FundingDetail: React.FC<FundingDetailProps> = ({
       <FundingDetailCard
         data={detailData}
         fundingId={detailData.funding.fundingId} // 🆕 React Query용 ID 전달
+        userId={userId}
       />
 
       {/* 상세 정보 */}

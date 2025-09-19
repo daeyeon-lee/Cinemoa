@@ -6,7 +6,7 @@ type ProjectInfoSectionProps = {
   categoryId?: number;
   movieTitle: string;
   projectTitle: string;
-  type?: 'funding' | 'vote';
+  type?: 'FUNDING' | 'VOTE';
   loadingState?: 'ready' | 'loading';
 };
 
@@ -14,12 +14,12 @@ const ProjectInfoSection: React.FC<ProjectInfoSectionProps> = ({
   categoryId,
   movieTitle,
   projectTitle,
-  type = 'funding',
+  type = 'FUNDING',
   loadingState = 'ready',
 }) => {
   if (loadingState === 'loading') {
     return (
-      <div className={`flex flex-col ${type === 'funding' ? 'gap-4' : 'gap-3'}`}>
+      <div className={`flex flex-col ${type === 'FUNDING' ? 'gap-4' : 'gap-3'}`}>
         <Skeleton className="h-4 w-48" />
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-4 w-full" />

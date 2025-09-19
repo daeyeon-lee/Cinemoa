@@ -10,7 +10,7 @@ export type ApiResponse<T> = {
    Funding 상세 응답 타입
    ========================= */
 export type FundingDetailData = {
-  type: 'funding'; // 판별자(discriminant)
+  type: 'FUNDING'; // 판별자(discriminant)
 
   // 기본 펀딩 정보
   funding: {
@@ -80,7 +80,7 @@ export type FundingDetailData = {
    Vote 상세 응답 타입
    ========================= */
 export type VoteDetailData = {
-  type: 'vote'; // 판별자(discriminant)
+  type: 'VOTE'; // 판별자(discriminant)
 
   // 기본 투표 정보
   vote: {

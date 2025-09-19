@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { persist } from 'zustand/middleware';
 
 interface User {
   userId: number;
@@ -41,10 +40,7 @@ export const useAuthStore = create<AuthStore>()(
         set((state) => ({
           user: state.user ? { ...state.user, ...updates } : null,
         })),
-      updateUserInfo: (updates) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, ...updates } : null,
-        })),
+      
 
       isLoggedIn: () => {
         const { user } = get();

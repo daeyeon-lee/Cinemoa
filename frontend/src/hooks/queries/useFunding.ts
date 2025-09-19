@@ -65,7 +65,7 @@ export function useFundingList(params: SearchParams = {}) {
 // 상세 조회 훅 (API 2번: 상세조회 → userId, isLiked, likeCount, isParticipated 추출)
 export function useFundingDetail({ fundingId, userId }: { fundingId: string; userId?: string }) {
   return useQuery({
-    queryKey: ['funding', fundingId, userId],
+    queryKey: ['FUNDING', fundingId, userId],
     queryFn: () => getFundingDetail(fundingId, userId), // 2️⃣ 상세 조회 API 호출
     enabled: !!fundingId, // fundingId가 있을 때만 실행
     staleTime: 30_000, // 30초
@@ -92,17 +92,17 @@ export function useFundingLike() {
     // Optimistic Update - 즉시 UI 반영
     onMutate: async ({ fundingId, userId, isLiked }) => {
       // 진행 중인 refetch 취소
-      await queryClient.cancelQueries({ queryKey: ['funding', fundingId.toString(), userId] });
+      await queryClient.cancelQueries({ queryKey: ['FUNDING', fundingId.toString(), userId] });
 
       // 현재 데이터 백업
-      const previousDetailData = queryClient.getQueryData(['funding', fundingId.toString(), userId]);
+      const previousDetailData = queryClient.getQueryData(['FUNDING', fundingId.toString(), userId]);
 
       // 상세 캐시 업데이트 (userId, isLiked, likeCount만 업데이트, isParticipated는 보존!)
-      queryClient.setQueryData(['funding', fundingId.toString(), userId], (old: ApiResponse<DetailData> | undefined) => {
+      queryClient.setQueryData(['FUNDING', fundingId.toString(), userId], (old: ApiResponse<DetailData> | undefined) => {
         if (!old) return old;
         
         // 타입 가드: funding 타입인지 확인
-        if (old.data?.type !== 'funding') return old;
+        if (old.data?.type !== 'FUNDING') return old;
         
         return {
           ...old,
@@ -125,7 +125,7 @@ export function useFundingLike() {
       
       // 목록 캐시들 업데이트 (isLiked, likeCount만)
       queryClient.setQueriesData(
-        { queryKey: ['fundings'] },
+        { queryKey: ['FUNDINGS'] },
         (old: any) => { // TODO: 목록 타입 정의 후 수정 필요
           if (!old?.pages) return old;
           
@@ -162,7 +162,7 @@ export function useFundingLike() {
       
       // 백업된 데이터로 복원
       if (context?.previousDetailData) {
-        queryClient.setQueryData(['funding', fundingId.toString(), userId], context.previousDetailData);
+        queryClient.setQueryData(['FUNDING', fundingId.toString(), userId], context.previousDetailData);
       }
     },
 
@@ -170,7 +170,7 @@ export function useFundingLike() {
     onSettled: (data, error, { fundingId, userId }) => {
       // 상세 데이터 최신화
       queryClient.invalidateQueries({ 
-        queryKey: ['funding', fundingId.toString(), userId] 
+        queryKey: ['FUNDING', fundingId.toString(), userId] 
       });
       
       /*
@@ -178,7 +178,7 @@ export function useFundingLike() {
       
       // 목록 데이터 최신화
       queryClient.invalidateQueries({ 
-        queryKey: ['fundings'] 
+        queryKey: ['FUNDINGS'] 
       });
       */
     },
