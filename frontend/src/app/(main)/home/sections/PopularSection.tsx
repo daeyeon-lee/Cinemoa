@@ -20,13 +20,15 @@ interface PopularSectionProps {
   loading?: boolean;
   /** 더보기 버튼 클릭 핸들러 */
   onMoreClick?: () => void;
+  /** 카드 클릭 핸들러 */
+  onCardClick?: (fundingId: number) => void;
 }
 
 /**
  * 인기 상영회 섹션
  * 반응형 레이아웃으로 데스크톱에서는 세로 스택, 모바일에서는 4x2 그리드
  */
-export function PopularSection({ title, items, loading = false, onMoreClick }: PopularSectionProps) {
+export function PopularSection({ title, items, loading = false, onMoreClick, onCardClick }: PopularSectionProps) {
   return (
     <div className="h-full">
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
@@ -48,7 +50,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick }: P
               <div key={item.funding.fundingId || index} className="w-full flex items-start">
                 <div className="text-Brand2-Primary text-2xl font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0">{index + 1}</div>
                 <div className="flex-1">
-                  <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} />
+                  <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               </div>
             ))}
@@ -65,7 +67,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick }: P
                   <div key={item.funding.fundingId || index} className="flex items-center gap-2">
                     <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} />
+                      <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                     </div>
                   </div>
                 ))}
@@ -79,7 +81,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick }: P
                   <div key={item.funding.fundingId || index} className="flex items-center gap-2">
                     <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 5}</div>
                     <div className="flex-1 min-w-0">
-                      <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} />
+                      <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                     </div>
                   </div>
                 ))}

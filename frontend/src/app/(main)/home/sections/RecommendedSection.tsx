@@ -19,13 +19,15 @@ interface RecommendedSectionProps {
   loading?: boolean;
   /** 더보기 버튼 클릭 핸들러 (선택사항) */
   onMoreClick?: () => void;
+  /** 카드 클릭 핸들러 */
+  onCardClick?: (fundingId: number) => void;
 }
 
 /**
  * 추천 상영회 섹션
  * 세로 카드를 2줄 그리드로 배치하되, 넘치는 내용은 가로 스크롤 가능
  */
-export function RecommendedSection({ title, items, loading = false, onMoreClick }: RecommendedSectionProps) {
+export function RecommendedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecommendedSectionProps) {
   return (
     <div>
       {/* 섹션 헤더: 제목 (더보기 버튼은 선택사항) */}
@@ -46,7 +48,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick 
             <div className="flex gap-2">
               {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
                 <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}
             </div>
@@ -55,7 +57,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick 
             <div className="flex gap-2">
               {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
                 <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}
             </div>
@@ -68,7 +70,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick 
         <HorizontalScroller className="w-full">
           {items.map((item, index) => (
             <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-              <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+              <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
             </div>
           ))}
         </HorizontalScroller>

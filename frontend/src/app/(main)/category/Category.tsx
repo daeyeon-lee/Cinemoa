@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
@@ -20,6 +21,7 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
  */
 export default function Category() {
   console.log('🎯 [Category] 컴포넌트 렌더링');
+  const router = useRouter();
 
   // 필터 상태 관리 (categoryId 기반)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null); // 1차 카테고리 ID
@@ -162,9 +164,9 @@ export default function Category() {
 
   // 🖱️ 카드 클릭 핸들러
   const handleCardClick = useCallback((id: number) => {
-    console.log('🎯 [Category] 펜딩 카드 클릭:', id);
-    // TODO: 상세 페이지 이동 로직 구현
-  }, []);
+    console.log('🎯 [Category] 펀딩 카드 클릭:', id);
+    router.push(`/detail/${id}`);
+  }, [router]);
 
   // ❤️ 좋아요 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {

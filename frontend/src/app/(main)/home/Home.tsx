@@ -75,6 +75,14 @@ export default function Home() {
     [handleSearch],
   );
 
+  // 카드 클릭 핸들러 - 상세페이지로 이동
+  const handleCardClick = useCallback(
+    (fundingId: number) => {
+      router.push(`/detail/${fundingId}`);
+    },
+    [router],
+  );
+
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
       <main className="gap-5">
@@ -141,22 +149,22 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Column - Recommended + Closing Soon */}
             <div className="lg:col-span-8 space-y-12">
-              <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} />
-              <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} />
+              <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
+              <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
             </div>
 
             {/* Right Column - Popular */}
             <aside className="lg:col-span-4 h-fit">
-              <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} />
+              <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
             </aside>
           </div>
         </div>
 
         {/* Mobile Layout - 모바일 버전 세로 스택 */}
         <div className="sm:hidden space-y-8">
-          <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} />
-          <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} />
-          <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} />
+          <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
+          <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
+          <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
         </div>
 
         {/* Recently Viewed - Full Width (Desktop Only) */}
