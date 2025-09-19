@@ -57,12 +57,12 @@ export default function Signup() {
 
   return (
     <div className="flex w-full items-center justify-center py-12">
-      <div className="w-full flex items-center justify-center gap-12">
+      <div className="w-full flex items-center justify-center md:justify-between md:gap-6">
+        {/* 로그인 폼 - 항상 보임 */}
         <div className="flex flex-col items-center justify-center">
-          <img src="/cinema_home_logo.png" width={360} height={75} alt="씨네모아" />
-          {/* <img src="/google_login_logo.png" alt="Google" /> */}
+          <img src="/cinema_home_logo.png" width={300} height={75} alt="씨네모아" />
           <div className="w-full pt-6">
-            <Button variant="tertiary" size="lg" textSize="lg" className=" w-full flex items-center justify-center gap-3 hover:bg-BG-3" onClick={handleButtonClick}>
+            <Button variant="tertiary" size="lg" textSize="lg" className="w-full flex items-center justify-center gap-3 hover:bg-BG-3" onClick={handleButtonClick}>
               <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -72,32 +72,13 @@ export default function Signup() {
               구글로 시작하기
             </Button>
             <div ref={googleLoginRef} style={{ display: 'none' }}>
-              <GoogleLogin
-                onSuccess={handleGoogleLoginSuccess}
-                onError={handleGoogleLoginError}
-                // useOneTap
-                useOneTap={false}
-                type="standard"
-                shape="square"
-                size="large"
-                text="continue_with"
-              />
+              <GoogleLogin onSuccess={handleGoogleLoginSuccess} onError={handleGoogleLoginError} useOneTap={false} type="standard" shape="square" size="large" text="continue_with" />
             </div>
           </div>
         </div>
 
-        {/* <GoogleLogin
-          onSuccess={handleGoogleLoginSuccess}
-          onError={handleGoogleLoginError}
-          // useOneTap
-          useOneTap={false}
-          type="icon"
-          theme="filled_blue"
-          shape="rectangular"
-          size="large"
-        /> */}
-        <img src="/mockup.png" width={360} height={75} alt="씨네모아" />
-        {/* 메인 콘텐츠 */}
+        {/* 목업 이미지 - 데스크탑에서만 보임 */}
+        <img src="/mockup.png" width={360} height={75} alt="씨네모아" className="hidden md:block" />
       </div>
 
       {/* 배경 장식 요소 */}

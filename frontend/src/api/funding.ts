@@ -12,9 +12,9 @@ export const createFunding = async (data: CreateFundingParams, posterUrl: string
     console.log('=== 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터 data:', data);
     console.log('bannerImg:', posterUrl);
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
+    // for (const [key, value] of formData.entries()) {
+    //   console.log(key, value);
+    // }
     const response = await fetch(`${BaseUrl}funding`, {
       method: 'POST',
       // headers: {
