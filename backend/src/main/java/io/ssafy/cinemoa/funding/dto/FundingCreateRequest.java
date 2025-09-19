@@ -16,6 +16,7 @@ public class FundingCreateRequest {
     private String content;
     private Long categoryId;
     private String videoName;
+    private String videoContent;
     private String posterUrl;
     private Long cinemaId;
     private Long screenId;

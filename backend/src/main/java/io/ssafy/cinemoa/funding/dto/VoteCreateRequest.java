@@ -14,6 +14,7 @@ public class VoteCreateRequest {
     private String content;
     private Long categoryId;
     private String videoName;
+    private String videoContent;
     private String posterUrl;
     private Long cinemaId;
     private LocalDate screenMinDate;

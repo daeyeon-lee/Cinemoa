@@ -56,6 +56,7 @@ public class FundingDetailResponse {
     @AllArgsConstructor
     public static class VideoInfo {
         private String videoName;
+        private String videoContent;
         private String screeningTitle;
         private Byte screenStartsOn;
         private Byte screenEndsOn;

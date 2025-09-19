@@ -53,6 +53,9 @@ public class Funding extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(100)", name = "video_name", nullable = false)
     private String videoName;
 
+    @Column(name = "video_content")
+    private String videoContent;
+
     @Column(name = "max_people", nullable = false)
     private Integer maxPeople;
 

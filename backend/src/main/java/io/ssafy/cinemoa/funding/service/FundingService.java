@@ -157,6 +157,7 @@ public class FundingService {
                 .content(request.getContent())
                 .title(request.getTitle())
                 .videoName(request.getVideoName())
+                .videoContent(request.getVideoContent())
                 .leader(user)
                 .maxPeople(request.getMaxPeople())
                 .screenDay(request.getScreenDay())
@@ -243,6 +244,7 @@ public class FundingService {
                 .title(request.getTitle())
                 .cinema(cinema)
                 .videoName(request.getVideoName())
+                .videoContent(request.getVideoContent())
                 .leader(user)
                 .category(category)
                 .maxPeople(0)
@@ -312,6 +314,7 @@ public class FundingService {
 
         VideoInfo videoInfo = VideoInfo.builder()
                 .videoName(funding.getVideoName())
+                .videoContent(funding.getVideoContent())
                 .screenStartsOn(funding.getScreenStartsOn())
                 .screenEndsOn(funding.getScreenEndsOn())
                 .build();
