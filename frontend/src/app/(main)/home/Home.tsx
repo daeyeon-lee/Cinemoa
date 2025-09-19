@@ -76,15 +76,14 @@ export default function Home() {
   );
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto ">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
       <main className="gap-5">
-        {/* 로고+검색+카테고리 - Full Width */}
-        <div className="col-span-12 py-8">
-          {/* Desktop: 로고 + 검색 + 카테고리 */}
-          <div className="hidden md:flex flex-col items-center gap-8 w-full">
+        {/* Desktop: 로고+검색+카테고리 - Full Width */}
+        <div className="hidden sm:block py-8">
+          <div className="flex flex-col items-center gap-8 w-full">
             <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={120} height={40} className="h-10 w-auto" priority />
 
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3 w-full">
               {/* 검색어 입력 */}
               <div className="w-full max-w-2xl flex items-center gap-2">
                 <Input
@@ -98,8 +97,8 @@ export default function Home() {
                   <SearchIcon width={34} height={34} stroke="#cbd5e1" />
                 </Button>
               </div>
-              {/* 버튼 선택 후 둘러보기페이지로 선택내용 들고서 이동 */}
-              <div className="flex gap-1">
+              {/* 카테고리 버튼들 */}
+              <div className="flex flex-wrap justify-center gap-1">
                 {categories.map((category) => (
                   <CategoryButton
                     key={category.value}
@@ -115,54 +114,53 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {/* Mobile: 카테고리 버튼만 */}
-          <div className="md:hidden px-4">
-            <HorizontalScroller>
-              <div className="flex gap-1">
-                {categories.map((category) => (
-                  <CategoryButton
-                    key={category.value}
-                    icon={category.icon}
-                    categoryValue={category.value}
-                    page="home"
-                    uniformWidth={true}
-                    onClick={() => navigateToCategory({ categoryId: category.categoryId ?? undefined })}
-                  >
-                    {category.label}
-                  </CategoryButton>
-                ))}
-              </div>
-            </HorizontalScroller>
-          </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="col-span-12">
-          {/* Desktop Layout */}
-          <div className="hidden md:grid grid-cols-12 gap-8">
+        {/* Mobile: 카테고리 버튼 상단 배치 */}
+        <div className="sm:hidden py-4">
+          <HorizontalScroller>
+            <div className="flex gap-1">
+              {categories.map((category) => (
+                <CategoryButton
+                  key={category.value}
+                  icon={category.icon}
+                  categoryValue={category.value}
+                  page="home"
+                  uniformWidth={true}
+                  onClick={() => navigateToCategory({ categoryId: category.categoryId ?? undefined })}
+                >
+                  {category.label}
+                </CategoryButton>
+              ))}
+            </div>
+          </HorizontalScroller>
+        </div>
+
+        {/* Desktop Layout - 웹 버전 */}
+        <div className="hidden sm:block">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Column - Recommended + Closing Soon */}
-            <div className="col-span-8 space-y-12">
+            <div className="lg:col-span-8 space-y-12">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} />
               <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} />
             </div>
 
             {/* Right Column - Popular */}
-            <aside className="col-span-4 h-fit">
+            <aside className="lg:col-span-4 h-fit">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} />
             </aside>
           </div>
         </div>
 
-        {/* Mobile Layout - Vertical Stack */}
-        <div className="md:hidden space-y-8">
+        {/* Mobile Layout - 모바일 버전 세로 스택 */}
+        <div className="sm:hidden space-y-8">
           <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} />
           <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} />
           <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} />
         </div>
 
         {/* Recently Viewed - Full Width (Desktop Only) */}
-        <section className="hidden md:block col-span-12 mt-4">{/* <RecentlyViewedSection title="최근 본 상영회" loading={true} /> */}</section>
+        <section className="hidden sm:block mt-4">{/* <RecentlyViewedSection title="최근 본 상영회" loading={true} /> */}</section>
       </main>
     </div>
   );
