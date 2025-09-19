@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/api/category",
             "/api/cinema/**",
             "/api/screen/**",
+            "/api/image/**",
             "/api/search"
     };
 
@@ -79,7 +80,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                         .requestMatchers(matcher).permitAll()
                         .requestMatchers("/api/**").hasRole(Role.USER.getRole())
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(oAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
