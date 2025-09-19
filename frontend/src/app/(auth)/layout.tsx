@@ -16,9 +16,9 @@ export const viewport = {
 
 export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="sm:w-[1200px] min-h-screen flex flex-col">
+    <div className="w-full min-h-screen">
       {/* 네비게이션 바 없음 */}
-      <main className="flex-1">{children}</main>
+      <main className="w-full max-w-full">{children}</main>
     </div>
   );
 }

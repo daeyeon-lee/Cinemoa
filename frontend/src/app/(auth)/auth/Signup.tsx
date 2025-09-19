@@ -56,11 +56,11 @@ export default function Signup() {
   // console.log('window.location.origin', window.location.origin);
 
   return (
-    <div className="flex w-full h-screen overflow-hidden">
-      <div className="flex flex-col md:flex-row w-full h-full">
+    <div className="flex w-full h-screen overflow-hidden justify-center items-center">
+      <div className="flex flex-col xl:flex-row w-full max-w-[1200px] h-full xl:h-auto items-center justify-center xl:gap-12">
         {/* 로그인 폼 - 왼쪽 영역 */}
-        <div className="flex flex-col justify-center flex-1 md:w-1/2 px-8 md:px-16 lg:px-24">
-          <div className="max-w-md mx-auto w-full">
+        <div className="flex flex-col justify-center flex-1 xl:flex-none xl:w-[400px] px-6 md:px-12 xl:px-0">
+          <div className="w-full max-w-md mx-auto xl:max-w-none">
             {/* 로고/제목 */}
             <div className="flex justify-center">
               <img src="/cinema_home_logo.png" alt="씨네모아" className="w-full max-w-sm" />
@@ -83,9 +83,9 @@ export default function Signup() {
           </div>
         </div>
 
-        {/* 오른쪽 이미지 영역 */}
-        <div className="hidden md:flex md:w-1/2 items-center justify-center p-8">
-          <div className="relative max-w-lg w-full">
+        {/* 오른쪽 이미지 영역 - 데스크탑(xl)에서만 표시 */}
+        <div className="hidden xl:flex xl:w-[400px] items-center justify-center">
+          <div className="relative w-full">
             <img src="/mockup.png" alt="씨네모아" className="w-full h-auto object-contain" />
           </div>
         </div>
