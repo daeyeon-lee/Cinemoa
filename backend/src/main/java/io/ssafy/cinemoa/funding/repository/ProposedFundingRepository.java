@@ -167,7 +167,7 @@ public class ProposedFundingRepository {
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    WHERE f.leader_id = ? AND f.funding_type = 'FUNDING'
+                    WHERE f.leader_id = ?
                     """);
 
             // userId를 파라미터로 추가 (좋아요 조회용, 제안자 조회용)
