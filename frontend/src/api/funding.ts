@@ -4,9 +4,6 @@ const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const createFunding = async (data: CreateFundingParams, posterUrl: string): Promise<CreateFundingResponse> => {
   const formData = new FormData();
 
-  formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-  formData.append('bannerImg', posterUrl);
-
   // Base64를 Blob으로 변환
   const response = await fetch(posterUrl); // posterUrl이 data:image/... 형태라면
   const blob = await response.blob();
