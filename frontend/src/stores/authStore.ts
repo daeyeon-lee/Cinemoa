@@ -40,7 +40,6 @@ export const useAuthStore = create<AuthStore>()(
         set((state) => ({
           user: state.user ? { ...state.user, ...updates } : null,
         })),
-      
 
       isLoggedIn: () => {
         const { user } = get();
@@ -49,7 +48,6 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage', // localStorage 키 이름
-    }
-  )
+    },
+  ),
 );
-
