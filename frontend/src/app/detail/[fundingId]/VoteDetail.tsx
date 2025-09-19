@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CineDetailCard } from '@/components/cards/CineDetailCard';
-import type { VoteDetailData } from '@/types/detail';
+import type { VoteDetailData } from '@/types/fundingDetail';
 
 type Props = {
   data: VoteDetailData; // 투표 상세 데이터

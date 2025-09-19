@@ -45,6 +45,7 @@ export type FundingDetailData = {
     viewCount: number;
     likeCount: number;
     isLiked: boolean;
+    isParticipated?: boolean; // 🆕 아직 없지만, 나중에 들어올 수 있음
   };
 
   // 카테고리 정보

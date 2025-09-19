@@ -5,6 +5,8 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import Payment from '@/app/payment/Payment';
 import { HeartIcon } from '@/component/icon/heartIcon';
 import LinkIcon from '@/component/icon/linkIcon';
+import { useFundingLike } from '@/hooks/queries';
+import { useAuthStore } from '@/stores/authStore';
 
 type ActionSectionProps = {
   type: 'funding' | 'vote';
@@ -12,6 +14,8 @@ type ActionSectionProps = {
   price?: number;
   likeCount?: number;
   isLiked?: boolean;
+  isParticipated?: boolean;  // 🆕 참여 여부 (기본값 false = 참여 가능)
+  fundingId?: number;        // 🆕 React Query용 추가
   // 공통 액션 핸들러
   onPrimaryAction?: () => void;
   onSecondaryAction?: () => void;
@@ -23,13 +27,42 @@ const ActionSection: React.FC<ActionSectionProps> = ({
   price,
   likeCount = 0,
   isLiked = false,
+  isParticipated = false,   // 🆕 기본값 false (참여 가능)
+  fundingId,              // 🆕 추가
   onPrimaryAction,
   onSecondaryAction,
   loadingState = 'ready',
 }) => {
+  // 🆕 React Query 훅 사용
+  const { user } = useAuthStore();
+  const userId = user?.userId?.toString();
+  const likeMutation = useFundingLike();
+  
+  // 🐛 authStore 디버깅 로그
+  console.log('=== AuthStore Debug ===');
+  console.log('user:', user);
+  console.log('user?.userId:', user?.userId);
+  console.log('userId (toString):', userId);
+  console.log('fundingId:', fundingId);
+  console.log('isLiked:', isLiked);
+  console.log('======================');
+  
+  // 🆕 좋아요 클릭 핸들러
+  const handleLikeClick = () => {
+    if (!userId || !fundingId) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+    
+    likeMutation.mutate({
+      fundingId,
+      userId,
+      isLiked
+    });
+  };
   if (loadingState === 'loading') {
     return (
-      <div className={`px-4 py-4 bg-slate-800 flex flex-col gap-${type === 'funding' ? '4' : '6'}`}>
+      <div className={`flex flex-col mt-5 gap-${type === 'funding' ? '4' : '6'}`}>
         {type === 'funding' && (
           <div className="inline-flex justify-between items-center">
             <Skeleton className="h-4 w-12" />
@@ -45,10 +78,10 @@ const ActionSection: React.FC<ActionSectionProps> = ({
   }
 
   return (
-    <div className={`px-4 py-4 bg-slate-800 flex flex-col gap-${type === 'funding' ? '4' : '6'}`}>
+    <div className={`flex flex-col pt-5 border-t border-slate-600 gap-${type === 'funding' ? '4' : '6'}`}>
       {/* 펀딩: 가격 정보 */}
       {type === 'funding' && price !== undefined && (
-        <div className="self-stretch inline-flex justify-between items-center">
+        <div className="w-full inline-flex justify-between items-center">
           <div className="inline-flex flex-col justify-start items-start">
             <div className="justify-center h6 text-tertiary">1인당</div>
           </div>
@@ -59,7 +92,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({
       )}
 
       {/* 버튼 영역 */}
-      <div className="self-stretch inline-flex justify-start items-center gap-2">
+      <div className="w-full inline-flex justify-start items-center gap-2">
         {type === 'funding' ? (
           <>
             {/* 펀딩 */}
@@ -73,7 +106,8 @@ const ActionSection: React.FC<ActionSectionProps> = ({
                   ? 'h5-b border-Brand1-Strong text-Brand1-Strong gap-1 hover:border-Brand1-Strong hover:text-Brand1-Strong'
                   : 'h5-b gap-1'
               }`}
-              onClick={onPrimaryAction}
+              onClick={fundingId ? handleLikeClick : onPrimaryAction} // 🆕 React Query 우선 사용
+              disabled={likeMutation.isPending} // 🆕 로딩 상태 반영
             >
               <HeartIcon stroke={isLiked ? '#FF5768' : '#94A3B8'} />
               {likeCount}
@@ -82,11 +116,21 @@ const ActionSection: React.FC<ActionSectionProps> = ({
             {/* 참여하기 버튼 -> 결제로 이동(모달 형태)*/}
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="brand1" size="lg" textSize="lg" className="w-full">
-                  참여하기
+                <Button 
+                  variant="brand1" 
+                  size="lg" 
+                  textSize="lg" 
+                  className="w-full"
+                  disabled={isParticipated} // 🆕 참여했으면 비활성화
+                >
+                  {isParticipated ? '참여완료' : '참여하기'}
                 </Button>
               </DialogTrigger>
-              <Payment />
+              <Payment 
+                fundingId={fundingId}
+                userId={userId}
+                amount={price}
+              />
             </Dialog>
           </>
         ) : (

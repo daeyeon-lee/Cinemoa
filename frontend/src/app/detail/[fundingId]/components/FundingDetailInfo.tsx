@@ -1,5 +1,5 @@
 // components/detail/FundingDetailInfo.jsx
-"use client"; // ✅ Next.js Client Component 선언 (브라우저에서 동작) - 서버 컴포넌트가 아님을 명시
+"use client"; 
 
 import React, { useState } from "react"; 
 import { Button } from "@/components/ui/button"; 
@@ -7,11 +7,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator"; 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"; 
 import { Input } from "@/components/ui/input"; 
-import { Media } from "../primitives/Media"; 
+import { Media } from "../../../../components/cards/primitives/Media"; 
 import KakaoMap from "@/components/maps/KakaoMap"; 
 import { Calendar as CalendarIcon, Clock as TimeIcon, MapPin as LocationIcon } from "lucide-react"; 
 
-import type { FundingDetailData } from '@/types/detail';
+import type { FundingDetailData } from '@/types/fundingDetail';
 type TabId = 'funding-info' | 'movie-info' | 'theater-info' | 'refund-info';
 
 
@@ -82,7 +82,7 @@ export default function FundingDetailInfo({ data }: { data: FundingDetailData })
     <section>
       {/* ✅ 네비게이션 버튼 행: 펀딩 소개 / 상영물 정보 / 영화관 정보 / 환불 및 위약 정보 */}
       <div className="flex flex-col gap-10 mt-10">
-        <div className="grid grid-cols-2 sm:flex sm:flex-nowrap w-full px-4 py-2 gap-4 sm:overflow-x-auto">
+        <div className="grid grid-cols-2 sm:flex sm:flex-nowrap w-full px-4 py-2 gap-2 sm:overflow-x-auto">
           <Button
             variant={activeButton === "funding-info" ? "brand1" : "tertiary"} // ✅ 현재 탭과 일치하면 강조
             size="md"

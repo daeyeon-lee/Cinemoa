@@ -1,20 +1,13 @@
-// app/detail/[fundingId]/page.tsx
 
-// 펀딩 상세/투표 상세 전용 컴포넌트
-import { FundingDetailCard } from '@/components/cards/detail/FundingDetailCard';
-import type { FundingDetailData } from '@/types/detail';
+import { FundingDetail } from '@/app/detail/[fundingId]/FundingDetail';
 
-import FundingDetail from './FundingDetail';
-import VoteDetail from './VoteDetail';
-
-// API 응답 타입 정의
-import type { ApiResponse, DetailData } from '@/types/detail';
-import FundingDetailInfo from '@/components/cards/detail/FundingDetailInfo';
-
-// API 서버 주소 (환경변수에서 관리)
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-// 동적 라우팅된 상세 페이지
+/**
+ * 펀딩/투표 상세 페이지 (React Query 기반)
+ * 
+ * 기존 SSR 방식에서 React Query 방식으로 변경:
+ * - 서버에서 직접 데이터 fetch → 클라이언트에서 React Query 사용
+ * - 기존 컴포넌트 구조는 그대로 유지
+ */
 export default async function DetailPage({
   params,        // URL 파라미터 (예: /detail/123 → { fundingId: '123' })
   searchParams,  // 쿼리 파라미터 (예: ?user_id=5 → { user_id: '5' })
@@ -28,46 +21,23 @@ export default async function DetailPage({
 
   // user_id는 string | string[] | undefined 일 수 있음 → 안전하게 처리
   const userId =
-  typeof sp.user_id === 'string'
-    ? sp.user_id
-    : Array.isArray(sp.user_id)
-    ? sp.user_id[0]
-    : undefined;
+    typeof sp.user_id === 'string'
+      ? sp.user_id
+      : Array.isArray(sp.user_id)
+      ? sp.user_id[0]
+      : undefined;
 
-  // user_id 있으면 쿼리스트링 추가
-  const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
-
-
-  // 서버에서 상세 데이터 가져오기
-  const res = await fetch(`${API_BASE_URL}funding/${fundingId}${qs}`, {
-    headers: { Accept: 'application/json' },
-    cache: 'no-store', // SSR에서 항상 fresh 데이터
-  });
-
-  console.log('res:', res);
-
-  // HTTP 에러 처리
-  if (!res.ok) return <div>HTTP {res.status}</div>;
-
-  // 응답 JSON 파싱
-  const json = (await res.json()) as ApiResponse<DetailData>;
-
-  // API 응답 확인
-  if (json.state !== 'SUCCESS' || !json.data) return <div>{json.message}</div>;
-
-  const data = json.data;
-
-  console.log(data);
-   
-
-  // type에 따라 다른 컴포넌트 렌더링
+  // 🎯 기존 FundingDetail 컴포넌트에 fundingId와 userId만 전달
+  // 데이터 fetching은 FundingDetail 내부에서 React Query로 처리
   return (
-    // <FundingDetailCard data={data as FundingDetailData}/>
-    <FundingDetailInfo data={data as FundingDetailData}/>)
-
-
+    <FundingDetail 
+      fundingId={fundingId}
+      userId={userId}
+    />
+    
     // return data.type === 'funding'
     // ? <FundingDetailCard data={data}/>
     // // ? <FundingDetail data={data} userId={userId} />
     // : <VoteDetail data={data} userId={userId} />;
+  );
 }
