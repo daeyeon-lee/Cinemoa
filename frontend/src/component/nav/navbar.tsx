@@ -71,7 +71,7 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center space-x-4">
             <SearchIcon />
-            {isLoggedIn() ? (
+            {isLoggedIn ? (
               <>
                 <Link href="/mypage" className="cursor-pointer">
                   <UserIcon />
@@ -156,7 +156,7 @@ export default function Navbar() {
                 </div>
               </div>
             )}
-            {isLoggedIn() ? (
+            {isLoggedIn ? (
               <>
                 <Link href="/mypage" className="flex-none cursor-pointer">
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">

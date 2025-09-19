@@ -23,7 +23,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="antialiased bg-BG-0 text-primary w-full max-xl:px-4 flex flex-col items-center">
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
           <QueryProvider>
-            {children} {/* 각 그룹의 레이아웃이 여기에 들어감 */}
+
+              {children} {/* 각 그룹의 레이아웃이 여기에 들어감 */}
+
           </QueryProvider>
         </GoogleOAuthProvider>
       </body>
