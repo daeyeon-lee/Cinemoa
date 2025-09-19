@@ -20,9 +20,9 @@ const StatItem: React.FC<StatItemProps> = ({ icon, text, loadingState = 'ready' 
 
   const renderIcon = () => {
     if (icon === 'people') {
-      return <PeopleIcon />;
+      return <PeopleIcon fill='#FF5768' />;
     } else if (icon === 'time') {
-      return <ClockIcon />;
+      return <ClockIcon fill='#FF5768' />;
     }
   };
 

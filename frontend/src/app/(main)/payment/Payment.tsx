@@ -7,7 +7,13 @@ import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/c
 import SuccessCheckIcon from '@/component/icon/success_check_icon';
 import { validateAndFormatExpiryDate, validateBirthDate, validateAllPaymentFields } from '@/utils/validation';
 
-export default function Payment() {
+interface PaymentProps {
+  fundingId?: number;
+  userId?: string;
+  amount?: number;
+}
+
+export default function Payment({ fundingId, userId, amount }: PaymentProps) {
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);

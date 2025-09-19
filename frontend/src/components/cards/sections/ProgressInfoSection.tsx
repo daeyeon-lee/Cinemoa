@@ -9,7 +9,7 @@ type ProgressInfoSectionProps = {
   likeCount: number;
   endDate: string;
   // 펀딩 전용
-  progressRate?: number;
+  progressRate?: number;   // ✅ 항상 0~100 정수
   maxPeople?: number;
   loadingState?: 'ready' | 'loading';
 };
@@ -45,15 +45,15 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
 
   if (loadingState === 'loading') {
     return (
-      <div className="flex flex-col justify-start items-start gap-3.5">
-        <div className="self-stretch inline-flex justify-between items-center">
+      <div className="w-full min-w-0 flex flex-col gap-3.5">
+        <div className="w-full flex items-center justify-between">
           <Skeleton className="h-7 w-32" />
           <Skeleton className="h-7 w-24" />
         </div>
         {type === 'funding' && (
-          <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
-            <Skeleton className="self-stretch h-2.5 rounded-full" />
-            <div className="self-stretch inline-flex justify-between items-start">
+          <div className="w-full min-w-0 flex flex-col gap-1.5">
+            <Skeleton className="h-2.5 rounded-full w-full" />
+            <div className="w-full flex items-start justify-between">
               <Skeleton className="h-7 w-12" />
               <Skeleton className="h-4 w-20" />
             </div>
@@ -64,30 +64,40 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
   }
 
   return (
-    <div className="self-stretch flex flex-col justify-start items-start gap-3.5">
+    <div className="w-full min-w-0 flex flex-col gap-3.5">
       {/* 공통: 참여자수 + 남은시간 */}
       {type === 'vote' ? (
-        <div className="self-stretch flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mt-1.5">
-          <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
-          <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
+        <div className="w-full min-w-0 flex flex-wrap gap-2 items-center justify-between mt-1.5">
+          <div className="min-w-0">
+            <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
+          </div>
+          <div className="min-w-0">
+            <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
+          </div>
         </div>
       ) : (
-        <div className="self-stretch inline-flex justify-between items-center mt-1.5">
-          <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
-          <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
+        <div className="w-full min-w-0 flex items-center justify-between mt-1.5">
+          <div className="min-w-0">
+            <StatItem icon="people" text={getParticipantText()} loadingState={loadingState} />
+          </div>
+          <div className="min-w-0">
+            <StatItem icon="time" text={getTimeText()} loadingState={loadingState} />
+          </div>
         </div>
       )}
 
       {/* 펀딩 전용: 프로그래스 바 + 퍼센트 정보 */}
       {type === 'funding' && progressRate !== undefined && maxPeople !== undefined && (
-        <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
+        <div className="w-full min-w-0 flex flex-col gap-1.5">
           <Progress value={progressRate} height={10} />
-          <div className="self-stretch h-7 inline-flex justify-between items-start">
-            <div className="self-stretch inline-flex flex-col justify-start items-start">
-              <div className="justify-center h4 text-Brand1-Primary">{Math.round(progressRate)}%</div>
+
+          <div className="w-full min-w-0 h-7 flex items-start justify-between">
+            <div className="min-w-0">
+              {/* ✅ 정수 그대로 출력 */}
+              <div className="h4 text-Brand1-Primary">{progressRate}%</div>
             </div>
-            <div className="self-stretch inline-flex flex-col justify-start items-start">
-              <div className="justify-center h6 text-tertiary">{maxPeople.toLocaleString()}명 모집</div>
+            <div className="min-w-0">
+              <div className="h6 text-tertiary">{maxPeople.toLocaleString()}명 모집해요</div>
             </div>
           </div>
         </div>

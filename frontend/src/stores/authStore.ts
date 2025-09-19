@@ -26,9 +26,15 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       user: null,
 
-      setUser: (user) => set({ user }),
+      setUser: (user) =>
+        set({
+          user,
+        }),
 
-      clearUser: () => set({ user: null }),
+      clearUser: () =>
+        set({
+          user: null,
+        }),
 
       updateUserInfo: (updates) =>
         set((state) => ({
@@ -42,10 +48,6 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage', // localStorage 키 이름
-      // 선택적으로 특정 필드만 저장
-      partialize: (state) => ({ user: state.user }),
-      // Hydration 문제 해결
-      skipHydration: true,
     },
   ),
 );
