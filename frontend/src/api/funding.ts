@@ -3,18 +3,23 @@ const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
 export const createFunding = async (data: CreateFundingParams, posterUrl: string): Promise<CreateFundingResponse> => {
   const formData = new FormData();
-  formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-  formData.append('bannerImg', posterUrl);
-
+  // Base64를 Blob으로 변환
+  const response = await fetch(posterUrl); // posterUrl이 data:image/... 형태라면
+  const blob = await response.blob();
+  formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  formData.append('bannerImg', new File([blob], 'banner.png', { type: blob.type || 'image/png' }));
   try {
     console.log('=== 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터 data:', data);
     console.log('bannerImg:', posterUrl);
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
     const response = await fetch(`${BaseUrl}funding`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      // headers: {
+      //   'Content-Type': 'multipart/form-data',
+      // },
       credentials: 'include',
       body: formData,
     });
