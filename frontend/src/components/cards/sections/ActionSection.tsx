@@ -5,7 +5,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import Payment from '@/app/(main)/payment/Payment';
 import { HeartIcon } from '@/component/icon/heartIcon';
 import LinkIcon from '@/component/icon/linkIcon';
-import { useFundingLike } from '@/hooks/queries';
+import { useFundingLike, useFundingDetail } from '@/hooks/queries';
 import { useAuthStore } from '@/stores/authStore';
 
 type ActionSectionProps = {
@@ -38,6 +38,16 @@ const ActionSection: React.FC<ActionSectionProps> = ({
   const userId = user?.userId?.toString();
   const likeMutation = useFundingLike();
   
+  // 🆕 실시간 데이터 가져오기 (캐시에서)
+  const { data: detailData } = useFundingDetail({ 
+    fundingId: fundingId?.toString() || '', 
+    userId 
+  });
+  
+  // 🆕 실시간 좋아요 상태 (React Query 캐시에서)
+  const currentIsLiked = detailData?.type === 'funding' ? detailData.stat.isLiked : isLiked;
+  const currentLikeCount = detailData?.type === 'funding' ? detailData.stat.likeCount : likeCount;
+  
   // 🐛 authStore 디버깅 로그
   console.log('=== AuthStore Debug ===');
   console.log('user:', user);
@@ -57,7 +67,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({
     likeMutation.mutate({
       fundingId,
       userId,
-      isLiked
+      isLiked: currentIsLiked // 🆕 실시간 상태 사용
     });
   };
   if (loadingState === 'loading') {
@@ -102,15 +112,15 @@ const ActionSection: React.FC<ActionSectionProps> = ({
               size="lg"
               textSize="lg"
               className={`${
-                isLiked
+                currentIsLiked
                   ? 'h5-b border-Brand1-Strong text-Brand1-Strong gap-1 hover:border-Brand1-Strong hover:text-Brand1-Strong'
                   : 'h5-b gap-1'
               }`}
               onClick={fundingId ? handleLikeClick : onPrimaryAction} // 🆕 React Query 우선 사용
               disabled={likeMutation.isPending} // 🆕 로딩 상태 반영
             >
-              <HeartIcon stroke={isLiked ? '#FF5768' : '#94A3B8'} />
-              {likeCount}
+              <HeartIcon stroke={currentIsLiked ? '#FF5768' : '#94A3B8'} />
+              {currentLikeCount}
             </Button>
 
             {/* 참여하기 버튼 -> 결제로 이동(모달 형태)*/}
@@ -142,9 +152,9 @@ const ActionSection: React.FC<ActionSectionProps> = ({
               size="lg"
               textSize="lg"
               onClick={onPrimaryAction}
-              className={`${isLiked ? 'w-full h5-b border-Brand2-Strong text-Brand2-Strong gap-1 hover:border-Brand2-Strong hover:text-Brand2-Strong' : 'w-full h5-b gap-1'}`}
+              className={`${currentIsLiked ? 'w-full h5-b border-Brand2-Strong text-Brand2-Strong gap-1 hover:border-Brand2-Strong hover:text-Brand2-Strong' : 'w-full h5-b gap-1'}`}
             >
-              <HeartIcon stroke={isLiked ? '#71E5DE' : '#94A3B8'} />
+              <HeartIcon stroke={currentIsLiked ? '#71E5DE' : '#94A3B8'} />
               보고 싶어요
             </Button>
 

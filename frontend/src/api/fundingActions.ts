@@ -5,7 +5,6 @@
  */
 
 import type { ApiResponse } from '@/types/fundingDetail';
-import { useAuthStore } from '@/stores/authStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -18,20 +17,22 @@ export const toggleFundingLike = async (fundingId: number, userId: string, isLik
     console.log('userId:', userId, typeof userId);
     console.log('isLiked:', isLiked, typeof isLiked);
     
-    // 🆕 authStore에서 토큰 가져오기
-    const { accessToken } = useAuthStore.getState();
-    console.log('token:', accessToken ? '있음' : '없음');
-    console.log('token 값:', accessToken);
     console.log('======================');
+    
+    const numericUserId = Number(userId);
+
+    if (isNaN(numericUserId)) {
+      throw new Error('유효하지 않은 userId');
+    }
     
     if (isLiked) {
       // 좋아요 취소: DELETE /api/funding/{fundingId}/like?userId={userId}
-      const response = await fetch(`${API_BASE_URL}funding/${fundingId}/like?userId=${userId}`, {
+      const response = await fetch(`${API_BASE_URL}funding/${fundingId}/like?userId=${numericUserId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }), // 🆕 토큰 추가
         },
+        credentials: 'include', // 🆕 쿠키 포함
       });
       
       if (!response.ok) {
@@ -48,9 +49,9 @@ export const toggleFundingLike = async (fundingId: number, userId: string, isLik
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }), // 🆕 토큰 추가
         },
         body: JSON.stringify({ userId }),
+        credentials: 'include', // 🆕 쿠키 포함
       });
       
       if (!response.ok) {
