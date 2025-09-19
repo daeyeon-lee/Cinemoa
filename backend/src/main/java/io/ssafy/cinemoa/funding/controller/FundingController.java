@@ -39,8 +39,8 @@ public class FundingController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createFunding(
-            @RequestPart(name = "bannerImg", required = false) MultipartFile image
-            , @RequestPart(name = "request") FundingCreateRequest request) {
+            @RequestPart(value = "bannerImg", required = false) MultipartFile image
+            , @RequestPart(value = "request") FundingCreateRequest request) {
         FundingCreationResult result = fundingService.createFunding(image, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ofSuccess(result));
     }

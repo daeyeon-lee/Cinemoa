@@ -20,8 +20,8 @@ public class VoteController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createVote(
-            @RequestPart(name = "bannerImg", required = false) MultipartFile image
-            , @RequestPart(name = "request") VoteCreateRequest request) {
+            @RequestPart(value = "bannerImg", required = false) MultipartFile image
+            , @RequestPart(value = "request") VoteCreateRequest request) {
         fundingService.createVote(image, request);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null));
     }
