@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,14 @@ public class ImageService {
 
         String baseDir = imageConfig.getBase();
         String midPath = category.getImagePath();
-        String filename = image.getOriginalFilename();
+        String original = image.getOriginalFilename();
+
+        if (original == null) {
+            throw InternalServerException.ofUnknown();
+        }
+        String ext = original.substring(original.lastIndexOf('.') - 1);
+
+        String filename = UUID.randomUUID() + ext;
 
         Path fullPath = Paths.get(baseDir, midPath, filename);
 
