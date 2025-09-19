@@ -5,7 +5,7 @@ interface ApiRequestOptions extends RequestInit {
 }
 
 /**
- * 사용자 인증 정보를 자동으로 헤더에 포함하는 fetch 래퍼 함수
+ * 세션 기반 인증을 사용하는 fetch 래퍼 함수
  */
 export const apiClient = async (url: string, options: ApiRequestOptions = {}) => {
   const { includeAuth = true, ...fetchOptions } = options;
@@ -18,21 +18,18 @@ export const apiClient = async (url: string, options: ApiRequestOptions = {}) =>
     headers.set('Content-Type', 'application/json');
   }
   
-  // 인증 정보 포함이 필요한 경우
-  if (includeAuth) {
-    const { user } = useAuthStore.getState();
-    
-    if (user) {
-      headers.set('X-User-Id', user.userId.toString());
-      headers.set('X-User-Email', user.email);
-    }
-  }
-  
-  // fetch 요청 실행
+  // fetch 요청 실행 (세션 쿠키는 자동으로 포함됨)
   const response = await fetch(url, {
     ...fetchOptions,
     headers,
+    credentials: includeAuth ? 'include' : 'omit', // 인증이 필요한 경우 쿠키 포함
   });
+  
+  // 401 에러인 경우 세션이 만료된 것으로 간주하고 로그아웃 처리
+  if (response.status === 401 && includeAuth) {
+    const { clearUser } = useAuthStore.getState();
+    clearUser();
+  }
   
   return response;
 };

@@ -42,6 +42,7 @@ type CineCardProps = {
   onVoteClick?: (id: number) => void;
   showStateTag?: boolean;
   stateTagClassName?: string;
+  getStateBadgeInfo?: (state: string, fundingType: 'FUNDING' | 'VOTE') => { text: string; className: string };
 };
 
 const CineCardVertical: React.FC<CineCardProps> = ({
@@ -51,6 +52,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({
   onCardClick,
   showStateTag = false,
   stateTagClassName = '',
+  getStateBadgeInfo,
 }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
@@ -112,23 +114,19 @@ const CineCardVertical: React.FC<CineCardProps> = ({
               loadingState={loadingState}
             />
             {/* 상태 태그 오버레이 */}
-            {showStateTag && (
-              <div
-                className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] bg-amber-300 rounded-md ${stateTagClassName}`}
-              >
-                <div className="text-inverse text-[10px] font-medium leading-3">
-                  {data.funding.state === 'ACTIVE'
-                    ? '진행중'
-                    : data.funding.state === 'PENDING'
-                    ? '심사 중'
-                    : data.funding.state === 'COMPLETED'
-                    ? '완료'
-                    : data.funding.state === 'CANCELLED'
-                    ? '취소'
-                    : '종료'}
+            {showStateTag && (() => {
+              const badgeInfo = getStateBadgeInfo 
+                ? getStateBadgeInfo(data.funding.state, data.funding.fundingType)
+                : { text: '진행중', className: 'bg-amber-300 text-slate-900' };
+              
+              return (
+                <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] rounded-md ${badgeInfo.className}`}>
+                  <div className="text-[10px] font-medium leading-3">
+                    {badgeInfo.text}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
           <div className="flex flex-col items-center justify-between p-0 gap-2 h-24">
             {isFunding ? (

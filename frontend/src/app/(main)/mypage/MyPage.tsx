@@ -6,8 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import type { ListCardData } from '@/components/cards/CineCardVertical';
-import { getUserInfo } from '@/api/mypage';
-import type { UserInfo } from '@/types/mypage';
+import { getUserInfo, getFundingProposals } from '@/api/mypage';
+import type { UserInfo, FundingProposal } from '@/types/mypage';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'next/navigation';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -31,27 +33,68 @@ function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
 }
 
 export default function MyPage() {
+  const router = useRouter();
+  
   // 사용자 정보 상태
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // 내가 제안한 상영회 상태
+  const [myProposals, setMyProposals] = useState<FundingProposal[]>([]);
+  const [isProposalsLoading, setIsProposalsLoading] = useState(true);
+  const [hasMoreProposals, setHasMoreProposals] = useState(false);
+  const [proposalType, setProposalType] = useState<'funding' | 'vote' | undefined>(undefined);
 
   // const [imageurl,setImageurl] = useState<string>('');
+  
+  // state에 따른 뱃지 색상과 문구 매핑
+  const getStateBadgeInfo = (state: string, fundingType: 'FUNDING' | 'VOTE') => {
+    switch (state) {
+      case 'SUCCESS':
+        return { text: '성공', className: 'bg-emerald-400 text-slate-900' };
+      case 'EVALUATING':
+        return { text: '심사중', className: 'bg-amber-300 text-slate-900' };
+      case 'REJECTED':
+        return { text: '반려됨', className: 'bg-red-500 text-white' };
+      case 'WAITING':
+        return { text: '대기중', className: 'bg-amber-300 text-slate-900' };
+      case 'ON_PROGRESS':
+        return { text: fundingType === 'FUNDING' ? '진행중' : '진행중', className: 'bg-cyan-400 text-slate-900' };
+      case 'FAILED':
+        return { text: '실패', className: 'bg-red-500 text-white' };
+      case 'VOTING':
+        return { text: '진행중', className: 'bg-cyan-400 text-slate-900' };
+      default:
+        return { text: '알 수 없음', className: 'bg-slate-500 text-white' };
+    }
+  };
+  
   // 사용자 정보 조회
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         setIsLoading(true);
-        const response = await getUserInfo();
+        const { user, isLoggedIn } = useAuthStore.getState();
+        
+        // 로그인하지 않은 경우 기본값 설정
+        if (!isLoggedIn() || !user?.userId) {
+          setUserInfo({
+            nickname: '사용자',
+            profileImgUrl: 'https://placehold.co/72x72'
+          });
+          return;
+        }
+
+        const response = await getUserInfo(user.userId);
         // response.data 예시: { nickname: '펀딩 테스트 유저', profile_img_url: 'https://picsum.photos/id/1/200' }
         const { nickname, profile_img_url } = response.data as any; // ← 서버 응답 키  // 서버 응답 키 설명: 스네이크 케이스로 내려옴
         setUserInfo({
           nickname,                         // ← 동일 키라 그대로 할당
           profileImgUrl: profile_img_url,   // ← 여기가 핵심: camelCase로 변환 저장
         });
-        // setUserInfo(response.data);
-        // setImageurl(response.data.profileImgUrl);
         console.log(response.data);
       } catch (err) {
+        console.error('사용자 정보 조회 오류:', err);
         // API 서버가 준비되지 않은 경우 기본값 사용 (console 에러 방지)
         setUserInfo({
           nickname: '사용자',
@@ -64,6 +107,70 @@ export default function MyPage() {
 
     fetchUserInfo();
   }, []);
+
+  // 내가 제안한 상영회 조회
+  const fetchMyProposals = async (type?: 'funding' | 'vote') => {
+    try {
+      setIsProposalsLoading(true);
+      const { user, isLoggedIn } = useAuthStore.getState();
+      
+      // 로그인하지 않은 경우 빈 배열 설정
+      if (!isLoggedIn() || !user?.userId) {
+        setMyProposals([]);
+        setHasMoreProposals(false);
+        return;
+      }
+
+      const response = await getFundingProposals(user.userId, type, undefined, 7);
+      setMyProposals(response.data.content); // 내가 제안한 상영회 목록 -> state 업데이트
+      setHasMoreProposals(response.data.hasNextPage);
+    } catch (err) {
+      console.error('내가 제안한 상영회 조회 오류:', err);
+      setMyProposals([]); // 내가 제안한 상영회 목록 -> state 초기화
+      setHasMoreProposals(false); 
+    } finally {
+      setIsProposalsLoading(false);
+    }
+  };
+
+  // 내가 제안한 상영회 조회 (초기 로드)
+  useEffect(() => {
+    fetchMyProposals();
+  }, []);
+
+  // 타입 필터 변경 시 재조회
+  useEffect(() => {
+    if (proposalType !== undefined) {
+      fetchMyProposals(proposalType);
+    }
+  }, [proposalType]);
+
+  // API 데이터를 ListCardData 형식으로 변환
+  const convertToCardData = (proposal: FundingProposal): ListCardData => {
+    return {
+      funding: {
+        fundingId: proposal.funding.fundingId,
+        title: proposal.funding.title,
+        bannerUrl: proposal.funding.bannerUrl,
+        state: proposal.funding.state,
+        progressRate: proposal.funding.progressRate,
+        fundingEndsOn: proposal.funding.fundingEndsOn,
+        screenDate: proposal.funding.screenDate,
+        price: proposal.funding.price,
+        maxPeople: proposal.funding.maxPeople,
+        participantCount: proposal.funding.participantCount,
+        favoriteCount: proposal.funding.favoriteCount,
+        isLiked: proposal.funding.isLiked,
+        fundingType: proposal.funding.fundingType,
+      },
+      cinema: {
+        cinemaId: proposal.cinema.cinemaId,
+        cinemaName: proposal.cinema.cinemaName,
+        city: proposal.cinema.city,
+        district: proposal.cinema.district,
+      },
+    };
+  };
 
   // 샘플 데이터
   const sampleCardData: ListCardData = {
@@ -219,49 +326,84 @@ export default function MyPage() {
             {/* 섹션 헤더 */}
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 제안한 상영회</h2>
-              <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
-                더보기 →
-              </button>
+              {hasMoreProposals && (
+                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                  더보기 →
+                </button>
+              )}
             </div>
             {/* 필터 버튼 그룹 */}
             <div className="w-96 inline-flex justify-start items-center gap-2">
               <Button
-                variant="brand1"
+                variant={proposalType === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-red-500 text-slate-300 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
+                  proposalType === undefined 
+                    ? "bg-red-500 text-slate-300" 
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => setProposalType(undefined)}
               >
                 전체
               </Button>
               <Button
-                variant="secondary"
+                variant={proposalType === 'funding' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
+                  proposalType === 'funding' 
+                    ? "bg-red-500 text-slate-300" 
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => setProposalType('funding')}
               >
                 펀딩
               </Button>
               <Button
-                variant="secondary"
+                variant={proposalType === 'vote' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
+                  proposalType === 'vote' 
+                    ? "bg-red-500 text-slate-300" 
+                    : "bg-slate-800 text-slate-400"
+                }`}
+                onClick={() => setProposalType('vote')}
               >
                 투표
               </Button>
             </div>
             {/* 상영회 카드 */}
             <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
-              <HorizontalScroller className="w-full">
-                {myScreenings.map((item, index) => (
-                  <div key={index} className="w-[172px] h-80 flex-shrink-0">
-                    <CineCardVertical
-                      data={item}
-                      onCardClick={(id) => console.log('카드 클릭:', id)}
-                      onVoteClick={(id) => console.log('투표 클릭:', id)}
-                      showStateTag={true}
-                      stateTagClassName="state state-active"
-                    />
+              {myProposals.length === 0 ? (
+                <div className="w-full flex justify-center items-center h-80">
+                  <div className="flex flex-col justify-center items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-slate-400 text-lg font-medium mb-2">내가 제안한 상영회가 없습니다</div>
+                      <div className="text-slate-500 text-sm">프로젝트를 시작해보세요</div>
+                    </div>
+                    <Button
+                      onClick={() => router.push('/create')}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      프로젝트 생성하기
+                    </Button>
                   </div>
-                ))}
-              </HorizontalScroller>
+                </div>
+              ) : (
+                <HorizontalScroller className="w-full">
+                  {myProposals.map((proposal, index) => (
+                    <div key={proposal.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                      <CineCardVertical
+                        data={convertToCardData(proposal)}
+                        onCardClick={(id) => console.log('카드 클릭:', id)}
+                        onVoteClick={(id) => console.log('투표 클릭:', id)}
+                        showStateTag={true}
+                        stateTagClassName="state state-active"
+                        getStateBadgeInfo={getStateBadgeInfo}
+                      />
+                    </div>
+                  ))}
+                </HorizontalScroller>
+              )}
             </div>
           </div>
 

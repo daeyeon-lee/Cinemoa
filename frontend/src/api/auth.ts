@@ -17,7 +17,6 @@ export const googleLogin = async (idToken: string) => {
         credentials: "include", // 쿠키 포함
         body: JSON.stringify({
           token: idToken,
-          // code: credential,
         }),
       }
     );
@@ -52,13 +51,22 @@ export const googleLogin = async (idToken: string) => {
 // 로그아웃 API
 export const logout = async (): Promise<LogoutResponse> => {
   try {
+    const { clearUser } = useAuthStore.getState();
+    
     const response = await fetch(
       'https://j13a110.p.ssafy.io:8443/api/auth/logout',
       {
         method: "GET",
+        // method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: "include", // 쿠키 포함
       }
     );
+
+    // 로그아웃 성공 여부와 관계없이 클라이언트에서 사용자 정보 제거
+    clearUser();
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -68,19 +76,11 @@ export const logout = async (): Promise<LogoutResponse> => {
     }
 
     const logoutData: LogoutResponse = await response.json();
-    
-    // 로그아웃 성공 시 store에서 사용자 정보 제거
-    if (logoutData.code === 0) {
-      const { clearUser } = useAuthStore.getState();
-      clearUser();
-      
-      // localStorage에서도 명시적으로 제거
-      localStorage.removeItem('auth-storage');
-    }
-
     return logoutData;
   } catch (error) {
     console.error("Logout error:", error);
+    // 에러가 발생해도 클라이언트에서는 로그아웃 처리
+    useAuthStore.getState().clearUser();
     throw error;
   }
 };
