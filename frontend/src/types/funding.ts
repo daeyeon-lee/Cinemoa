@@ -9,6 +9,7 @@ export interface movieinfo {
   categoryId?: number;
   videoName?: string;
   posterUrl?: string;
+  videoContent?: string;
 }
 
 export interface theaterinfo {
@@ -18,6 +19,8 @@ export interface theaterinfo {
   scrrenStartsOn?: number;
   scrrenEndsOn?: number;
   maxPeople?: number;
+  fundingId?: number;
+  amount?: number; // 1인당 결제 금액
 }
 
 export interface CreateFundingParams {
@@ -28,7 +31,8 @@ export interface CreateFundingParams {
   // 영화 정보
   categoryId?: number;
   videoName?: string;
-  posterUrl?: string;
+  videoContent?: string;
+  // posterUrl?: string;
   // 상영 정보
   cinemaId?: number;
   screenId?: number;
@@ -43,5 +47,7 @@ export interface CreateFundingResponse {
   state: string;
   message: string;
   code: number;
-  //   data: FundingDetail;
+  data: {
+    fundingId: number;
+  };
 }

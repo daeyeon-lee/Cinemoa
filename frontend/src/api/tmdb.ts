@@ -1,13 +1,13 @@
 import { TMDBMultiResponse, MultiSearchResponse, TMDBMultiItem, TMDBMovie, TMDBTV, TMDBPerson } from '@/types/tmdb';
 
 // TMDB API 클라이언트
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_BASE_URL = process.env.NEXT_PUBLIC_TMDB_BASE_URL;
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 // TMDB API 호출 함수
 export const tmdbClient = {
   async get(endpoint: string, params: Record<string, string> = {}) {
-    const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
+    const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
     url.searchParams.set('api_key', TMDB_API_KEY || '');
 
     Object.entries(params).forEach(([key, value]) => {
@@ -72,11 +72,7 @@ export const getMediaTypeKorean = (mediaType: string): string => {
 };
 
 // Multi 검색 (영화, TV, 인물 등)
-export const searchMulti = async (
-  query: string,
-  page: number = 1,
-  language: string = 'ko-KR',
-): Promise<MultiSearchResponse> => {
+export const searchMulti = async (query: string, page: number = 1, language: string = 'ko-KR'): Promise<MultiSearchResponse> => {
   if (!query.trim()) {
     return {
       success: false,

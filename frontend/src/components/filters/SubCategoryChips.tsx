@@ -18,10 +18,10 @@ interface SubCategoryItem {
 interface SubCategoryChipsProps {
   /** 표시할 서브 카테고리 칩 목록 */
   items: SubCategoryItem[];
-  /** 현재 선택된 서브 카테고리들의 categoryId 배열 */
-  value: number[];
+  /** 현재 선택된 서브 카테고리의 categoryId (단일 선택) */
+  value: number | null;
   /** 서브 카테고리 선택 변경 시 호출되는 콜백 함수 */
-  onChange: (value: number[]) => void;
+  onChange: (value: number | null) => void;
   /** 서브 카테고리 표시 여부 (전체 선택 시 숨김) */
   visible?: boolean;
   /** 색상 variant (brand1: 빨간색, brand2: 청록색) */
@@ -32,7 +32,7 @@ interface SubCategoryChipsProps {
  * SubCategoryChips 컴포넌트
  *
  * @description 2차 카테고리 선택을 위한 칩(chip) 그룹 컴포넌트입니다.
- * ListShell의 header 영역에서 사용되며, 다중 선택이 가능합니다.
+ * ListShell의 header 영역에서 사용되며, 단일 선택만 가능합니다.
  *
  * @example
  * ```tsx
@@ -54,28 +54,21 @@ interface SubCategoryChipsProps {
  * @param props.value - 현재 선택된 서브 카테고리 값들
  * @param props.onChange - 서브 카테고리 선택 변경 핸들러
  */
-const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({
-  items,
-  value,
-  onChange,
-  visible = true,
-  variant = 'brand1'
-}) => {
+const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({ items, value, onChange, visible = true, variant = 'brand1' }) => {
   /**
-   * 칩 선택/해제를 토글하는 핸들러
-   * @param itemValue - 토글할 아이템의 value (categoryId 문자열 또는 'all')
+   * 칩 선택을 처리하는 핸들러 (단일 선택)
+   * @param itemValue - 선택할 아이템의 value (categoryId 문자열 또는 'all')
    */
-  const handleToggle = (itemValue: string) => {
+  const handleSelect = (itemValue: string) => {
     if (itemValue === 'all') {
-      // '전체' 선택 시 모든 선택 해제
-      onChange([]);
+      // '전체' 선택 시 선택 해제
+      onChange(null);
       return;
     }
 
     const categoryId = parseInt(itemValue);
-    const newValue = value.includes(categoryId)
-      ? value.filter((v) => v !== categoryId) // 이미 선택된 경우 제거
-      : [...value, categoryId]; // 선택되지 않은 경우 추가
+    // 이미 선택된 경우 해제, 아니면 새로 선택
+    const newValue = value === categoryId ? null : categoryId;
     onChange(newValue);
   };
 
@@ -88,9 +81,10 @@ const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({
     <div className="flex flex-wrap gap-2">
       {/* 서브 카테고리 칩 목록 렌더링 */}
       {items.map((item) => {
-        const isSelected = item.value === 'all'
-          ? value.length === 0 // '전체'는 아무것도 선택되지 않았을 때 활성화
-          : value.includes(parseInt(item.value));
+        const isSelected =
+          item.value === 'all'
+            ? value === null // '전체'는 아무것도 선택되지 않았을 때 활성화
+            : value === parseInt(item.value);
 
         return (
           <Button
@@ -98,7 +92,7 @@ const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({
             variant={isSelected ? variant : 'tertiary'}
             size="sm"
             textSize="sm"
-            onClick={() => handleToggle(item.value)}
+            onClick={() => handleSelect(item.value)}
             className={cn('rounded-full px-4 py-2 h-auto transition-all', isSelected && 'text-primary')}
           >
             {item.label}

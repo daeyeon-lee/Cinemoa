@@ -1,5 +1,6 @@
 import { CinemaResponse, CinemaDetailResponse, ReservationTime, CinemaParams } from '@/types/cinema';
 import { formatDateToISOString } from '@/mappers/dateMapper';
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 // 영화관 전체 목록 조회
 export const getCinemas = async (params: CinemaParams = {}): Promise<CinemaResponse> => {
@@ -22,7 +23,7 @@ export const getCinemas = async (params: CinemaParams = {}): Promise<CinemaRespo
       searchParams.set('cinemald', params.cinemald.toString());
     }
     const queryString = searchParams.toString();
-    const url = `https://j13a110.p.ssafy.io:8443/api/cinema${queryString ? `?${queryString}` : ''}`;
+    const url = `${BaseUrl}cinema${queryString ? `?${queryString}` : ''}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: {

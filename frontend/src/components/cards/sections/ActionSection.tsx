@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import Payment from '@/app/payment/Payment';
+import Payment from '@/app/(main)/payment/Payment';
 import { HeartIcon } from '@/component/icon/heartIcon';
 import LinkIcon from '@/component/icon/linkIcon';
 import { useFundingLike } from '@/hooks/queries';
@@ -142,11 +142,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({
               size="lg"
               textSize="lg"
               onClick={onPrimaryAction}
-              className={`${
-                isLiked
-                  ? 'w-full h5-b border-Brand2-Strong text-Brand2-Strong gap-1 hover:border-Brand2-Strong hover:text-Brand2-Strong'
-                  : 'w-full h5-b gap-1'
-              }`}
+              className={`${isLiked ? 'w-full h5-b border-Brand2-Strong text-Brand2-Strong gap-1 hover:border-Brand2-Strong hover:text-Brand2-Strong' : 'w-full h5-b gap-1'}`}
             >
               <HeartIcon stroke={isLiked ? '#71E5DE' : '#94A3B8'} />
               보고 싶어요

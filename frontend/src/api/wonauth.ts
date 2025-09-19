@@ -18,7 +18,7 @@ export const startWonauth = async (data: WonauthStartRequest): Promise<WonauthSt
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
+      throw new Error(`${errorData.message || 'Unknown error'}`);
     }
 
     const result: WonauthStartResponse = await response.json();

@@ -1,18 +1,28 @@
 import { CreateVoteFundingParams, CreateVoteFundingResponse } from '@/types/vote';
-
+const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
-export const creatVoteFunding = async (data: CreateVoteFundingParams): Promise<CreateVoteFundingResponse> => {
+export const creatVoteFunding = async (data: CreateVoteFundingParams, posterUrl: string): Promise<CreateVoteFundingResponse> => {
+  const formData = new FormData();
+  // Base64를 Blob으로 변환
+  const response = await fetch(posterUrl); // posterUrl이 data:image/... 형태라면
+  const blob = await response.blob();
+  formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  formData.append('bannerImg', new File([blob], 'banner.png', { type: blob.type || 'image/png' }));
+
   try {
     console.log('=== 투표 펀딩 생성 API 요청 시작 ===');
     console.log('요청 데이터:', data);
-
-    const response = await fetch('https://j13a110.p.ssafy.io:8443/api/vote', {
+    console.log('bannerImg:', posterUrl);
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+    const response = await fetch(`${BaseUrl}vote`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      // headers: {
+      //   'Content-Type': 'multipart/form-data',
+      // },
       credentials: 'include',
-      body: JSON.stringify(data),
+      body: formData,
     });
 
     if (!response.ok) {

@@ -1,16 +1,23 @@
 'use client';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, useCallback } from 'react';
 
 import SearchIcon from '@/component/icon/searchIcon';
 import UserIcon from '@/component/icon/userIcon';
+import LoginIcon from '@/component/icon/loginIcon';
+import LogoutIcon from '@/component/icon/logoutIcon';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuthStore } from '@/stores/authStore';
+import { logout } from '@/api/auth';
 
 export default function Navbar() {
   // navbar 페이지 활성화 여부 확인 함수
   const pathname = usePathname();
-
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { user, isLoggedIn } = useAuthStore();
   const isActive = (path: string) => {
     if (path === '/') {
       return pathname === '/';
@@ -26,6 +33,33 @@ export default function Navbar() {
     return `${baseClasses} ${isActive(path) ? activeClasses : inactiveClasses}`;
   };
 
+  // 검색 실행 핸들러
+  const handleSearch = useCallback(() => {
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }, [searchQuery, router]);
+
+  // 엔터키 핸들러
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      alert('로그아웃에 실패했습니다.');
+    }
+  };
   return (
     <header className="bg-slate-900 border-b border-slate-900 py-3 pt-[108px] lg:pt-4">
       {/* 모바일 레이아웃 - 두 줄 */}
@@ -37,7 +71,20 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center space-x-4">
             <SearchIcon />
-            <UserIcon />
+            {isLoggedIn() ? (
+              <>
+                <Link href="/mypage" className="cursor-pointer">
+                  <UserIcon />
+                </Link>
+                <button onClick={handleLogout} className="cursor-pointer">
+                  <LogoutIcon />
+                </button>
+              </>
+            ) : (
+              <Link href="/auth" className="cursor-pointer">
+                <LoginIcon />
+              </Link>
+            )}
           </div>
         </div>
 
@@ -93,32 +140,47 @@ export default function Navbar() {
         {/* 검색바 + 로그인/회원가입 */}
         <div className="flex items-center space-x-4">
           <div className="flex w-full items-center space-x-2">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="검색어를 입력해주세요"
-                className="h-8 bg-BG-1 text-primary placeholder:text-tertiary border-none rounded-[8px] pr-10 pl-3"
-              />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
-                <SearchIcon stroke="#94A3B8" />
+            {/* 홈 페이지와 검색 페이지가 아닐 때만 검색창 표시 */}
+            {pathname !== '/' && pathname !== '/home' && pathname !== '/search' && (
+              <div className="relative flex-1 min-w-0">
+                <Input
+                  type="text"
+                  placeholder="검색어를 입력해주세요"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="h-8 bg-BG-1 text-primary placeholder:text-tertiary border-none rounded-[8px] pr-10 pl-3"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer" onClick={handleSearch}>
+                  <SearchIcon stroke="#94A3B8" />
+                </div>
               </div>
-            </div>
-            <Link href="/auth">
-              <Button className="w-full rounded-[99px]" variant="secondary" size="sm" textSize="sm">
-                로그인
-              </Button>
-            </Link>
-            <Link href="/auth">
-              {/* 바꿔야함 */}
-              <Button
-                className="w-full rounded-[99px] text-inverse font-semibold text-xs"
-                variant="primary"
-                size="sm"
-                textSize="sm"
-              >
-                회원가입
-              </Button>
-            </Link>
+            )}
+            {isLoggedIn() ? (
+              <>
+                <Link href="/mypage" className="flex-none cursor-pointer">
+                  <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">
+                    마이페이지
+                  </Button>
+                </Link>
+                <Button onClick={handleLogout} className="rounded-[99px] text-inverse font-semibold text-xs flex-none cursor-pointer" variant="primary" size="sm" textSize="sm">
+                  로그아웃
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth">
+                  <Button className="w-full rounded-[99px]" variant="secondary" size="sm" textSize="sm">
+                    로그인
+                  </Button>
+                </Link>
+                <Link href="/auth">
+                  <Button className="w-full rounded-[99px] text-inverse font-semibold text-xs" variant="primary" size="sm" textSize="sm">
+                    회원가입
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

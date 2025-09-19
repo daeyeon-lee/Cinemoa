@@ -4,12 +4,20 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 
 /**
+ * 상영관 타입 아이템 인터페이스
+ */
+interface TheaterTypeItem {
+  label: string;
+  value: string;
+}
+
+/**
  * TheaterTypeFilterPanel 컴포넌트의 props 타입
  */
 interface TheaterTypeFilterPanelProps {
   /** 표시할 상영관 타입 목록 */
-  types: string[];
-  /** 현재 선택된 상영관 타입들 */
+  types: TheaterTypeItem[];
+  /** 현재 선택된 상영관 타입들 (label 기준) */
   value: string[];
   /** 상영관 타입 선택 변경 시 호출되는 콜백 함수 */
   onChange: (value: string[]) => void;
@@ -43,21 +51,15 @@ interface TheaterTypeFilterPanelProps {
  * @param props.onChange - 상영관 타입 선택 변경 핸들러
  * @param props.onReset - 필터 초기화 핸들러
  */
-const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({
-  types,
-  value,
-  onChange,
-  onReset,
-  variant = 'brand1',
-}) => {
+const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({ types, value, onChange, onReset, variant = 'brand1' }) => {
   /**
    * 상영관 타입 선택/해제를 토글하는 핸들러
-   * @param type - 토글할 상영관 타입
+   * @param label - 토글할 상영관 타입 라벨
    */
-  const handleToggle = (type: string) => {
-    const newValue = value.includes(type)
-      ? value.filter((v) => v !== type) // 이미 선택된 경우 제거
-      : [...value, type]; // 선택되지 않은 경우 추가
+  const handleToggle = (label: string) => {
+    const newValue = value.includes(label)
+      ? value.filter((v) => v !== label) // 이미 선택된 경우 제거
+      : [...value, label]; // 선택되지 않은 경우 추가
     onChange(newValue);
   };
 
@@ -75,30 +77,18 @@ const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({
       {/* 상영관 타입 선택 */}
       <div className="">
         {types.map((type) => {
-          const isSelected = value.includes(type);
+          const isSelected = value.includes(type.label);
 
           return (
-            <div
-              key={type}
-              className="flex items-center justify-between py-3 border-b border-stroke-3 text-p2 cursor-pointer"
-              onClick={() => handleToggle(type)}
-            >
-              <Label className="text-sm text-slate-200 cursor-pointer">
-                {type}
-              </Label>
+            <div key={type.value} className="flex items-center justify-between py-3 border-b border-stroke-3 text-p2 cursor-pointer" onClick={() => handleToggle(type.label)}>
+              <Label className="text-sm text-slate-200 cursor-pointer">{type.label}</Label>
               <div
                 className={cn(
-                  "w-4 h-4 rounded-full border-2 cursor-pointer transition-colors flex items-center justify-center",
-                  isSelected
-                    ? variant === 'brand2'
-                      ? 'border-[#2cd8ce] bg-[#2cd8ce]'
-                      : 'border-[#e83045] bg-[#e83045]'
-                    : 'border-stroke-3 bg-transparent'
+                  'w-4 h-4 rounded-full border-2 cursor-pointer transition-colors flex items-center justify-center',
+                  isSelected ? (variant === 'brand2' ? 'border-[#2cd8ce] bg-[#2cd8ce]' : 'border-[#e83045] bg-[#e83045]') : 'border-stroke-3 bg-transparent',
                 )}
               >
-                {isSelected && (
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                )}
+                {isSelected && <div className="w-2 h-2 rounded-full bg-white"></div>}
               </div>
             </div>
           );

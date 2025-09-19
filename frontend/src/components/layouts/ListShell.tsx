@@ -11,6 +11,8 @@ interface ListShellProps {
   sidebar: React.ReactNode;
   /** 우측 메인 콘텐츠 영역에 렌더링할 컴포넌트 (카드 리스트 등) */
   content: React.ReactNode;
+  /** 추가 CSS 클래스 */
+  className?: string;
 }
 
 /**
@@ -25,9 +27,9 @@ interface ListShellProps {
  * @param props.sidebar - 좌측 사이드바에 표시할 컴포넌트
  * @param props.content - 메인 콘텐츠 영역에 표시할 컴포넌트
  */
-const ListShell: React.FC<ListShellProps> = ({ header, sidebar, content }) => {
+const ListShell: React.FC<ListShellProps> = ({ header, sidebar, content, className }) => {
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen mt-16 ${className || ''}`}>
       {/* 상단 필터바 영역 */}
       <div className="w-full pb-7">{header}</div>
 
