@@ -57,7 +57,7 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
             name="title"
             render={({ field }) => (
               <FormItem className="flex ">
-                <FormLabel className="h5-b text-primary w-[376px] sm:pt-2">
+                <FormLabel className="h5-b text-primary w-[375px] sm:pt-2">
                   수요조사 제목 <span className="text-Brand1-Primary">*</span>
                   <p className="text-p3 text-tertiary">수요조사 제목을 적어주세요</p>
                 </FormLabel>
@@ -76,7 +76,7 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
             name="content"
             render={({ field }) => (
               <FormItem className="flex">
-                <FormLabel className="h5-b text-primary w-[376px] sm:pt-2">
+                <FormLabel className="h5-b text-primary w-[375px] sm:pt-2">
                   수요조사 내용 <span className="text-Brand1-Primary">*</span>
                   <p className="text-p3 text-tertiary">수요조사 내용을 자세히 설명해주세요.</p>
                 </FormLabel>

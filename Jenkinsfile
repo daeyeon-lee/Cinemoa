@@ -8,7 +8,7 @@ pipeline {
         DOCKER_IMAGE_FE = "941kjw/cinemoafe"  // 프론트엔드 이미지
         DOCKER_TAG = "latest"
     }
-    stages {
+    stages {//수정
         stage('Detect BE Branch and Build') {
             when {
                 branch 'BE'  // BE 브랜치 푸시 시에만 실행
@@ -16,19 +16,18 @@ pipeline {
             steps {
                 echo 'BE 브랜치 Push가 감지되었습니다. : Docker 빌드를 시작합니다.'
                 script {
-                    withCredentials(file(credentialsId: 'application',variable: 'APPLICATION'),
-                                    file(credentialsId: 'ssl-key-p12',variable: 'SSL_KEY_FILE')
+                    withCredentials([
+                                    file(credentialsId: 'application',variable: 'APPLICATION'),
+                                    file(credentialsId: 'application-db',variable: 'APPLICATION_DB'),
+                                    file(credentialsId: 'keyfile', variable: 'KEYFILE')
                                     ]) {
                         sh '''
                         cd ./backend
                         mkdir -p ./src/main/resources
-                        cp $APPLICATION ./src/main/resources/application.yml
-                        cp $APPLICATION_DB ./src/main/resources/application-db.yml
-                        cp $APPLICATION_DB_LOCAL ./src/main/resources/application-db-local.yml
-                        cp $APPLICATION_SECURITY ./src/main/resources/application-security.yml
-                        cp $APPLICATION_API ./src/main/resources/application-api.yml
-                        cp $APPLICATION_MAIL ./src/main/resources/application-mail.yml
-                        cp $SSL_KEY_FILE ./src/main/resources/keystore.p12
+                        chmod 755 ./src/main/resources
+                        cp -f $APPLICATION ./src/main/resources/application.yml
+                        cp -f $APPLICATION_DB ./src/main/resources/application-db.yml
+                        cp -f $KEYFILE ./src/main/resources/keystore.p12
                         chmod +x ./gradlew
                         docker build -t ${DOCKER_IMAGE_BE}:${DOCKER_TAG} .
                         '''
@@ -64,18 +63,13 @@ pipeline {
             steps {
                 echo 'FE 브랜치 Push가 감지되었습니다. : Docker 빌드를 시작합니다.'
                 script {
-                    withCredentials(file(credentialsId: 'ssl-private-key',variable: 'SSL_PRIVATE_KEY'),
-                                    file(credentialsId: 'ssl-full-chain',variable: 'SSL_FULL_CHAIN'),
-                                    file(credentialsId: 'env',variable: 'ENV'),
-                                    file(credentialsId: 'ssl-key-p12',variable: 'SSL_KEY_FILE')
+                    withCredentials([
+                                    file(credentialsId: 'env',variable: 'ENV')
                                     ]) {
                         sh '''
                         cd ./frontend
                         mkdir -p ./ssl
-                        cp $ENV ./.env
-                        cp $SSL_PRIVATE_KEY ./ssl/privkey.pem
-                        cp $SSL_FULL_CHAIN ./ssl/fullchain.pem
-                        chmod 600 ./ssl/*.pem
+                        cp -f $ENV ./.env
                         docker build -t ${DOCKER_IMAGE_FE}:${DOCKER_TAG} .
                         '''
                     }

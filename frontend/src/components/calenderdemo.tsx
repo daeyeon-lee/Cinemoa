@@ -55,7 +55,7 @@ export function CalendarDemo({ value = '', onChange, disabled = false, min, plac
           className="w-full h-10 justify-between whitespace-nowrap rounded-[6px] bg-BG-1 px-3 py-1 text-left font-normal shadow-sm ring-offset-background data-[placeholder]:text-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 border-none"
           disabled={disabled}
         >
-          <span className={date ? 'text-primary' : 'text-secondary line-clamp-1'}>
+          <span className={date ? 'text-primary' : disabled ? 'text-tertiary line-clamp-1' : 'text-secondary line-clamp-1'}>
             {date ? `${date.toLocaleDateString()} (${date.toLocaleDateString('ko-KR', { weekday: 'short' })})` : placeholder}
           </span>
           <ChevronDownIcon className="h-4 w-4 opacity-50" />
@@ -67,19 +67,30 @@ export function CalendarDemo({ value = '', onChange, disabled = false, min, plac
           selected={date}
           captionLayout="dropdown"
           onSelect={handleDateSelect}
-          disabled={
-            minDateObj
-              ? (date: Date) => {
-                  const minDate = new Date(min!);
-                  minDate.setHours(0, 0, 0, 0);
-                  const compareDate = new Date(date);
-                  compareDate.setHours(0, 0, 0, 0);
+          disabled={(date: Date) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-                  // min 날짜보다 이전 날짜는 비활성화 (min 날짜는 선택 가능)
-                  return compareDate < minDate;
-                }
-              : undefined
-          }
+            const compareDate = new Date(date);
+            compareDate.setHours(0, 0, 0, 0);
+
+            // 오늘부터 7일 후까지는 선택 불가 (8일 후부터 선택 가능)
+            const sevenDaysFromToday = new Date(today);
+            sevenDaysFromToday.setDate(today.getDate() + 7);
+
+            // 오늘부터 7일 후까지 비활성화
+            const isWithinSevenDays = compareDate >= today && compareDate <= sevenDaysFromToday;
+
+            // min 날짜 조건도 함께 확인
+            let isBeforeMinDate = false;
+            if (minDateObj) {
+              const minDate = new Date(min!);
+              minDate.setHours(0, 0, 0, 0);
+              isBeforeMinDate = compareDate < minDate;
+            }
+
+            return isWithinSevenDays || isBeforeMinDate;
+          }}
         />
       </PopoverContent>
     </Popover>

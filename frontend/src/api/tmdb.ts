@@ -7,7 +7,7 @@ const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 // TMDB API 호출 함수
 export const tmdbClient = {
   async get(endpoint: string, params: Record<string, string> = {}) {
-    const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
+    const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
     url.searchParams.set('api_key', TMDB_API_KEY || '');
 
     Object.entries(params).forEach(([key, value]) => {

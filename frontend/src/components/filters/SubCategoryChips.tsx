@@ -54,13 +54,7 @@ interface SubCategoryChipsProps {
  * @param props.value - 현재 선택된 서브 카테고리 값들
  * @param props.onChange - 서브 카테고리 선택 변경 핸들러
  */
-const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({
-  items,
-  value,
-  onChange,
-  visible = true,
-  variant = 'brand1'
-}) => {
+const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({ items, value, onChange, visible = true, variant = 'brand1' }) => {
   /**
    * 칩 선택을 처리하는 핸들러 (단일 선택)
    * @param itemValue - 선택할 아이템의 value (categoryId 문자열 또는 'all')
@@ -87,9 +81,10 @@ const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({
     <div className="flex flex-wrap gap-2">
       {/* 서브 카테고리 칩 목록 렌더링 */}
       {items.map((item) => {
-        const isSelected = item.value === 'all'
-          ? value === null // '전체'는 아무것도 선택되지 않았을 때 활성화
-          : value === parseInt(item.value);
+        const isSelected =
+          item.value === 'all'
+            ? value === null // '전체'는 아무것도 선택되지 않았을 때 활성화
+            : value === parseInt(item.value);
 
         return (
           <Button

@@ -20,7 +20,7 @@ export const viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className="antialiased bg-BG-0 text-primary w-full max-xl:px-4 flex flex-col items-center">
+      <body className="antialiased bg-BG-0 text-primary w-full flex flex-col items-center">
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
           <QueryProvider>
             {children} {/* 각 그룹의 레이아웃이 여기에 들어감 */}

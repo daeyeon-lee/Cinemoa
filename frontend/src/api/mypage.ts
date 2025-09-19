@@ -23,11 +23,11 @@ export const getUserInfo = async (userId: number): Promise<UserInfoResponse> => 
 
 // 내가 제안한 상영회 목록 조회 API
 export const getFundingProposals = async (
-  userId: number=2,
+  userId: number = 2,
   // type?: 'funding' | 'vote',
   type?: string,
   cursor?: number,
-  limit: number = 7
+  limit: number = 7,
 ): Promise<FundingProposalsResponse> => {
   try {
     // 쿼리 파라미터 구성

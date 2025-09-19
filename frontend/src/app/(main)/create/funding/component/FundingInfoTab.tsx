@@ -51,7 +51,7 @@ export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) 
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <div className="space-y-8">
+        <div className="space-y-12">
           <FormField
             control={form.control}
             name="title"

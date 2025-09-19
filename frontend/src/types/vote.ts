@@ -9,6 +9,7 @@ export interface VoteMovieinfo {
   categoryId?: number;
   videoName?: string;
   posterUrl?: string;
+  videoContent?: string;
 }
 
 export interface VoteTheaterinfo {
@@ -20,11 +21,12 @@ export interface VoteTheaterinfo {
 export interface CreateVoteFundingParams {
   userId?: number;
   // 펀딩 정보
-  content?: string;
   title?: string;
+  content?: string;
   // 영화 정보
   categoryId?: number;
   videoName?: string;
+  videoContent?: string;
   // posterUrl?: string;
   // 상영 정보
   cinemaId?: number;
