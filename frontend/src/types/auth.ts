@@ -38,3 +38,10 @@ export interface WonauthVerifyResponse {
     message: string;
     state: string;
 }
+
+// 로그아웃 시 백에서 받을 응답 타입
+export interface LogoutResponse {
+    code: number;
+    message: string;
+    state: string;
+  }

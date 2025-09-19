@@ -25,27 +25,26 @@ interface MovieInfoTabProps {
 export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const { data: getCategories } = useGetCategories();
 
-  const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [movieTitle, setMovieTitle] = useState('');
-  const [movieDescription, setMovieDescription] = useState('');
-  const [searchResults, setSearchResults] = useState<TMDBMultiItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<TMDBMultiItem | null>(null);
-  const [selectedMovieId, setSelectedMovieId] = useState<string>('');
-  const [selectedImage, setSelectedImage] = useState<string>('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryError, setCategoryError] = useState<string>('');
-  const [titleError, setTitleError] = useState<string>('');
-  const [imageError, setImageError] = useState<string>('');
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]); // 카테고리 목록을 저장하는 상태
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(''); // 선택된 카테고리 ID를 저장하는 상태
+  const [movieTitle, setMovieTitle] = useState(''); // 영화 제목을 저장하는 상태
+  const [movieDescription, setMovieDescription] = useState(''); // 영화 설명을 저장하는 상태
+  const [searchResults, setSearchResults] = useState<TMDBMultiItem[]>([]); // TMDB 검색 결과를 저장하는 상태
+  const [isSearching, setIsSearching] = useState(false); // 검색 중인지 여부를 나타내는 상태
+  const [selectedMovie, setSelectedMovie] = useState<TMDBMultiItem | null>(null); // 선택된 영화 정보를 저장하는 상태
+  const [selectedMovieId, setSelectedMovieId] = useState<string>(''); // 선택된 영화의 ID를 저장하는 상태
+  const [selectedImage, setSelectedImage] = useState<string>(''); // 선택된 이미지 URL을 저장하는 상태
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // 업로드된 파일을 저장하는 상태
+  const [isModalOpen, setIsModalOpen] = useState(false); // 검색 모달이 열려있는지 여부를 나타내는 상태
+  const [searchQuery, setSearchQuery] = useState(''); // 검색어를 저장하는 상태
+  const [categoryError, setCategoryError] = useState<string>(''); // 카테고리 선택 에러 메시지를 저장하는 상태
+  const [titleError, setTitleError] = useState<string>(''); // 제목 입력 에러 메시지를 저장하는 상태
+  const [imageError, setImageError] = useState<string>(''); // 이미지 선택 에러 메시지를 저장하는 상태
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 검색 디바운싱을 위한 타이머 ref
+  const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 요소에 대한 ref
 
   useEffect(() => {
     if (getCategories) {
-      console.log('API 카테고리 데이터:', getCategories);
       setCategories(getCategories);
     }
   }, [getCategories]);
@@ -54,20 +53,13 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     // 카테고리 에러 메시지 초기화
     setCategoryError('');
 
-    console.log('=== 카테고리 선택 ===');
-    console.log('클릭된 카테고리 ID:', categoryId);
-    console.log('현재 선택된 카테고리 ID:', selectedCategoryId);
-
     if (selectedCategoryId === categoryId) {
       // 이미 선택된 경우 제거
       setSelectedCategoryId('');
-      console.log('카테고리 선택 해제');
     } else {
       // 새로운 카테고리 선택 (전체에서 1개만 선택 가능)
       setSelectedCategoryId(categoryId);
-      console.log('새로운 카테고리 선택됨:', categoryId);
     }
-    console.log('===================');
   };
 
   // TMDB Multi API 검색 함수
@@ -216,17 +208,10 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
       categoryId: parseInt(selectedCategoryId), // 선택한 카테고리
       videoName: movieTitle, // 상영물 제목
       posterUrl: selectedImage, // 상영물 이미지 배너
+      videoContent: movieDescription, // 상영물 설명
     };
 
-    console.log('=== MovieInfoTab 제출 ===');
-    console.log('선택된 카테고리 ID (문자열):', selectedCategoryId);
-    console.log('선택된 카테고리 ID (숫자):', parseInt(selectedCategoryId));
-    console.log('입력된 값:', movieData);
-    console.log('Store에 저장된 값:', {
-      categoryId: parseInt(selectedCategoryId),
-      videoName: movieTitle,
-      posterUrl: selectedImage,
-    });
+    console.log('movieData', movieData);
     console.log('========================');
 
     onNext(movieData);
@@ -443,7 +428,9 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
           {/* 상영물 상세 소개 */}
           <div className="space-y-3">
             <div className="space-y-1">
-              <h4 className="h5-b text-primary">상영물 소개</h4>
+              <h4 className="h5-b text-primary">
+                상영물 소개 <span className="text-Brand1-Primary">*</span>
+              </h4>
               <p className="p3 text-tertiary">상영물에 대한 소개를 입력해주세요.</p>
             </div>
             <Textarea placeholder="상영물에 대한 소개를 입력해주세요." value={movieDescription} onChange={(e) => setMovieDescription(e.target.value)} className="min-h-[135px] resize-none" />

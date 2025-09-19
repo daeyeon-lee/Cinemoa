@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { CreatePaymentParams } from '@/types/payment';
 import { useAuthStore } from '@/stores/authStore';
 import { createPayment } from '@/api/payment';
+import { useRouter } from 'next/navigation';
 
 interface PaymentTabProps {
   onNext: (data: CreatePaymentParams) => void;
@@ -18,6 +19,7 @@ interface PaymentTabProps {
 }
 
 export default function PaymentTab({ onNext, onPrev, fundingId, amount }: PaymentTabProps) {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentData, setPaymentData] = useState({
@@ -87,9 +89,8 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
 
       console.log('=== Payment API 요청 성공 ===');
       console.log('응답:', result);
-
       alert('결제가 성공적으로 완료되었습니다!');
-      onNext(paymentParams);
+      router.push('/mypage');
     } catch (error) {
       console.error('=== Payment API 요청 실패 ===');
       console.error('에러:', error);
@@ -204,7 +205,7 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
             이전
           </Button>
           <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext} disabled={isSubmitting}>
-            {isSubmitting ? '처리 중...' : '다음'}
+            {isSubmitting ? '처리 중...' : '결제 하기'}
           </Button>
         </div>
       </div>
