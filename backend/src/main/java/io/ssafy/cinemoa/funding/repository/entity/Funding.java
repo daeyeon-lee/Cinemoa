@@ -65,7 +65,7 @@ public class Funding extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(columnDefinition = "varchar(100)", name = "banner_url", nullable = false)
+    @Column(name = "banner_url", nullable = false)
     private String bannerUrl;
 
     @Column(name = "screen_day")
