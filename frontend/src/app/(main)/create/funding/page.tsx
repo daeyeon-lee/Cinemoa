@@ -93,7 +93,7 @@ export default function FundingPage() {
       <div className="flex flex-col gap-10  w-full">
         <Card className="flex flex-col gap-4 px-4 sm:px-6">
           <CardHeader className="max-sm:text-center">
-            <CardTitle>펀딩 만들기</CardTitle>
+            <CardTitle>상영회 만들기</CardTitle>
             <CardDescription>원하는 영화의 상영회를 직접 제안해보세요</CardDescription>
           </CardHeader>
         </Card>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import Payment from '@/app/payment/Payment';
+import Payment from '@/app/(main)/payment/Payment';
 import { HeartIcon } from '@/component/icon/heartIcon';
 import LinkIcon from '@/component/icon/linkIcon';
 
@@ -18,15 +18,7 @@ type ActionSectionProps = {
   loadingState?: 'ready' | 'loading';
 };
 
-const ActionSection: React.FC<ActionSectionProps> = ({
-  type,
-  price,
-  likeCount = 0,
-  isLiked = false,
-  onPrimaryAction,
-  onSecondaryAction,
-  loadingState = 'ready',
-}) => {
+const ActionSection: React.FC<ActionSectionProps> = ({ type, price, likeCount = 0, isLiked = false, onPrimaryAction, onSecondaryAction, loadingState = 'ready' }) => {
   if (loadingState === 'loading') {
     return (
       <div className={`px-4 py-4 bg-slate-800 flex flex-col gap-${type === 'funding' ? '4' : '6'}`}>
@@ -68,11 +60,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({
               variant="outline"
               size="lg"
               textSize="lg"
-              className={`${
-                isLiked
-                  ? 'h5-b border-Brand1-Strong text-Brand1-Strong gap-1 hover:border-Brand1-Strong hover:text-Brand1-Strong'
-                  : 'h5-b gap-1'
-              }`}
+              className={`${isLiked ? 'h5-b border-Brand1-Strong text-Brand1-Strong gap-1 hover:border-Brand1-Strong hover:text-Brand1-Strong' : 'h5-b gap-1'}`}
               onClick={onPrimaryAction}
             >
               <HeartIcon stroke={isLiked ? '#FF5768' : '#94A3B8'} />
@@ -98,11 +86,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({
               size="lg"
               textSize="lg"
               onClick={onPrimaryAction}
-              className={`${
-                isLiked
-                  ? 'w-full h5-b border-Brand2-Strong text-Brand2-Strong gap-1 hover:border-Brand2-Strong hover:text-Brand2-Strong'
-                  : 'w-full h5-b gap-1'
-              }`}
+              className={`${isLiked ? 'w-full h5-b border-Brand2-Strong text-Brand2-Strong gap-1 hover:border-Brand2-Strong hover:text-Brand2-Strong' : 'w-full h5-b gap-1'}`}
             >
               <HeartIcon stroke={isLiked ? '#71E5DE' : '#94A3B8'} />
               보고 싶어요

@@ -9,6 +9,7 @@ export interface movieinfo {
   categoryId?: number;
   videoName?: string;
   posterUrl?: string;
+  videoContent?: string;
 }
 
 export interface theaterinfo {
@@ -30,6 +31,7 @@ export interface CreateFundingParams {
   // 영화 정보
   categoryId?: number;
   videoName?: string;
+  videoContent?: string;
   // posterUrl?: string;
   // 상영 정보
   cinemaId?: number;
