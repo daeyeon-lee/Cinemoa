@@ -2,7 +2,7 @@
 
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
-import type { ListCardData } from '../types/listCardData';
+import type { ApiSearchItem } from '@/types/searchApi';
 
 /**
  * 종료 임박 상영회 섹션 컴포넌트
@@ -14,7 +14,7 @@ interface ClosingSoonSectionProps {
   /** 섹션 제목 */
   title: string;
   /** 표시할 카드 아이템 목록 (최대 8개) */
-  items: ListCardData[];
+  items: ApiSearchItem[];
   /** 로딩 상태 여부 */
   loading?: boolean;
   /** 더보기 버튼 클릭 핸들러 */
