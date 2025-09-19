@@ -10,6 +10,7 @@ import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFundi
 import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
+import CardManagement from '@/app/(main)/mypage/component/CardManagement';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -62,6 +63,9 @@ export default function MyPage() {
   const [isLikedLoading, setIsLikedLoading] = useState(true);
   const [hasMoreLiked, setHasMoreLiked] = useState(false);
   const [likedType, setLikedType] = useState<'funding' | 'vote' | undefined>(undefined);
+
+  // 카드 관리 모달 상태
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
   // const [imageurl,setImageurl] = useState<string>('');
 
@@ -419,6 +423,7 @@ export default function MyPage() {
                       variant="secondary"
                       size="sm"
                       className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                      onClick={() => setIsCardModalOpen(true)}
                     >
                       결제 카드 등록
                     </Button>
@@ -473,6 +478,7 @@ export default function MyPage() {
                   variant="secondary"
                   size="sm"
                   className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                  onClick={() => setIsCardModalOpen(true)}
                 >
                   결제 카드 등록
                 </Button>
@@ -739,6 +745,12 @@ export default function MyPage() {
           </div>
         </div>
       </main>
+      
+      {/* 카드 관리 모달 */}
+      <CardManagement 
+        isOpen={isCardModalOpen} 
+        onClose={() => setIsCardModalOpen(false)} 
+      />
     </div>
   );
 }
