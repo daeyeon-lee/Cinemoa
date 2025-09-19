@@ -1,4 +1,4 @@
-import { UserInfoResponse, UserInfoErrorResponse, FundingProposalsResponse, FundingProposalsErrorResponse } from '@/types/mypage';
+import { UserInfoResponse, UserInfoErrorResponse, FundingProposalsResponse, FundingProposalsErrorResponse, ParticipatedFundingResponse, ParticipatedFundingErrorResponse } from '@/types/mypage';
 import { apiGet } from '@/utils/apiClient';
 
 const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -49,6 +49,37 @@ export const getFundingProposals = async (
     return data;
   } catch (error) {
     console.error('내가 제안한 상영회 조회 오류:', error);
+    throw error;
+  }
+};
+
+// 내가 참여한 상영회 목록 조회 API
+export const getParticipatedFunding = async (
+  userId: number,
+  state?: 'ALL' | 'ON_PROGRESS' | 'CLOSE',
+  cursor?: number,
+  limit: number = 7
+): Promise<ParticipatedFundingResponse> => {
+  try {
+    // 쿼리 파라미터 구성
+    const queryParams = new URLSearchParams();
+    console.log('state:', state, 'cursor:', cursor, 'limit:', limit);
+    if (state) queryParams.append('state', state);
+    if (cursor) queryParams.append('cursor', cursor.toString());
+    queryParams.append('limit', limit.toString());
+
+    const response = await apiGet(`${BaseUrl}user/${userId}/participated-funding?${queryParams}`);
+
+    if (!response.ok) {
+      const errorData: ParticipatedFundingErrorResponse = await response.json();
+      throw new Error(errorData.message || '내가 참여한 상영회 조회에 실패했습니다.');
+    }
+
+    const data: ParticipatedFundingResponse = await response.json();
+    console.log('내가 참여한 상영회 목록:', data);
+    return data;
+  } catch (error) {
+    console.error('내가 참여한 상영회 조회 오류:', error);
     throw error;
   }
 };
