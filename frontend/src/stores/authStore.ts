@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface User {
   userId: number;
@@ -20,30 +19,30 @@ interface AuthStore {
   setUser: (user: User) => void;
   clearUser: () => void;
   updateUserInfo: (updates: Partial<User>) => void;
+  isLoggedIn: () => boolean;
 }
 
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, get) => ({
-      user: null,
+export const useAuthStore = create<AuthStore>()((set, get) => ({
+  user: null,
 
-      setUser: (user) =>
-        set({
-          user,
-        }),
-
-      clearUser: () =>
-        set({
-          user: null,
-        }),
-
-      updateUserInfo: (updates) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, ...updates } : null,
-        })),
+  setUser: (user) =>
+    set({
+      user,
     }),
-    {
-      name: 'auth-storage', // localStorage 키
-    },
-  ),
-);
+
+  clearUser: () =>
+    set({
+      user: null,
+    }),
+
+  updateUserInfo: (updates) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...updates } : null,
+    })),
+
+  isLoggedIn: () => {
+    const { user } = get();
+    return !!user;
+  },
+}));
+

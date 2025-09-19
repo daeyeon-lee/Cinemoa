@@ -17,8 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
+  const { user, isLoggedIn } = useAuthStore();
   const isActive = (path: string) => {
     if (path === '/') {
       return pathname === '/';
@@ -72,7 +71,7 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center space-x-4">
             <SearchIcon />
-            {isLoggedIn ? (
+            {isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer">
                   <UserIcon />
@@ -157,7 +156,7 @@ export default function Navbar() {
                 </div>
               </div>
             )}
-            {isLoggedIn ? (
+            {isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="flex-none cursor-pointer">
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">
