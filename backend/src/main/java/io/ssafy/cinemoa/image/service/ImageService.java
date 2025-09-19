@@ -47,7 +47,7 @@ public class ImageService {
             throw BadRequestException.ofInput("잘못된 파일명입니다.");
         }
 
-        Path fullPath = Paths.get(imageConfig.getBase(), ImageCategory.getImagePath(imageName), imageName);
+        Path fullPath = Paths.get(imageConfig.getBase(), ImageCategory.BANNER.getImagePath(), imageName);
         try {
             return ImageInfo.of(fullPath);
         } catch (IOException e) {
@@ -73,7 +73,7 @@ public class ImageService {
 
         try {
             Files.copy(image.getInputStream(), fullPath, StandardCopyOption.REPLACE_EXISTING);
-            return fullPath.toString();
+            return Paths.get(midPath, filename).toString();
         } catch (IOException e) {
             throw InternalServerException.ofUnknown();
         }

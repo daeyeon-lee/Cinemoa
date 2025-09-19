@@ -22,7 +22,6 @@ public class ImageController {
     @GetMapping("/{imageName}")
     public ResponseEntity<byte[]> getImage(@PathVariable String imageName) {
         ImageInfo imageResponse = imageService.getImage(imageName);
-
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePrivate())
                 .contentType(MediaType.parseMediaType(imageResponse.getContentType()))
