@@ -1,5 +1,9 @@
 import { ComponentType } from 'react';
 import { HeartIcon } from '@/component/icon/heartIcon';
+import MovieIcon  from '@/component/icon/movieIcon';
+import SeriesIcon from '@/component/icon/seriesIcon';
+import ConcertIcon from '@/component/icon/concertIcon';
+import SportsIcon from '@/component/icon/sportsIcon';
 
 export const CATEGORY_VALUES = {
   ALL: 'all',
@@ -42,7 +46,7 @@ export const CATEGORIES_INFO: Record<CategoryValue, CategoryInfo> = {
   [CATEGORY_VALUES.MOVIE]: {
     categoryId: 1,
     label: '영화',
-    icon: HeartIcon,
+    icon: MovieIcon,
     items: [
       { categoryId: 5, categoryName: '액션' },
       { categoryId: 6, categoryName: '공포/스릴러' },
@@ -55,7 +59,7 @@ export const CATEGORIES_INFO: Record<CategoryValue, CategoryInfo> = {
   [CATEGORY_VALUES.SERIES]: {
     categoryId: 2,
     label: '시리즈',
-    icon: HeartIcon,
+    icon: SeriesIcon,
     items: [
       { categoryId: 11, categoryName: '액션' },
       { categoryId: 12, categoryName: '공포/스릴러' },
@@ -68,7 +72,7 @@ export const CATEGORIES_INFO: Record<CategoryValue, CategoryInfo> = {
   [CATEGORY_VALUES.PERFORMANCE]: {
     categoryId: 3,
     label: '공연',
-    icon: HeartIcon,
+    icon: ConcertIcon,
     items: [
       { categoryId: 17, categoryName: '외국가수' },
       { categoryId: 18, categoryName: '한국가수' },
@@ -80,7 +84,7 @@ export const CATEGORIES_INFO: Record<CategoryValue, CategoryInfo> = {
   [CATEGORY_VALUES.SPORTS]: {
     categoryId: 4,
     label: '스포츠중계',
-    icon: HeartIcon,
+    icon: SportsIcon,
     items: [
       { categoryId: 22, categoryName: '축구' },
       { categoryId: 23, categoryName: '야구' },
