@@ -1,6 +1,6 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 import SearchIcon from '@/component/icon/searchIcon';
 import UserIcon from '@/component/icon/userIcon';
@@ -17,7 +17,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isClient, setIsClient] = useState(false);
   const { user, isLoggedIn } = useAuthStore();
+
+  // 클라이언트 사이드에서만 인증 상태 확인
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   const isActive = (path: string) => {
     if (path === '/') {
       return pathname === '/';
@@ -71,7 +77,7 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center space-x-4">
             <SearchIcon />
-            {isLoggedIn() ? (
+            {isClient && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer">
                   <UserIcon />
@@ -156,7 +162,7 @@ export default function Navbar() {
                 </div>
               </div>
             )}
-            {isLoggedIn() ? (
+            {isClient && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="flex-none cursor-pointer">
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">

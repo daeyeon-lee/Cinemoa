@@ -89,7 +89,7 @@ export default function Home() {
         {/* Desktop: 로고+검색+카테고리 - Full Width */}
         <div className="hidden sm:block py-8">
           <div className="flex flex-col items-center gap-8 w-full">
-            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={120} height={40} className="h-10 w-auto" priority />
+            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} />
 
             <div className="flex flex-col items-center gap-3 w-full">
               {/* 검색어 입력 */}
