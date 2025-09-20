@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { startWonauth, verifyWonauth } from '@/api/wonauth';
+import { updateRefundAccount } from '@/api/user';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -207,7 +208,7 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
         setIsVerificationSuccess(true);
         setIsVerificationSent(true);
         setSecretKey(result.data.secretKey);
-        console.log('인증 완료, secretKey:', result.data.secretKey);
+        // console.log('인증 완료, secretKey:', result.data.secretKey);
       } else {
         setVerificationCodeError(result.message || '인증에 실패했습니다.');
       }
@@ -218,7 +219,7 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
   };
 
   // '수정' 버튼 클릭 핸들러
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!bank || !accountNumber) {
       alert('은행과 계좌번호를 모두 입력해주세요.');
       return;
@@ -229,8 +230,33 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
       return;
     }
 
-    alert('계좌 정보가 수정되었습니다.');
-    onClose();
+    if (!user?.userId) {
+      alert('사용자 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    try {
+      // 선택된 은행명에 해당하는 bankCode 찾기
+      const selectedBank = banks.find((bankOption) => bankOption.bankName === bank);
+      const bankCode = selectedBank ? selectedBank.bankCode : null;
+
+      if (!bankCode) {
+        alert('은행 코드를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 환불계좌 변경 API 호출
+      await updateRefundAccount(user.userId, {
+        accountNo: accountNumber,
+        bankCode: bankCode,
+      });
+
+      alert('계좌 정보가 수정되었습니다.');
+      onClose();
+    } catch (error: any) {
+      console.error('환불계좌 변경 실패:', error);
+      alert('계좌 정보 수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    }
   };
 
   return (
