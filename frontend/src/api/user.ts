@@ -1,4 +1,4 @@
-import { UpdateUserInfoRequest, UpdateUserInfoResponse } from '@/types/user';
+import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
 import type { ApiSearchResponse } from '@/types/searchApi';
 
@@ -34,6 +34,32 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
   } catch (error) {
     console.error('=== 사용자 추가 정보 입력 실패 ===');
     console.error('에러:', error);
+    throw error;
+  }
+};
+
+// 환불계좌 변경 API
+export const updateRefundAccount = async (userId: number, data: UpdateRefundAccountRequest): Promise<UpdateRefundAccountResponse> => {
+  try {
+    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}/refund-account`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 세션 기반 인증을 위해 쿠키 포함
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('환불계좌 변경 API 에러:', response.status, errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const result: UpdateRefundAccountResponse = await response.json();
+    return result;
+  } catch (error) {
+    console.error('환불계좌 변경 실패:', error);
     throw error;
   }
 };
