@@ -15,7 +15,9 @@ type ListCardData = {
     state: string;
     progressRate: number;
     fundingEndsOn: string;
-    screenDate: string;
+    screenDate?: string;
+    screenMinDate?: string;
+    screenMaxDate?: string;
     price: number;
     maxPeople: number;
     participantCount: number;
@@ -55,6 +57,18 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
 
   const formatLocation = (city: string, district: string) => {
     return `${city} ${district}`;
+  };
+
+  const formatScreenPeriod = (screenMinDate?: string, screenMaxDate?: string) => {
+    if (!screenMinDate || !screenMaxDate) return '';
+    try {
+      const minDate = new Date(screenMinDate);
+      const maxDate = new Date(screenMaxDate);
+      return `${minDate.getMonth() + 1}/${minDate.getDate()} ~ ${maxDate.getMonth() + 1}/${maxDate.getDate()}`;
+    } catch (error) {
+      console.error('날짜 포맷팅 오류:', error);
+      return '';
+    }
   };
 
   const handleCardClick = () => {
@@ -133,8 +147,23 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
           {/* 배지 영역 */}
           <div className="flex gap-1 flex-wrap ">
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatLocation(data.cinema.city, data.cinema.district)}</span>
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.fundingEndsOn)}</span>
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.screenDate)}</span>
+            {isFunding ? (
+              // 펀딩 카드: fundingEndsOn, screenDate 태그
+              <>
+                <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.fundingEndsOn)}</span>
+                {data.funding.screenDate && (
+                  <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.screenDate)}</span>
+                )}
+              </>
+            ) : (
+              // 투표 카드: screenMinDate~screenMaxDate 기간 태그
+              (() => {
+                const periodText = formatScreenPeriod(data.funding.screenMinDate, data.funding.screenMaxDate);
+                return periodText ? (
+                  <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{periodText}</span>
+                ) : null;
+              })()
+            )}
           </div>
           {/* 영화관 이름 */}
           <h4 className="text-xs font-normal leading-tight text-slate-300 line-clamp-2 h-8">{data.cinema.cinemaName}</h4>

@@ -259,7 +259,7 @@ export default function MyPage() {
       if (type === 'funding') {
         likedData = likedData.filter(item => item.funding.price > 0);
       } else if (type === 'vote') {
-        likedData = likedData.filter(item => item.funding.price === 0);
+        likedData = likedData.filter(item => item.funding.price <= 0);
       }
 
       setMyLiked(likedData);
@@ -289,6 +289,7 @@ export default function MyPage() {
   }, [likedType]);
 
   // API 데이터를 ListCardData 형식으로 변환
+  // 내가 제안한 상영회 데이터를 ListCardData 형식으로 변환
   const convertToCardData = (proposal: FundingProposal): ListCardData => {
     return {
       funding: {
@@ -299,6 +300,8 @@ export default function MyPage() {
         progressRate: proposal.funding.progressRate,
         fundingEndsOn: proposal.funding.fundingEndsOn,
         screenDate: proposal.funding.screenDate,
+        screenMinDate: proposal.funding.screenMinDate,
+        screenMaxDate: proposal.funding.screenMaxDate,
         price: proposal.funding.price,
         maxPeople: proposal.funding.maxPeople,
         participantCount: proposal.funding.participantCount,
@@ -326,6 +329,8 @@ export default function MyPage() {
         progressRate: participated.funding.progressRate,
         fundingEndsOn: participated.funding.fundingEndsOn,
         screenDate: participated.funding.screenDate,
+        screenMinDate: participated.funding.screenMinDate,
+        screenMaxDate: participated.funding.screenMaxDate,
         price: participated.funding.price,
         maxPeople: participated.funding.maxPeople,
         participantCount: participated.funding.participantCount,
@@ -356,6 +361,8 @@ export default function MyPage() {
         progressRate: liked.funding.progressRate,
         fundingEndsOn: liked.funding.fundingEndsOn,
         screenDate: liked.funding.screenDate,
+        screenMinDate: liked.funding.screenMinDate,
+        screenMaxDate: liked.funding.screenMaxDate,
         price: liked.funding.price,
         maxPeople: liked.funding.maxPeople,
         participantCount: liked.funding.participantCount,
