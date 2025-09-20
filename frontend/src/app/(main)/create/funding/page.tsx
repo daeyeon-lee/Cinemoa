@@ -103,7 +103,7 @@ export default function FundingPage() {
           <Button
             variant={activeTab === 'funding-info' ? 'brand1' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 sm:h-8 md:h-9 lg:h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
             disabled
           >
             <span className="md:inline">상영회 소개</span>
@@ -111,7 +111,7 @@ export default function FundingPage() {
           <Button
             variant={activeTab === 'movie-info' ? 'brand1' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 sm:h-8 md:h-9 lg:h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
             disabled
           >
             <span className="md:inline">상영물 정보</span>
@@ -119,7 +119,7 @@ export default function FundingPage() {
           <Button
             variant={activeTab === 'theater-info' ? 'brand1' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 sm:h-8 md:h-9 lg:h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
             disabled
           >
             <span className="md:inline">영화관 정보</span>
@@ -127,7 +127,7 @@ export default function FundingPage() {
           <Button
             variant={activeTab === 'payment' ? 'brand1' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 sm:h-8 md:h-9 lg:h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
             disabled
           >
             결제
