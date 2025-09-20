@@ -64,48 +64,48 @@ public class FundingService {
             local userId = KEYS[2]
             local initialSeats = tonumber(ARGV[1])
             local ttl = tonumber(ARGV[2])
-            
+                        
             local seatKey = "seat:" .. fundingId .. ":" .. userId
             local remainSeatKey = "remain_seat:" .. fundingId
-            
+                        
             -- 잔여 좌석 키가 없는 경우 초기화
             if redis.call("exists", remainSeatKey) == 0 then
                 redis.call("set", remainSeatKey, initialSeats)
             end
-            
+                        
             local remainSeats = tonumber(redis.call("get", remainSeatKey))
-            
+                        
             if remainSeats <= 0 then
                 return {0, "NO_SEATS_LEFT", 0}
             end
-            
+                        
             -- 사용자가 이미 점유했는지 확인
             if redis.call("exists", seatKey) == 1 then
                 return {0, "ALREADY_HOLDING", remainSeats}
             end
-            
+                        
             -- 잔여 좌석 1 감소 및 사용자 점유 등록
             redis.call("decr", remainSeatKey)
             redis.call("setex", seatKey, ttl, "true")
-            
+                        
             return {1, "SUCCESS", remainSeats - 1}
             """;
     private static final String RELEASE_SEAT_SCRIPT = """
             local fundingId = KEYS[1]
             local userId = KEYS[2]
-            
+                        
             local seatKey = "seat:" .. fundingId .. ":" .. userId
             local remainSeatKey = "remain_seat:" .. fundingId
-            
+                        
             -- 점유한 좌석이 있는지 확인
             if redis.call("exists", seatKey) == 0 then
                 return {0}
             end
-            
+                        
             -- 원자적으로 좌석 해제 및 잔여 좌석 수 증가
             redis.call("del", seatKey)
             local remainSeats = redis.call("incr", remainSeatKey)
-            
+                        
             return {1}
             """;
 
@@ -164,7 +164,7 @@ public class FundingService {
                 .screenStartsOn(request.getScreenStartsOn())
                 .screenEndsOn(request.getScreenEndsOn())
                 .category(category)
-                .state(FundingState.EVALUATING)
+                .state(FundingState.ON_PROGRESS)
                 .endsOn(request.getScreenDay().minusDays(7))
                 .cinema(cinema)
                 .screen(screen)
@@ -248,7 +248,7 @@ public class FundingService {
                 .leader(user)
                 .category(category)
                 .maxPeople(0)
-                .state(FundingState.EVALUATING)
+                .state(FundingState.ON_PROGRESS)
                 .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
                 .build();
 
