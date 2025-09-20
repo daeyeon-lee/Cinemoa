@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
@@ -53,6 +54,7 @@ public class Funding extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(100)", name = "video_name", nullable = false)
     private String videoName;
 
+    @Lob
     @Column(name = "video_content")
     private String videoContent;
 
