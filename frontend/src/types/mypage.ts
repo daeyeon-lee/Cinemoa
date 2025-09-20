@@ -26,7 +26,9 @@ export interface FundingProposal {
     state: string;
     progressRate: number;
     fundingEndsOn: string;
-    screenDate: string;
+    screenDate?: string;
+    screenMinDate?: string;
+    screenMaxDate?: string;
     price: number;
     maxPeople: number;
     participantCount: number;
@@ -67,7 +69,9 @@ export interface ParticipatedFunding {
     state: string;
     progressRate: number;
     fundingEndsOn: string;
-    screenDate: string;
+    screenDate?: string;
+    screenMinDate?: string;
+    screenMaxDate?: string;
     price: number;
     maxPeople: number;
     participantCount: number;
@@ -108,7 +112,9 @@ export interface LikedFunding {
     state: string;
     progressRate: number;
     fundingEndsOn: string;
-    screenDate: string;
+    screenDate?: string;
+    screenMinDate?: string;
+    screenMaxDate?: string;
     price: number;
     maxPeople: number;
     participantCount: number;
