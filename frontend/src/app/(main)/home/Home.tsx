@@ -146,7 +146,7 @@ export default function Home() {
 
         {/* Desktop Layout - 웹 버전 */}
         <div className="hidden sm:block">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Column - Recommended + Closing Soon */}
             <div className="lg:col-span-8 space-y-12">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
@@ -154,7 +154,7 @@ export default function Home() {
             </div>
 
             {/* Right Column - Popular */}
-            <aside className="lg:col-span-4 h-fit">
+            <aside className="lg:col-span-4 h-fit w-full">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
             </aside>
           </div>

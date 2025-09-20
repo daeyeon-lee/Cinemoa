@@ -283,9 +283,30 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
     });
   };
 
+  // 날짜 형식 변환 함수 (YYYY-MM-DD → YYYY.MM.DD (요일))
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return '';
+
+    // 이미 요일이 포함되어 있는 경우 (예: "2025-01-15 수요일")
+    if (dateString.includes(' ')) {
+      const [dateOnly, dayOfWeek] = dateString.split(' ');
+      // 요일을 축약형으로 변환 (수요일 → 수)
+      const shortDayOfWeek = dayOfWeek.replace('요일', '');
+      return `${dateOnly.replace(/-/g, '.')} ${shortDayOfWeek}`;
+    }
+
+    // 요일이 없는 경우 날짜에서 요일 계산
+    const dateOnly = dateString.split(' ')[0];
+    const date = new Date(dateOnly);
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const dayOfWeek = dayNames[date.getDay()];
+
+    return `${dateOnly.replace(/-/g, '.')} ${dayOfWeek}`;
+  };
+
   return (
     <div className="w-full space-y-8">
-      <div className="flex gap-12 w-full justify-center items-center">
+      <div className="flex flex-col gap-8 lg:flex-row w-full justify-center items-center">
         <div className="flex flex-col gap-12 w-full">
           {/* 상영관 종류 선택 */}
           <div className="flex flex-col gap-2 w-full">
@@ -294,7 +315,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                 상영관 종류 <span className="text-Brand1-Primary">*</span>
               </h4>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
               {features.map((feature) => (
                 <Button key={feature.value} variant={selectedFeature.includes(feature.value) ? 'brand1' : 'secondary'} size="sm" onClick={() => handleFeatureChange(feature.value)} className="h-10">
                   {feature.name}
@@ -303,8 +324,8 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
             </div>
           </div>
 
-          {/* 지역, 영화관, 상영관 선택 */}
-          <div className="flex gap-2 w-full">
+          {/* 지역, 영화관 선택 */}
+          <div className="flex flex-col gap-12 sm:flex-row  w-full">
             {/* 지역 선택 */}
             <div className="flex flex-col gap-2 w-full">
               <div className="space-y-1">
@@ -348,7 +369,9 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
               </Select>
             </div>
           </div>
-          <div className="flex gap-2 w-full items-start">
+
+          {/* 상영관, 대관 희망일 선택 */}
+          <div className="flex flex-col gap-12 sm:flex-row w-full ">
             {/* 상영관 선택 */}
             <div className="flex flex-col gap-2 w-full">
               <div className="space-y-1">
@@ -406,7 +429,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                 </SelectContent>
               </Select>
             </div>
-            {/* 날짜 선택 */}
+            {/* 대관 희망일 선택 */}
             <div className="flex flex-col gap-2 w-full">
               <div className="space-y-1">
                 <h4 className="h5-b text-primary">
@@ -423,10 +446,11 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
               {selectedScreenName ? <p className="p2 text-Brand1-Primary">상영회는 대관 희망일의 7일 전까지 활성화됩니다.</p> : ''}
             </div>
           </div>
-          {/* 시간 선택 */}
-          <div className="flex gap-2 w-full items-end">
+
+          {/* 대관 시작/종료 시간 선택 */}
+          <div className="flex gap-3 sm:gap-12 w-full">
             {/* 대관 시작 시간 */}
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 flex-1 min-w-0">
               <div className="space-y-1">
                 <h4 className="h5-b text-primary">
                   대관 시작 시간 <span className="text-Brand1-Primary">*</span>
@@ -469,7 +493,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
             </div>
 
             {/* 대관 종료 시간 */}
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 flex-1 min-w-0">
               <div className="space-y-1">
                 <h4 className="h5-b text-primary">
                   대관 종료 시간 <span className="text-Brand1-Primary">*</span>
@@ -517,15 +541,15 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
           </div>
         </div>
         {/* 우측 카드 */}
-        <div className="flex flex-col gap-4 w-[400px] ">
+        <div className="flex flex-col gap-4 w-full lg:w-[400px]">
           <div>
-            <Card className="h-full p-0 w-full">
-              <CardContent className="px-6 py-4 flex flex-col justify-center gap-4 h-full">
+            <Card className="h-full p-0">
+              <CardContent className="px-6 py-4 flex flex-col justify-center gap-4 h-max">
                 <div className="flex flex-col justify-center items-center">
                   {selectedScreenFeatures.length > 0 && <div className="p1 text-tertiary text-center">{getScreenFeatureNames().join(', ')}</div>}
                   {selectedTheaterName && selectedScreenName ? (
-                    <div className="p1-b text-primary text-center mt-1">
-                      {selectedTheaterName} | {selectedScreenName}
+                    <div className="p1-b text-primary text-center mt-1 break-keep">
+                      {selectedTheaterName} {selectedScreenName}
                     </div>
                   ) : (
                     <div className="p1-b text-primary text-center mt-1">상영관을 선택해주세요</div>
@@ -533,9 +557,8 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                   <div className="p2 text-tertiary text-center mt-1">
                     {selectedDate && selectedStartTime && selectedEndTime ? (
                       <>
-                        <div>{selectedDate}</div>
                         <div>
-                          {selectedStartTime} ~ {selectedEndTime}
+                          {formatDateForDisplay(selectedDate)} {selectedStartTime} ~ {selectedEndTime}
                         </div>
                       </>
                     ) : (
@@ -551,7 +574,11 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                   </div>
                 ) : (
                   <div className="w-full flex justify-center items-center">
-                    <div className="p1-b text-tertiary">상영관을 선택 시 대관료가 표시됩니다</div>
+                    <div className="p1-b text-tertiary text-center">
+                      상영관을 선택 시
+                      <br />
+                      대관료가 표시됩니다
+                    </div>
                   </div>
                 )}
                 <Separator />
@@ -598,11 +625,11 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
       </div>
       {/* 이전 다음 바튼 */}
 
-      <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
-        <Button variant="tertiary" size="lg" className="w-[138px]" onClick={onPrev}>
+      <div className="pt-4 flex justify-center gap-2">
+        <Button variant="tertiary" size="lg" className="w-[138px] max-lg:w-full" onClick={onPrev}>
           이전
         </Button>
-        <Button type="button" variant="brand1" size="lg" className="w-[138px]" onClick={handleNext}>
+        <Button type="button" variant="brand1" size="lg" className="w-[138px] max-lg:w-full" onClick={handleNext}>
           상영회 생성하기
         </Button>
       </div>

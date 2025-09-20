@@ -69,7 +69,7 @@ export default function Navbar() {
   return (
     <header className="bg-slate-900 border-b border-slate-900 py-5 lg:pt-4">
       {/* 모바일 레이아웃 - 두 줄 */}
-      <div className="border-b border-1 border-[#1E293B] lg:hidden">
+      <div className="border-b border-1 border-[#1E293B] px-5 lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
         <div className="flex items-center justify-between mb-4">
           <Link href="/" className="cursor-pointer">
@@ -115,7 +115,7 @@ export default function Navbar() {
       </div>
 
       {/* 데스크톱 레이아웃 - 한 줄 */}
-      <div className="hidden lg:flex items-center justify-between">
+      <div className="hidden max-w-[1200px] mx-auto lg:flex items-center justify-between lg:px-5 px-2">
         <div className="flex items-start justify-center gap-16 h-full">
           {/* 로고-홈으로 이동 */}
           {/* 홈 주소로 변경함 */}
