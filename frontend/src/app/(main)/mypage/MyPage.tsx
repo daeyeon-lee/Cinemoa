@@ -11,6 +11,7 @@ import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } fro
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 import CardManagement from '@/app/(main)/mypage/component/CardManagement';
+import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -66,6 +67,9 @@ export default function MyPage() {
 
   // 카드 관리 모달 상태
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+
+  // 환불 계좌 수정 모달 상태
+  const [isRefundAccountModalOpen, setIsRefundAccountModalOpen] = useState(false);
 
   // const [imageurl,setImageurl] = useState<string>('');
 
@@ -441,13 +445,14 @@ export default function MyPage() {
                 <Avatar src={userInfo?.profileImgUrl} size={72} />
                 <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
                   <div className="text-slate-50 text-2xl font-bold leading-loose">
-                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}, 안녕하세요`}
+                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}
                   </div>
                   <div className="h-8 flex justify-start items-center gap-[14px]">
                     <Button
                       variant="secondary"
                       size="sm"
                       className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                      onClick={() => setIsRefundAccountModalOpen(true)}
                     >
                       환불 계좌 수정
                     </Button>
@@ -503,6 +508,7 @@ export default function MyPage() {
                   variant="secondary"
                   size="sm"
                   className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                  onClick={() => setIsRefundAccountModalOpen(true)}
                 >
                   환불 계좌 수정
                 </Button>
@@ -782,6 +788,12 @@ export default function MyPage() {
       <CardManagement 
         isOpen={isCardModalOpen} 
         onClose={() => setIsCardModalOpen(false)} 
+      />
+
+      {/* 환불 계좌 수정 모달 */}
+      <RefundAccountModal
+        isOpen={isRefundAccountModalOpen}
+        onClose={() => setIsRefundAccountModalOpen(false)}
       />
     </div>
   );
