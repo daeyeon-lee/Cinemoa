@@ -5,9 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 내가 참여한 목록 조회 요청 DTO
- * <p>
- * API 경로: GET /api/user/{userId}/participated-funding
+ * 커서 기반 페이지네이션을 위한 공통 요청 DTO
  */
 @Data
 @NoArgsConstructor
