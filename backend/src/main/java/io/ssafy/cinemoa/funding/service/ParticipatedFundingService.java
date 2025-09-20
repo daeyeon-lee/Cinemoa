@@ -30,12 +30,13 @@ public class ParticipatedFundingService {
      * 특정 사용자가 참여한 펀딩 목록을 조회합니다. 무한 스크롤 방식으로 동작하며, 커서 기반 페이지네이션을 사용합니다.
      *
      * @param userId 조회할 사용자의 ID
+     * @param state  참여 상태 필터 (ALL, ON_PROGRESS, CLOSE)
      * @param cursor 다음 페이지 조회를 위한 커서 (이전 응답의 nextCursor 값)
      * @param limit  한 번에 조회할 개수 (기본값: 20)
      * @return 참여한 펀딩 목록과 페이지네이션 정보
      */
     @Transactional(readOnly = true)
-    public CursorResponse<CardTypeFundingInfoDto> getParticipatedFundings(Long userId, String cursor, Integer limit) {
+    public CursorResponse<CardTypeFundingInfoDto> getParticipatedFundings(Long userId, String state, String cursor, Integer limit) {
         // 1. 사용자 존재 여부 확인
         if (!userRepository.existsById(userId)) {
             throw ResourceNotFoundException.ofUser();
@@ -48,8 +49,7 @@ public class ParticipatedFundingService {
 
         // 4. 펀딩 데이터 조회 (무한 스크롤)
 
-        return participatedFundingRepository.findParticipatedFundings(userId,
-                request);
+        return participatedFundingRepository.findParticipatedFundings(userId, state, request);
     }
 
 

@@ -35,16 +35,18 @@ public class ParticipatedFundingRepository {
      * 내가 참여한 펀딩 목록을 조회합니다.
      *
      * @param userId  사용자 ID
+     * @param state   참여 상태 필터 (ALL, ON_PROGRESS, CLOSE)
      * @param request 참여한 목록 조회 요청
      * @return 참여한 펀딩 목록
      */
     public CursorResponse<CardTypeFundingInfoDto> findParticipatedFundings(Long userId,
+                                                                           String state,
                                                                            CursorRequestDto request) {
-        // 1. 기본 쿼리 구성
+        // 1. 기본 쿼리 구성 (state 필터 포함)
         ParticipatedQueryBuilder queryBuilder = new ParticipatedQueryBuilder();
-        queryBuilder.buildBaseQuery(userId);
+        queryBuilder.buildBaseQuery(userId, state);
 
-        // 2. 동적 조건 추가 (커서와 상태 필터)
+        // 2. 커서 조건 추가
         addCursor(queryBuilder, request.getCursor());
 
         // 3. 정렬 및 페이징 (커서 기반)
@@ -77,8 +79,9 @@ public class ParticipatedFundingRepository {
                 .build();
     }
 
+
     /**
-     * 보고싶어요 목록 조회를 위한 동적 조건을 추가합니다.
+     * 커서 조건을 추가합니다.
      */
     private void addCursor(ParticipatedQueryBuilder queryBuilder, String cursor) {
         if (cursor == null) {
@@ -159,7 +162,7 @@ public class ParticipatedFundingRepository {
         @Getter
         private final List<Object> params = new ArrayList<>();
 
-        public void buildBaseQuery(Long userId) {
+        public void buildBaseQuery(Long userId, String state) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
                            f.funding_type, f.max_people, s.price,
@@ -181,7 +184,29 @@ public class ParticipatedFundingRepository {
             params.add(userId);
             params.add(userId);
             params.add(userId);
+
+            // state 필터 조건 추가
+            if (state != null && !state.equals("ALL")) {
+                switch (state) {
+                    case "ON_PROGRESS":
+                        // 진행 중인 펀딩 (ON_PROGRESS, WAITING)
+                        sql.append(" AND f.state IN (?, ?)");
+                        params.add("ON_PROGRESS");
+                        params.add("WAITING");
+                        break;
+                    case "CLOSE":
+                        // 완료된 펀딩 (FAILED, SUCCESS)
+                        sql.append(" AND f.state IN (?, ?)");
+                        params.add("FAILED");
+                        params.add("SUCCESS");
+                        break;
+                    default:
+                        // 잘못된 state 값인 경우 예외 발생
+                        throw new BadRequestException("잘못된 상태 필터입니다. (ALL, ON_PROGRESS, CLOSE 중 하나를 선택하세요)", ResourceCode.INPUT);
+                }
+            }
         }
+
 
         public void addCursorCondition(TimestampCursorInfo cursorInfo) {
             sql.append("""
