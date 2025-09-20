@@ -60,16 +60,26 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       screenMaxDate: selectedEndDate.split(' ')[0], // 요일 정보 제거하고 날짜만 전송 (YYYY-MM-DD)
     };
     const posterUrl = movieData?.posterUrl;
+    
+    // posterUrl 확인 (디버깅 로그 제거)
+    console.log('posterUrl 확인:', posterUrl ? '이미지 있음' : '이미지 없음');
+    
+    // posterUrl이 없으면 에러 처리
+    if (!posterUrl || posterUrl.trim() === '') {
+      alert('상영물 이미지를 선택해주세요.');
+      return;
+    }
+    
     try {
-      const result = await creatVoteFunding(completeData, posterUrl || '');
-      console.log('=== 펀딩 생성 성공 ===');
-      console.log('응답:', result);
+      const result = await creatVoteFunding(completeData, posterUrl);
+      console.log('투표 생성 성공:', result);
 
       // 성공 alert 표시 후 홈으로 이동
       alert('투표가 성공적으로 생성되었습니다!');
       router.push('/');
     } catch (error) {
-      alert('투표 생성에 실패했습니다. 다시 시도해주세요.');
+      console.error('투표 생성 에러:', error);
+      alert(`투표 생성에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 

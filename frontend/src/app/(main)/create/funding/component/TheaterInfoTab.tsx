@@ -74,9 +74,15 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
       maxPeople: theaterData?.maxPeople,
     };
     const posterUrl = movieData?.posterUrl;
+    
+    // posterUrl이 없으면 에러 처리
+    if (!posterUrl) {
+      alert('상영물 이미지를 선택해주세요.');
+      return;
+    }
 
     try {
-      const result = await createFunding(completeData, posterUrl || '');
+      const result = await createFunding(completeData, posterUrl);
       console.log('=== 펀딩 생성 성공 ===');
       console.log('응답:', result);
       const fundingId = result.data.fundingId;
@@ -90,7 +96,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
     } catch (error) {
       console.error('=== 펀딩 생성 실패 ===');
       console.error('에러:', error);
-      alert('펀딩 생성에 실패했습니다. 다시 시도해주세요.');
+      alert(`펀딩 생성에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 
