@@ -137,64 +137,61 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex gap-12 w-full justify-center items-center">
+      <div className="flex flex-col gap-8 lg:flex-row w-full justify-center items-center">
         <div className="flex flex-col gap-12 w-full">
-          {/* 지역, 영화관, 상영관 선택 */}
-          <div className="flex gap-2 w-full">
-            {/* 지역 선택 */}
-            <div className="flex flex-col gap-2 w-full">
-              <div className="space-y-1">
-                <h4 className="h5-b text-primary">
-                  지역 선택 <span className="text-Brand1-Primary">*</span>
-                </h4>
-              </div>
-              <Select value={selectedDistrict} onValueChange={handleDistrictChange}>
-                <SelectTrigger className="w-full h-10">
-                  <SelectValue placeholder="지역을 선택해주세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  {district.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* 영화관 선택 */}
-            <div className="flex flex-col gap-2 w-full">
-              <div className="space-y-1">
-                <h4 className="h5-b text-primary">
-                  영화관 선택 <span className="text-Brand1-Primary">*</span>
-                </h4>
-              </div>
-              <Select value={selectedTheater} onValueChange={handleTheaterChange} disabled={!selectedDistrict || selectedDistrict === '' || isLoading || theaterList.length === 0}>
-                <SelectTrigger className="w-full h-10">
-                  <SelectValue
-                    placeholder={isLoading ? '로딩 중...' : !selectedDistrict ? '지역을 먼저 선택해주세요' : theaterList.length === 0 ? '해당 조건의 영화관이 없습니다' : '영화관을 선택해주세요'}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {theaterList.map((theater) => (
-                    <SelectItem key={theater.cinemaId} value={theater.cinemaId?.toString() || ''}>
-                      {theater.cinemaName || ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          {/* 지역 선택 */}
           <div className="flex flex-col gap-2 w-full">
-            {/* 대관 예정 기간 제목 */}
+            <div className="space-y-1">
+              <h4 className="h5-b text-primary">
+                지역 선택 <span className="text-Brand1-Primary">*</span>
+              </h4>
+            </div>
+            <Select value={selectedDistrict} onValueChange={handleDistrictChange}>
+              <SelectTrigger className="w-full h-10">
+                <SelectValue placeholder="지역을 선택해주세요" />
+              </SelectTrigger>
+              <SelectContent>
+                {district.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 영화관 선택 */}
+          <div className="flex flex-col gap-2 w-full">
+            <div className="space-y-1">
+              <h4 className="h5-b text-primary">
+                영화관 선택 <span className="text-Brand1-Primary">*</span>
+              </h4>
+            </div>
+            <Select value={selectedTheater} onValueChange={handleTheaterChange} disabled={!selectedDistrict || selectedDistrict === '' || isLoading || theaterList.length === 0}>
+              <SelectTrigger className="w-full h-10">
+                <SelectValue
+                  placeholder={isLoading ? '로딩 중...' : !selectedDistrict ? '지역을 먼저 선택해주세요' : theaterList.length === 0 ? '해당 조건의 영화관이 없습니다' : '영화관을 선택해주세요'}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {theaterList.map((theater) => (
+                  <SelectItem key={theater.cinemaId} value={theater.cinemaId?.toString() || ''}>
+                    {theater.cinemaName || ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 대관 예정 기간 */}
+          <div className="flex flex-col gap-2 w-full">
             <div className="space-y-1">
               <h4 className="h5-b text-primary">
                 대관 예정 기간 <span className="text-Brand1-Primary">*</span>
               </h4>
             </div>
-
-            {/* 날짜 선택 영역 */}
-            <div className="flex gap-2 w-full">
-              <div className="flex-1">
+            <div className="flex gap-3 w-full">
+              <div className="flex-1 min-w-0">
                 <CalendarDemo
                   value={selectedStartDate}
                   onChange={(date) => {
@@ -222,7 +219,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                 />
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <CalendarDemo
                   value={selectedEndDate}
                   onChange={() => {}} // 종료일은 자동 설정되므로 변경 불가
@@ -240,11 +237,11 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
       </div>
       {/* 이전 다음 바튼 */}
 
-      <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
-        <Button variant="tertiary" size="lg" className="w-[138px]" onClick={onPrev}>
+      <div className="pt-4 flex justify-center gap-2">
+        <Button variant="tertiary" size="lg" className="w-[138px] max-lg:w-full" onClick={onPrev}>
           이전
         </Button>
-        <Button type="button" variant="brand2" size="lg" className="w-[138px]" onClick={handleNext}>
+        <Button type="button" variant="brand2" size="lg" className="w-[138px] max-lg:w-full" onClick={handleNext}>
           다음
         </Button>
       </div>

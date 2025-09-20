@@ -227,7 +227,6 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   return (
     <div className="space-y-8">
       {/* 카테고리 선택 */}
-
       <div className="space-y-3">
         <div className="space-y-1">
           <h4 className="h5-b text-primary">
@@ -259,7 +258,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   const IconComponent = getIcon(category.categoryName);
                   return <IconComponent className="w-4 h-4 mr-1" />;
                 })()}
-                <h3 className="text-sm sm:text-p2-b text-Brand1-Strong">{category.categoryName}</h3>
+                <h3 className="p2-b text-Brand1-Strong">{category.categoryName}</h3>
               </div>
               <div className="w-full flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide">
                 {category.childCategories.map((item) => {
@@ -274,7 +273,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                       textSize="sm"
                       onClick={() => handleCategorySelect(item.categoryId.toString())}
                       disabled={isDisabled}
-                      className={`flex-1 rounded-[6px] text-xs ${
+                      className={`flex-1 rounded-[6px] p2-b ${
                         isSelected
                           ? 'text-Brand1-Strong border-Brand1-Strong hover:border-Brand1-Secondary'
                           : isDisabled
