@@ -22,19 +22,10 @@ public class ImageController {
     @GetMapping("/{imageName}")
     public ResponseEntity<byte[]> getImage(@PathVariable String imageName) {
         // 경로에서 실제 파일명만 추출 (cinemoa/images/banners/banner.png -> banner.png)
-        String actualImageName = extractActualImageName(imageName);
-        ImageInfo imageResponse = imageService.getImage(actualImageName);
+        ImageInfo imageResponse = imageService.getImage(imageName);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePrivate())
                 .contentType(MediaType.parseMediaType(imageResponse.getContentType()))
                 .body(imageResponse.getImageData());
-    }
-    
-    private String extractActualImageName(String imageName) {
-        // 경로에서 마지막 파일명만 추출
-        if (imageName.contains("/")) {
-            return imageName.substring(imageName.lastIndexOf("/") + 1);
-        }
-        return imageName;
     }
 }

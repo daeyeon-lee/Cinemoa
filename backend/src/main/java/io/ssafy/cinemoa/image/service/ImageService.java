@@ -47,13 +47,7 @@ public class ImageService {
             throw BadRequestException.ofInput("잘못된 파일명입니다.");
         }
 
-        // imageName에서 카테고리 경로 추출
-        String imagePath = ImageCategory.getImagePath(imageName);
-        if (imagePath == null) {
-            throw BadRequestException.ofInput("지원하지 않는 이미지 카테고리입니다.");
-        }
-
-        Path fullPath = Paths.get(imageConfig.getBase(), imagePath, imageName);
+        Path fullPath = Paths.get(imageConfig.getBase(), ImageCategory.BANNER.getImagePath(), imageName);
         try {
             return ImageInfo.of(fullPath);
         } catch (IOException e) {
