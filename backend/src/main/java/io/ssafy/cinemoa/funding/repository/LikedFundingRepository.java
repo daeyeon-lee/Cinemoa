@@ -4,7 +4,6 @@ import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.CursorRequestDto;
 import io.ssafy.cinemoa.funding.dto.TimestampCursorInfo;
 import io.ssafy.cinemoa.funding.enums.FundingState;
-import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.global.enums.ResourceCode;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.response.CursorResponse;
@@ -113,7 +112,6 @@ public class LikedFundingRepository {
      */
     private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
         String fundingType = rs.getString("funding_type");
-        FundingType type = FundingType.valueOf(fundingType);
 
         int participantCount = rs.getInt("participant_count");
         int maxPeople = rs.getInt("max_people");
@@ -152,6 +150,7 @@ public class LikedFundingRepository {
                 .participantCount(participantCount)
                 .isLiked(isLiked)
                 .favoriteCount(favoriteCount)
+                .fundingType(fundingType)
                 .build();
 
         CardTypeFundingInfoDto.BriefCinemaInfo cinema = CardTypeFundingInfoDto.BriefCinemaInfo.builder()
@@ -188,7 +187,7 @@ public class LikedFundingRepository {
                     LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
-                    LEFT JOIN funding_estimate_days fed ON fed.funding_id = f.funding_id AND f.funding_type = 'VOTE'
+                    LEFT JOIN funding_estimate_days fed ON fed.funding_id = f.funding_id
                     INNER JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
                     WHERE 1 = 1
                     """);
