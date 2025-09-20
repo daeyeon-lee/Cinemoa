@@ -146,7 +146,7 @@ export default function MyPage() {
       }
 
       // API에서 모든 데이터 가져오기 
-      const response = await getFundingProposals(user.userId, undefined, undefined, 7);
+      const response = await getFundingProposals(user.userId, undefined, undefined, 15);
       let proposalsData = response.data.content;
 
       // 클라이언트에서 타입별 필터링 (fundingType 기준)
@@ -176,6 +176,9 @@ export default function MyPage() {
   useEffect(() => {
     if (proposalType !== undefined) {
       fetchMyProposals(proposalType);
+    } else {
+      // proposalType이 undefined일 때는 전체 데이터 조회
+      fetchMyProposals();
     }
   }, [proposalType]);
 
@@ -192,8 +195,24 @@ export default function MyPage() {
         return;
       }
 
-      const response = await getParticipatedFunding(user.userId, state, undefined, 7);
-      setMyParticipated(response.data.content);
+      const response = await getParticipatedFunding(user.userId, state, undefined, 15);
+      let participatedData = response.data.content;
+
+      // 클라이언트에서 2차 필터링
+      if (state === 'ON_PROGRESS') {
+        // 진행중: ON_PROGRESS, WAITING 상태만 필터링
+        participatedData = participatedData.filter(item => 
+          item.funding.state === 'ON_PROGRESS' || item.funding.state === 'WAITING'
+        );
+      } else if (state === 'CLOSE') {
+        // 진행 완료: FAILED, SUCCESS 상태만 필터링
+        participatedData = participatedData.filter(item => 
+          item.funding.state === 'FAILED' || item.funding.state === 'SUCCESS'
+        );
+      }
+      // state === 'ALL' 또는 undefined인 경우 필터링하지 않음
+
+      setMyParticipated(participatedData);
       setHasMoreParticipated(response.data.hasNextPage);
     } catch (err) {
       console.error('내가 참여한 상영회 조회 오류:', err);
@@ -213,6 +232,9 @@ export default function MyPage() {
   useEffect(() => {
     if (participatedState !== undefined) {
       fetchMyParticipated(participatedState);
+    } else {
+      // participatedState가 undefined일 때는 전체 데이터 조회
+      fetchMyParticipated('ALL');
     }
   }, [participatedState]);
 
@@ -230,7 +252,7 @@ export default function MyPage() {
       }
 
       // API에서 데이터 가져오기 (type 파라미터 전달)
-      const response = await getLikedFunding(user.userId, type, undefined, 7);
+      const response = await getLikedFunding(user.userId, type, undefined, 15);
       let likedData = response.data?.content || [];
 
       // 클라이언트에서 추가 필터링 (price 기준으로 한 번 더 확인)
@@ -260,6 +282,9 @@ export default function MyPage() {
   useEffect(() => {
     if (likedType !== undefined) {
       fetchMyLiked(likedType);
+    } else {
+      // likedType이 undefined일 때는 전체 데이터 조회
+      fetchMyLiked();
     }
   }, [likedType]);
 
