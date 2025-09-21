@@ -11,8 +11,11 @@ import io.ssafy.cinemoa.funding.service.ExpiringFundingService;
 import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.funding.service.RecommendedFundingListService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/funding")
@@ -39,8 +43,15 @@ public class FundingController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createFunding(
-            @RequestPart(value = "bannerImg", required = false) MultipartFile image
-            , @RequestPart(value = "request") FundingCreateRequest request) {
+            @RequestPart(value = "bannerImg", required = false) MultipartFile image,
+            @RequestPart(value = "request") FundingCreateRequest request) {
+        // 요청 데이터 로깅
+        log.info("=== POST /api/funding Request Received ===");
+        log.info("Image file: {}", image != null ? image.getOriginalFilename() : "null");
+        log.info("Image size: {}", image != null ? image.getSize() : "0");
+        log.info("Image content type: {}", image != null ? image.getContentType() : "null");
+        log.info("FundingCreateRequest: {}", request);
+        log.info("====================================");
         FundingCreationResult result = fundingService.createFunding(image, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ofSuccess(result));
     }
@@ -93,6 +104,20 @@ public class FundingController {
             @RequestParam("userId") Long userId) {
 
         List<CardTypeFundingInfoDto> result = recommendedFundingListService.getRecommendedFundings(userId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<List<?>>> getFundingList(
+            @RequestParam("ids") String ids,
+            @RequestParam("userId") Long userId) {
+
+        List<Long> fundingIds = Arrays.stream(ids.split(","))
+                .map(String::trim)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+
+        List<CardTypeFundingInfoDto> result = fundingService.getFundingList(fundingIds, userId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
 
     }

@@ -8,6 +8,7 @@ import io.ssafy.cinemoa.cinema.repository.ScreenUnavailableTImeBatchRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
+import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
 import io.ssafy.cinemoa.funding.dto.FundingCreationResult;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
@@ -25,6 +26,7 @@ import io.ssafy.cinemoa.funding.event.AccountCreationRequestEvent;
 import io.ssafy.cinemoa.funding.event.FundingScoreUpdateEvent;
 import io.ssafy.cinemoa.funding.exception.SeatLockException;
 import io.ssafy.cinemoa.funding.repository.FundingEstimatedDayRepository;
+import io.ssafy.cinemoa.funding.repository.FundingListRepository;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
@@ -42,7 +44,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -112,6 +117,7 @@ public class FundingService {
     private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
     private final FundingRepository fundingRepository;
     private final FundingStatRepository statRepository;
+    private final FundingListRepository fundingListRepository;
 
     private final ScreenRepository screenRepository;
     private final CinemaRepository cinemaRepository;
@@ -361,6 +367,27 @@ public class FundingService {
 
         eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
         return response;
+    }
+
+    @Transactional
+    public List<CardTypeFundingInfoDto> getFundingList(List<Long> fundingIds, Long userId) {
+
+        // 중복 제거 및 유효성 검사
+        List<Long> uniqueIds = fundingIds.stream()
+                .distinct()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (uniqueIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 최대 10개로 제한
+        if (uniqueIds.size() > 10) {
+            throw new IllegalArgumentException("최대 10개의 fundingId만 처리 가능합니다.");
+        }
+
+        List<CardTypeFundingInfoDto> fundings = fundingListRepository.findByFundingIdIn(uniqueIds, userId);
+        return fundings;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
