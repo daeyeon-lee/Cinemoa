@@ -9,6 +9,7 @@ import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
 import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
 import io.ssafy.cinemoa.funding.service.ExpiringFundingService;
 import io.ssafy.cinemoa.funding.service.FundingService;
+import io.ssafy.cinemoa.funding.service.PopularFundingService;
 import io.ssafy.cinemoa.funding.service.RecommendedFundingListService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ public class FundingController {
 
     private final ExpiringFundingService expiringFundingService;
     private final RecommendedFundingListService recommendedFundingListService;
+    private final PopularFundingService popularFundingService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createFunding(
@@ -110,7 +112,7 @@ public class FundingController {
     @GetMapping("/list")
     public ResponseEntity<ApiResponse<List<?>>> getFundingList(
             @RequestParam("ids") String ids,
-            @RequestParam("userId") Long userId) {
+            @RequestParam(value = "userId", required = false) Long userId) {
 
         List<Long> fundingIds = Arrays.stream(ids.split(","))
                 .map(String::trim)
@@ -119,7 +121,14 @@ public class FundingController {
 
         List<CardTypeFundingInfoDto> result = fundingService.getFundingList(fundingIds, userId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
+    }
 
+    @GetMapping("/popular")
+    public ResponseEntity<ApiResponse<List<?>>> getPopularFundings(
+            @RequestParam(value = "userId", required = false) Long userId) {
+
+        List<CardTypeFundingInfoDto> result = popularFundingService.getTopPopularFundings(userId);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
     }
 
 }

@@ -2,6 +2,7 @@ package io.ssafy.cinemoa.funding.repository;
 
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.enums.FundingState;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,7 +19,7 @@ public class FundingListRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public List<CardTypeFundingInfoDto> findByFundingIdIn(List<Long> fundingIds, Long userId) {
-        String sql = """ 
+        String sql = """
                 SELECT
                     f.funding_id as funding_id,
                     f.title as title,
@@ -54,6 +55,7 @@ public class FundingListRepository {
     }
 
     private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
+        Date screenDay = rs.getDate("screen_day");
         // Funding 정보 매핑
         CardTypeFundingInfoDto.BriefFundingInfo fundingInfo = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
@@ -61,7 +63,7 @@ public class FundingListRepository {
                 .bannerUrl(rs.getString("banner_url"))
                 .state(FundingState.valueOf(rs.getString("state")))
                 .fundingEndsOn(rs.getDate("ends_on").toLocalDate())
-                .screenDate(rs.getDate("screen_day").toLocalDate())
+                .screenDate(screenDay == null ? null : screenDay.toLocalDate())
                 .videoName(rs.getString("video_name"))
                 .price(rs.getInt("price"))
                 .maxPeople(rs.getInt("max_people"))
