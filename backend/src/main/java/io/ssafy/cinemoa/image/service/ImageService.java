@@ -56,7 +56,12 @@ public class ImageService {
     }
 
     private ImageCategory extractCategory(String imageName) {
-        String type = imageName.substring(imageName.indexOf("-"));
+        int dashIndex = imageName.indexOf("-");
+        if (dashIndex == -1) {
+            throw BadRequestException.ofInput("유효하지 않은 이미지 형식입니다.");
+        }
+
+        String type = imageName.substring(0, dashIndex);
 
         ImageCategory category = ImageCategory.getCategory(type);
 
