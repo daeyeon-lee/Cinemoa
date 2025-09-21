@@ -23,11 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageService {
 
-    private final ImageConfig imageConfig;
-
-    private final Set<String> allowed = Set.of(MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, "image/webp");
-
     private static final String BASE_PATH = "https://j13a110.p.ssafy.io/api/image/";
+    private final ImageConfig imageConfig;
+    private final Set<String> allowed = Set.of(MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, "image/webp");
 
     @PostConstruct
     public void init() {
@@ -47,12 +45,26 @@ public class ImageService {
             throw BadRequestException.ofInput("잘못된 파일명입니다.");
         }
 
-        Path fullPath = Paths.get(imageConfig.getBase(), ImageCategory.BANNER.getImagePath(), imageName);
+        ImageCategory category = extractCategory(imageName);
+
+        Path fullPath = Paths.get(imageConfig.getBase(), category.getImagePath(), imageName);
         try {
             return ImageInfo.of(fullPath);
         } catch (IOException e) {
             throw InternalServerException.ofUnknown();
         }
+    }
+
+    private ImageCategory extractCategory(String imageName) {
+        String type = imageName.substring(imageName.indexOf("-"));
+
+        ImageCategory category = ImageCategory.getCategory(type);
+
+        if (category == null) {
+            throw BadRequestException.ofInput("유효하지 않은 이미지입니다.");
+        }
+
+        return category;
     }
 
     public String saveImage(MultipartFile image, ImageCategory category) {
@@ -67,7 +79,7 @@ public class ImageService {
         }
         String ext = original.substring(original.lastIndexOf('.') - 1);
 
-        String filename = UUID.randomUUID() + ext;
+        String filename = category.getPrefix() + "-" + UUID.randomUUID() + ext;
 
         Path fullPath = Paths.get(baseDir, midPath, filename);
 

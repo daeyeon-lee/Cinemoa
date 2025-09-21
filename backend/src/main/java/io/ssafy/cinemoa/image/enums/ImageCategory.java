@@ -18,7 +18,15 @@ public enum ImageCategory {
                 return category.getImagePath();
             }
         }
+        return null;
+    }
 
+    public static ImageCategory getCategory(String type) {
+        for (ImageCategory category : ImageCategory.values()) {
+            if (type.equals(category.getPrefix())) {
+                return category;
+            }
+        }
         return null;
     }
 }
