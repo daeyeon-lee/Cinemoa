@@ -38,6 +38,8 @@ import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
 import io.ssafy.cinemoa.image.enums.ImageCategory;
 import io.ssafy.cinemoa.image.service.ImageService;
+import io.ssafy.cinemoa.payment.enums.UserTransactionState;
+import io.ssafy.cinemoa.payment.repository.UserTransactionRepository;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import java.time.LocalDate;
@@ -126,6 +128,7 @@ public class FundingService {
 
     private final UserRepository userRepository;
     private final UserFavoriteRepository userFavoriteRepository;
+    private final UserTransactionRepository userTransactionRepository;
     private final RedisService redisService;
     private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
 
@@ -279,6 +282,10 @@ public class FundingService {
         Boolean isLiked = userId != null
                 && userFavoriteRepository.existsByUser_IdAndFunding_FundingId(userId, fundingId);
 
+        Boolean isParticipated = userId != null
+                && userTransactionRepository.existsByFunding_FundingIdAndUser_IdAndState(fundingId, userId,
+                UserTransactionState.SUCCESS);
+
         Screen screen = funding.getScreen();
         Cinema cinema = funding.getCinema();
         User proposer = funding.getLeader();
@@ -326,6 +333,7 @@ public class FundingService {
         FundingStatInfo statInfo = FundingStatInfo.builder()
                 .maxPeople(funding.getMaxPeople())
                 .isLiked(isLiked)
+                .isParticipated(isParticipated)
                 .participantCount(stat.getParticipantCount())
                 .likeCount(stat.getFavoriteCount())
                 .viewCount(stat.getViewCount())

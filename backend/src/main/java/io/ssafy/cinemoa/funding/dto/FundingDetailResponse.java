@@ -72,6 +72,7 @@ public class FundingDetailResponse {
         private Integer viewCount;
         private Integer likeCount;
         private Boolean isLiked;
+        private Boolean isParticipated;
     }
 
     @Data
