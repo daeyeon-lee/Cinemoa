@@ -40,12 +40,14 @@ export const useGetCinemaDetail = (cinemaId: number, features?: string[]) => {
 };
 
 // 영화관 대관 가능 시간 조회
-export const useGetReservationTime = (screenId: number, targetDate: Date) => {
-  // Date 객체를 YYYY-MM-DD 문자열로 변환하여 queryKey에 사용
-  const dateString = formatDateToISOString(targetDate);
+export const useGetReservationTime = (screenId: number, selectedDate: string) => {
+  // selectedDate가 있을 때만 Date 객체로 변환
+  const targetDate = selectedDate ? new Date(selectedDate) : null;
+  const dateString = selectedDate || '';
+  
   return useQuery({
     queryKey: ['screen', 'reservationTime', screenId, dateString],
-    queryFn: () => getReservationTime(screenId, targetDate),
-    enabled: !!screenId && screenId > 0 && !!targetDate, // screenId와 targetDate가 유효할 때만 실행
+    queryFn: () => getReservationTime(screenId, targetDate!),
+    enabled: !!screenId && screenId > 0 && !!selectedDate && !!targetDate, // 모든 조건이 만족될 때만 실행
   });
 };

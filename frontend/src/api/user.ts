@@ -1,6 +1,6 @@
-import { UpdateUserInfoRequest, UpdateUserInfoResponse } from '@/types/user';
+import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
-import type { ApiSearchResponse } from '@/types/searchApi';
+import type { ApiSearchResponse, ApiRecommendationResponse } from '@/types/searchApi';
 
 // 사용자 추가 정보 입력 API
 export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserInfoRequest): Promise<UpdateUserInfoResponse> => {
@@ -38,13 +38,39 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
   }
 };
 
+// 환불계좌 변경 API
+export const updateRefundAccount = async (userId: number, data: UpdateRefundAccountRequest): Promise<UpdateRefundAccountResponse> => {
+  try {
+    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}/refund-account`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 세션 기반 인증을 위해 쿠키 포함
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('환불계좌 변경 API 에러:', response.status, errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const result: UpdateRefundAccountResponse = await response.json();
+    return result;
+  } catch (error) {
+    console.error('환불계좌 변경 실패:', error);
+    throw error;
+  }
+};
+
 // 추천 상영회 조회 API
 export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchResponse> => {
   try {
-    // 로그인 상태에 따라 API 경로 분기
-    const url = userId
-      ? `${process.env.NEXT_PUBLIC_BASE_URL}user/${userId}/recommended-funding`
-      : `${process.env.NEXT_PUBLIC_BASE_URL}user/recommended-funding`;
+    // 새로운 API 경로 사용 - userId는 쿼리 파라미터로 전달
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/recommendation`;
+    console.log('userId:', userId);
+    const url = userId ? `${baseUrl}?userId=${userId}` : baseUrl;
 
     console.log('[추천api] 요청:', url);
 
@@ -58,23 +84,26 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
 
     if (!response.ok) {
       console.warn('[추천api] 실패, search fallback 사용');
-      // 데이터가 없으면 search로 8개 조회
-      return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 8 });
+      // 데이터가 없으면 search로 8개 조회 (최신순)
+      return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
     }
 
-    const result: ApiSearchResponse = await response.json();
+    const result: ApiRecommendationResponse = await response.json();
 
     // 데이터가 비어있으면 fallback
-    if (!result.data?.content || result.data.content.length === 0) {
+    if (!result.data || !result.data.content || result.data.content.length === 0) {
       console.warn('[추천api] 빈 데이터, search fallback 사용');
-      return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 8 });
+      return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
     }
 
     console.log('[추천api] 성공:', `${result.data.content.length}개 조회`);
+    
+    // ApiRecommendationResponse는 이제 ApiSearchResponse와 동일한 구조
+    console.log('추천 api result:', result);
     return result;
   } catch (error) {
     console.error('[추천api] 오류, search fallback 사용:', error);
-    return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 8 });
+    return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
   }
 };
 

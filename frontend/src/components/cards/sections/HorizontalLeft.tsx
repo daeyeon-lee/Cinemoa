@@ -41,9 +41,11 @@ const HorizontalLeft: React.FC<HorizontalLeftProps> = ({
               ? formatLocation(data.cinema.city, data.cinema.district)
               : `${data.cinema.city} ${data.cinema.district}`}
           </span>
-          <span className="px-2 py-1 bg-slate-600 text-slate-300 text-xs rounded">
-            {formatDate ? formatDate(data.funding.screenDate) : data.funding.screenDate}
-          </span>
+          {data.funding.screenDate && (
+            <span className="px-2 py-1 bg-slate-600 text-slate-300 text-xs rounded">
+              {formatDate ? formatDate(data.funding.screenDate) : data.funding.screenDate}
+            </span>
+          )}
         </div>
 
         {/* 영화관 이름 */}

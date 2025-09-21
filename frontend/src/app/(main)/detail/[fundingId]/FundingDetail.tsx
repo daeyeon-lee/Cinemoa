@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useFundingDetail } from "@/hooks/queries";
 import { FundingDetailCard } from "@/app/(main)/detail/[fundingId]/components/FundingDetailCard"
 import FundingDetailInfo from "@/app/(main)/detail/[fundingId]/components/FundingDetailInfo"
+import { FundingDetailProvider } from "@/contexts/FundingDetailContext"
 
 interface FundingDetailProps {
   fundingId: string;                           // 🆕 URL에서 받은 fundingId
@@ -73,17 +74,17 @@ const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId }) => {
   }
 
   return (
-    <div className="flex flex-col items-stretch w-full max-w-[1200px] min-w-0">
-      {/* 상단 카드 */}
-      <FundingDetailCard
-        data={detailData}
-        fundingId={detailData.funding.fundingId} // 🆕 React Query용 ID 전달
-        userId={userId}
-      />
+    <FundingDetailProvider data={detailData} userId={userId}>
+      <div className="flex flex-col items-stretch w-full max-w-[1200px] min-w-0">
+        {/* 상단 카드 */}
+        <FundingDetailCard
+          fundingId={detailData.funding.fundingId} // 🆕 React Query용 ID 전달
+        />
 
-      {/* 상세 정보 */}
-      <FundingDetailInfo data={detailData} />
-    </div>
+        {/* 상세 정보 */}
+        <FundingDetailInfo />
+      </div>
+    </FundingDetailProvider>
   );
 };
 

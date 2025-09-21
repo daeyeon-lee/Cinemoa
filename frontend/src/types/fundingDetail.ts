@@ -61,7 +61,7 @@ export type FundingDetailData = {
     screenId: number;
     screenName: string;
     isImax: boolean;
-    isScreenX: boolean;
+    isScreenx: boolean;
     is4dx: boolean;
     isDolby: boolean;
     isRecliner: boolean;

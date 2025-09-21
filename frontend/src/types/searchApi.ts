@@ -93,6 +93,20 @@ export interface ApiSearchResponse {
   state: ApiState;
 }
 
+/**
+ * /funding/recommendation API 응답
+ */
+export interface ApiRecommendationResponse {
+  data: {
+    content: ApiSearchItem[];
+    nextCursor: string | null;
+    hasNext: boolean;
+  };
+  code: number;
+  message: string;
+  state: ApiState;
+}
+
 // ========================================
 // UI 변환 타입 (필요한 경우)
 // ========================================

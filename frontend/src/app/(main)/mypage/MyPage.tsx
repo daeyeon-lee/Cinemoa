@@ -11,6 +11,8 @@ import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } fro
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 import CardManagement from '@/app/(main)/mypage/component/CardManagement';
+import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
+import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -66,6 +68,12 @@ export default function MyPage() {
 
   // 카드 관리 모달 상태
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+
+  // 환불 계좌 수정 모달 상태
+  const [isRefundAccountModalOpen, setIsRefundAccountModalOpen] = useState(false);
+
+  // 프로필 수정 모달 상태
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
   // const [imageurl,setImageurl] = useState<string>('');
 
@@ -145,11 +153,11 @@ export default function MyPage() {
         return;
       }
 
-      // API에서 모든 데이터 가져오기 
-      const response = await getFundingProposals(user.userId, undefined, undefined, 7);
+      // API에서 데이터 가져오기 (type 파라미터 전달)
+      const response = await getFundingProposals(user.userId, type, undefined, 15);
       let proposalsData = response.data.content;
 
-      // 클라이언트에서 타입별 필터링 (fundingType 기준)
+      // 클라이언트에서 추가 필터링 (fundingType 기준으로 한 번 더 확인)
       if (type === 'funding') {
         proposalsData = proposalsData.filter(item => item.funding.fundingType === 'FUNDING');
       } else if (type === 'vote') {
@@ -176,6 +184,9 @@ export default function MyPage() {
   useEffect(() => {
     if (proposalType !== undefined) {
       fetchMyProposals(proposalType);
+    } else {
+      // proposalType이 undefined일 때는 전체 데이터 조회
+      fetchMyProposals();
     }
   }, [proposalType]);
 
@@ -192,8 +203,24 @@ export default function MyPage() {
         return;
       }
 
-      const response = await getParticipatedFunding(user.userId, state, undefined, 7);
-      setMyParticipated(response.data.content);
+      const response = await getParticipatedFunding(user.userId, state, undefined, 15);
+      let participatedData = response.data.content;
+
+      // 클라이언트에서 2차 필터링
+      if (state === 'ON_PROGRESS') {
+        // 진행중: ON_PROGRESS, WAITING 상태만 필터링
+        participatedData = participatedData.filter(item => 
+          item.funding.state === 'ON_PROGRESS' || item.funding.state === 'WAITING'
+        );
+      } else if (state === 'CLOSE') {
+        // 진행 완료: FAILED, SUCCESS 상태만 필터링
+        participatedData = participatedData.filter(item => 
+          item.funding.state === 'FAILED' || item.funding.state === 'SUCCESS'
+        );
+      }
+      // state === 'ALL' 또는 undefined인 경우 필터링하지 않음
+
+      setMyParticipated(participatedData);
       setHasMoreParticipated(response.data.hasNextPage);
     } catch (err) {
       console.error('내가 참여한 상영회 조회 오류:', err);
@@ -213,6 +240,9 @@ export default function MyPage() {
   useEffect(() => {
     if (participatedState !== undefined) {
       fetchMyParticipated(participatedState);
+    } else {
+      // participatedState가 undefined일 때는 전체 데이터 조회
+      fetchMyParticipated('ALL');
     }
   }, [participatedState]);
 
@@ -230,14 +260,14 @@ export default function MyPage() {
       }
 
       // API에서 데이터 가져오기 (type 파라미터 전달)
-      const response = await getLikedFunding(user.userId, type, undefined, 7);
+      const response = await getLikedFunding(user.userId, type, undefined, 15);
       let likedData = response.data?.content || [];
 
       // 클라이언트에서 추가 필터링 (price 기준으로 한 번 더 확인)
       if (type === 'funding') {
         likedData = likedData.filter(item => item.funding.price > 0);
       } else if (type === 'vote') {
-        likedData = likedData.filter(item => item.funding.price === 0);
+        likedData = likedData.filter(item => item.funding.price <= 0);
       }
 
       setMyLiked(likedData);
@@ -260,10 +290,14 @@ export default function MyPage() {
   useEffect(() => {
     if (likedType !== undefined) {
       fetchMyLiked(likedType);
+    } else {
+      // likedType이 undefined일 때는 전체 데이터 조회
+      fetchMyLiked();
     }
   }, [likedType]);
 
   // API 데이터를 ListCardData 형식으로 변환
+  // 내가 제안한 상영회 데이터를 ListCardData 형식으로 변환
   const convertToCardData = (proposal: FundingProposal): ListCardData => {
     return {
       funding: {
@@ -274,6 +308,8 @@ export default function MyPage() {
         progressRate: proposal.funding.progressRate,
         fundingEndsOn: proposal.funding.fundingEndsOn,
         screenDate: proposal.funding.screenDate,
+        screenMinDate: proposal.funding.screenMinDate,
+        screenMaxDate: proposal.funding.screenMaxDate,
         price: proposal.funding.price,
         maxPeople: proposal.funding.maxPeople,
         participantCount: proposal.funding.participantCount,
@@ -301,6 +337,8 @@ export default function MyPage() {
         progressRate: participated.funding.progressRate,
         fundingEndsOn: participated.funding.fundingEndsOn,
         screenDate: participated.funding.screenDate,
+        screenMinDate: participated.funding.screenMinDate,
+        screenMaxDate: participated.funding.screenMaxDate,
         price: participated.funding.price,
         maxPeople: participated.funding.maxPeople,
         participantCount: participated.funding.participantCount,
@@ -331,6 +369,8 @@ export default function MyPage() {
         progressRate: liked.funding.progressRate,
         fundingEndsOn: liked.funding.fundingEndsOn,
         screenDate: liked.funding.screenDate,
+        screenMinDate: liked.funding.screenMinDate,
+        screenMaxDate: liked.funding.screenMaxDate,
         price: liked.funding.price,
         maxPeople: liked.funding.maxPeople,
         participantCount: liked.funding.participantCount,
@@ -409,13 +449,14 @@ export default function MyPage() {
                 <Avatar src={userInfo?.profileImgUrl} size={72} />
                 <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
                   <div className="text-slate-50 text-2xl font-bold leading-loose">
-                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}, 안녕하세요`}
+                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
                   </div>
                   <div className="h-8 flex justify-start items-center gap-[14px]">
                     <Button
                       variant="secondary"
                       size="sm"
                       className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                      onClick={() => setIsRefundAccountModalOpen(true)}
                     >
                       환불 계좌 수정
                     </Button>
@@ -435,8 +476,9 @@ export default function MyPage() {
               variant="secondary"
               size="sm"
               className="w-28 px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+              onClick={() => setIsEditProfileModalOpen(true)}
             >
-              프로필 관리
+              프로필 수정
             </Button>
           </div>
 
@@ -446,7 +488,7 @@ export default function MyPage() {
             <div className="flex flex-col flex-1 justify-start items-start gap-2">
               <div className="w-full flex justify-between items-center">
                 <div className="text-slate-50 text-2xl font-bold leading-loose">
-                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
+                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}
                 </div>
                 {/* <Button
                   variant="secondary"
@@ -471,6 +513,7 @@ export default function MyPage() {
                   variant="secondary"
                   size="sm"
                   className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                  onClick={() => setIsRefundAccountModalOpen(true)}
                 >
                   환불 계좌 수정
                 </Button>
@@ -501,7 +544,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 제안한 상영회</h2>
               {hasMoreProposals && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/proposals')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
@@ -584,7 +627,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 참여한 상영회</h2>
               {hasMoreParticipated && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/participated')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
@@ -667,7 +710,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 보고 싶은 상영회</h2>
               {hasMoreLiked && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/liked')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
@@ -750,6 +793,19 @@ export default function MyPage() {
       <CardManagement 
         isOpen={isCardModalOpen} 
         onClose={() => setIsCardModalOpen(false)} 
+      />
+
+      {/* 환불 계좌 수정 모달 */}
+      <RefundAccountModal
+        isOpen={isRefundAccountModalOpen}
+        onClose={() => setIsRefundAccountModalOpen(false)}
+      />
+
+      {/* 프로필 수정 모달 */}
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => setIsEditProfileModalOpen(false)}
+        currentNickname={userInfo?.nickname}
       />
     </div>
   );

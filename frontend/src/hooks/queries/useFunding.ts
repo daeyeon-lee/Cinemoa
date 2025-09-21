@@ -14,15 +14,6 @@ import { getFundingDetail } from '@/api/fundingDetail';
 import { addFundingLike, deleteFundingLike } from '@/api/fundingActions'; // ✅ 분리된 API 불러오기
 import type { ApiResponse, DetailData } from '@/types/fundingDetail';
 
-/*
-🚧 임시 주석 처리: 목록 조회 훅 (API 1번: 리스트조회)
-리스트 조회는 다른 팀원이 작업 중이므로 Detail 완료 후 연동 예정
-
-// 목록 조회 훅 (API 1번: 리스트조회 → userId, isLiked, likeCount 추출, isParticipated 없음)
-export function useFundingList(params: SearchParams = {}) {
-  ...
-}
-*/
 
 // 상세 조회 훅 (API 2번: 상세조회 → userId, isLiked, likeCount, isParticipated 추출)
 export function useFundingDetail({ fundingId, userId }: { fundingId: string; userId?: string }) {

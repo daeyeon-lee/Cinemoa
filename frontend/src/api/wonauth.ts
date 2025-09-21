@@ -23,7 +23,7 @@ export const startWonauth = async (data: WonauthStartRequest): Promise<WonauthSt
 
     const result: WonauthStartResponse = await response.json();
     console.log('=== 1원 인증 요청 성공 ===');
-    console.log('응답 데이터:', result);
+    // console.log('응답 데이터:', result);
 
     return result;
   } catch (error) {
@@ -58,7 +58,7 @@ export const verifyWonauth = async (data: WonauthVerifyRequest): Promise<Wonauth
 
     const result: WonauthVerifyResponse = await response.json();
     console.log('=== 1원 인증번호 검증 성공 ===');
-    console.log('응답 데이터:', result);
+    // console.log('응답 데이터:', result);
 
     return result;
   } catch (error) {

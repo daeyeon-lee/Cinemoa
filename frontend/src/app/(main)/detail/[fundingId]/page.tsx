@@ -4,9 +4,8 @@ import { FundingDetail } from '@/app/(main)/detail/[fundingId]/FundingDetail';
 /**
  * 펀딩/투표 상세 페이지 (React Query 기반)
  * 
- * 기존 SSR 방식에서 React Query 방식으로 변경:
- * - 서버에서 직접 데이터 fetch → 클라이언트에서 React Query 사용
- * - 기존 컴포넌트 구조는 그대로 유지
+ * 일단 펀딩만 랜더하도록 구현
+ * 추후 펀딩/투표 분기 처리 하도록 수정 필요.
  */
 export default async function DetailPage({
   params,        // URL 파라미터 (예: /detail/123 → { fundingId: '123' })
