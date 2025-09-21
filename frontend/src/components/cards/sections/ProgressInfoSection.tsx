@@ -2,24 +2,20 @@ import React from 'react';
 import { StatItem } from '../primitives/StatItem';
 import { Progress } from '../primitives/Progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFundingDetail } from '@/contexts/FundingDetailContext';
 
-type ProgressInfoSectionProps = {
-  participantCount: number;
-  likeCount: number;
-  endDate: string;
-  progressRate: number;   // ✅ 항상 0~100 정수
-  maxPeople: number;
-  loadingState?: 'ready' | 'loading';
-};
+type ProgressInfoSectionProps = {};
 
-const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
-  participantCount,
-  likeCount,
-  endDate,
-  progressRate,
-  maxPeople,
-  loadingState = 'ready',
-}) => {
+const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = () => {
+  // Context에서 데이터 가져오기
+  const { data } = useFundingDetail();
+  const { funding, stat } = data;
+  
+  const participantCount = stat.participantCount;
+  const likeCount = stat.likeCount;
+  const endDate = funding.fundingEndsOn;
+  const progressRate = funding.progressRate;
+  const maxPeople = stat.maxPeople;
   const calculateDaysLeft = (endDateString: string): number => {
     const endDateObj = new Date(endDateString);
     const now = new Date();
@@ -30,23 +26,6 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = ({
 
   const daysLeft = calculateDaysLeft(endDate);
 
-  if (loadingState === 'loading') {
-    return (
-      <div className="w-full min-w-0 flex flex-col gap-3.5">
-        <div className="w-full flex items-center justify-between">
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="h-7 w-24" />
-        </div>
-        <div className="w-full min-w-0 flex flex-col gap-1.5">
-          <Skeleton className="h-2.5 rounded-full w-full" />
-          <div className="w-full flex items-start justify-between">
-            <Skeleton className="h-7 w-12" />
-            <Skeleton className="h-4 w-20" />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full min-w-0 flex flex-col gap-3.5">

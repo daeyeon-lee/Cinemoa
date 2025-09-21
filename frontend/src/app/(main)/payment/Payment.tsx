@@ -6,17 +6,52 @@ import { Input } from '@/components/ui/input';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import SuccessCheckIcon from '@/component/icon/success_check_icon';
 import { validateAndFormatExpiryDate, validateBirthDate, validateAllPaymentFields } from '@/utils/validation';
+import { formatTime, formatKoreanDate } from '@/utils/dateUtils';
+import { createPayment } from '@/api/payment';
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'next/navigation';
+
 
 interface PaymentProps {
   fundingId?: number;
   userId?: string;
   amount?: number;
+  title?: string;
+  videoName?: string;
+  fundingEndsOn?: string;
+  screenStartsOn?: number;
+  screenEndsOn?: number;
+  cinemaName?: string;
+  screenName?: string;
+  screenFeatures?: {
+    isDolby?: boolean;
+    isImax?: boolean;
+    isScreenx?: boolean;
+    is4dx?: boolean;
+    isRecliner?: boolean;
+  };
 }
 
-export default function Payment({ fundingId, userId, amount }: PaymentProps) {
+export default function Payment({ 
+  fundingId, 
+  userId, 
+  amount, 
+  title, 
+  videoName, 
+  fundingEndsOn, 
+  screenStartsOn, 
+  screenEndsOn, 
+  cinemaName, 
+  screenName,
+  screenFeatures 
+}: PaymentProps) {
+  const router = useRouter();
+  const { user } = useAuthStore();
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [showFailureModal, setShowFailureModal] = useState(false);
+  const [paymentError, setPaymentError] = useState<string>('');
 
   // 결제 정보 입력 상태 관리
   const [paymentData, setPaymentData] = useState({
@@ -62,10 +97,50 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
     setCurrentStep('step2');
   };
 
-  // step3 이동
-  const handleNextToStep3 = () => {
+  // step3 이동 (결제 처리)
+  const handleNextToStep3 = async () => {
     if (!isAllFieldsCompleted()) return;
-    setCurrentStep('step3');
+    
+    console.log('=== Payment step2 제출 시작 ===');
+    console.log('현재 paymentData:', paymentData);
+    console.log('fundingId:', fundingId);
+    console.log('amount:', amount);
+    console.log('============================');
+
+    setIsLoading(true);
+    try {
+      // 카드 번호 합치기
+      const fullCardNumber = `${paymentData.cardNumber1}${paymentData.cardNumber2}${paymentData.cardNumber3}${paymentData.cardNumber4}`;
+
+      const paymentParams = {
+        userId: user?.userId || 0,
+        fundingId: fundingId || 0,
+        cardNumber: fullCardNumber,
+        cardCvc: paymentData.cvc,
+        amount: amount || 0,
+      };
+
+      console.log('=== Payment API 요청 시작 ===');
+      console.log('요청 데이터:', paymentParams);
+
+      const result = await createPayment(paymentParams);
+
+      console.log('=== Payment API 요청 성공 ===');
+      console.log('응답:', result);
+      
+      // 성공 시 step3로 이동
+      setCurrentStep('step3');
+      setPaymentCompleted(true);
+    } catch (error) {
+      console.error('=== Payment API 요청 실패 ===');
+      console.error('에러:', error);
+      
+      // 실패 시 실패 모달 표시
+      setPaymentError(error instanceof Error ? error.message : '결제에 실패했습니다.');
+      setShowFailureModal(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // step3에서 결제 처리
@@ -109,9 +184,17 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
   //   setCurrentStep('step2');
   // };
 
-  // 최종 제출
-  const handleConfirmComplete = () => {
+  // 실패 모달에서 다시 시도
+  const handleRetry = () => {
+    setShowFailureModal(false);
+    setPaymentError('');
+    // step2에 머물러서 다시 시도 가능
+  };
+
+  // 성공 모달에서 확인
+  const handleSuccess = () => {
     resetAllStates();
+    router.push(`/detail/${fundingId}`);
   };
 
   // 모든 상태를 초기화하는 함수
@@ -119,6 +202,8 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
     setCurrentStep('step1'); // 첫 번째 단계로 리셋
     setIsLoading(false); // 로딩 상태 리셋
     setPaymentCompleted(false); // 결제 완료 상태 리셋
+    setShowFailureModal(false); // 실패 모달 리셋
+    setPaymentError(''); // 에러 메시지 리셋
     setPaymentData({
       // 결제 데이터 리셋
       cardNumber1: '',
@@ -133,12 +218,12 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
     });
   };
 
-  // step3에 진입하면 자동으로 결제 처리 시작
-  useEffect(() => {
-    if (currentStep === 'step3' && !paymentCompleted && !isLoading) {
-      processPayment();
-    }
-  }, [currentStep]);
+  // step3에 진입하면 자동으로 결제 처리 시작 (이제 step2에서 결제 완료하므로 제거)
+  // useEffect(() => {
+  //   if (currentStep === 'step3' && !paymentCompleted && !isLoading) {
+  //     processPayment();
+  //   }
+  // }, [currentStep]);
 
   const renderContent = () => {
     // 1단계 : 결제 내역 확인 단계
@@ -152,21 +237,31 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
           <div className="w-full flex flex-col gap-6">
             <div className="flex flex-col">
               <div className="h5-b text-primary leading-7">펀딩 제목</div>
-              <div className="p1 text-secondary leading-normal">케데헌 같이 보실 분 영등포로 보여라~</div>
+              <div className="p1 text-secondary leading-normal">{title || '펀딩 제목'}</div>
             </div>
 
             <div className="w-full bg-BG-2 py-4 rounded-[12px] text-center flex-col items-start">
-              <div className="h5-b text-primary mb-2">케이팝 데몬 헌터스</div>
-              <div className="p1 text-primary">CGV 강남 2관 Dolby Atmos</div>
-              <div className="p2 text-tertiary">2025.10.19 (일) 14:00 ~ 18:00</div>
+              <div className="h5-b text-primary mb-2">{videoName || '영화 제목'}</div>
+              <div className="p1 text-primary">
+                {cinemaName || '영화관'} {screenName || '상영관'}
+                {screenFeatures?.isDolby ? " | Dolby Atmos" : ""}
+                {screenFeatures?.isImax ? " | IMAX" : ""}
+                {screenFeatures?.isScreenx ? " | ScreenX" : ""}
+                {screenFeatures?.is4dx ? " | 4DX" : ""}
+                {screenFeatures?.isRecliner ? " | 리클라이너" : ""}
+              </div>
+              <div className="p2 text-tertiary">
+                {fundingEndsOn ? formatKoreanDate(fundingEndsOn) : '상영일'} 
+                {screenStartsOn && screenEndsOn ? ` ${formatTime(screenStartsOn)} ~ ${formatTime(screenEndsOn)}` : ' 시간'}
+              </div>
             </div>
 
             <div className="w-full flex justify-between items-center">
               <div className="h5-b text-primary">결제 금액</div>
-              <div className="h4-b text-primary">20,000원</div>
+              <div className="h4-b text-primary">{amount ? amount.toLocaleString() : '0'}원</div>
             </div>
           </div>
-          <Button variant="brand1" size="lg" className="w-full" onClick={handleNextToStep2}>
+          <Button variant="brand1" size="lg" textSize="lg" className="w-full" onClick={handleNextToStep2}>
             결제하러 가기
           </Button>
         </>
@@ -175,6 +270,25 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
 
     // 2단계 : 결제 정보 입력 단계
     if (currentStep === 'step2') {
+      // 로딩 중일 때
+      if (isLoading) {
+        return (
+          <>
+            <DialogHeader className="self-stretch" onClose={resetAllStates}>
+              <DialogTitle>결제 처리 중</DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="sr-only">결제 처리가 진행 중입니다. 잠시만 기다려주세요.</DialogDescription>
+            <div className="w-full flex flex-col items-center gap-4 py-8">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-subtle border-t-transparent"></div>
+              <div className="text-center mt-4">
+                <div className="h5-b text-primary">결제 처리중입니다</div>
+                <div className="p2 text-tertiary">잠시만 기다려주세요</div>
+              </div>
+            </div>
+          </>
+        );
+      }
+
       return (
         <>
           <DialogHeader className="self-stretch" onClose={resetAllStates}>
@@ -303,62 +417,72 @@ export default function Payment({ fundingId, userId, amount }: PaymentProps) {
               onClick={handleNextToStep3}
               disabled={!isAllFieldsCompleted()}
             >
-              다음
+              결제하기
             </Button>
           </div>
         </>
       );
     }
 
-    // 3단계 : 결제 처리 및 완료 단계
+    // 3단계 : 결제 완료 단계
     if (currentStep === 'step3') {
-      if (isLoading) {
-        // 로딩 중 상태
-        return (
-          <>
-            <DialogDescription className="sr-only">결제 처리가 진행 중입니다. 잠시만 기다려주세요.</DialogDescription>
-            <div className="w-full flex flex-col items-center gap-4 py-8">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-subtle border-t-transparent"></div>
-              <div className="text-center mt-4">
-                <div className="h5-b text-primary">결제 처리중입니다</div>
-                <div className="p2 text-tertiary">잠시만 기다려주세요</div>
-              </div>
-            </div>
-          </>
-        );
-      } else if (paymentCompleted) {
-        // 결제 완료 상태
-        return (
-          <>
-            <DialogDescription className="sr-only">결제가 성공적으로 완료되었습니다.</DialogDescription>
-            <div className="w-full flex flex-col items-center">
-              <SuccessCheckIcon width={72} height={72} />
+      // 결제 완료 상태
+      return (
+        <>
+          <DialogDescription className="sr-only">결제가 성공적으로 완료되었습니다.</DialogDescription>
+          <div className="w-full flex flex-col items-center">
+            <SuccessCheckIcon width={72} height={72} />
 
-              <div className="text-center flex flex-col">
-                <div>
-                  <div className="h5-b text-primary mb-2">결제가 완료되었습니다!</div>
-                  <div className="p2 text-tertiary">결제 정보는 마이페이지 &gt; 결제내역에서 확인하실 수 있습니다.</div>
-                </div>
+            <div className="text-center flex flex-col">
+              <div>
+                <div className="h5-b text-primary mb-2">결제가 완료되었습니다!</div>
+                <div className="p2 text-tertiary">결제 정보는 마이페이지 &gt; 결제내역에서 확인하실 수 있습니다.</div>
               </div>
             </div>
 
-            {/* <div className="w-full flex gap-4">
-              <Button variant="secondary" size="lg" className="w-full" onClick={handleBackToStep2}>
-                이전
-              </Button> */}
-
-            <Button variant="brand1" size="lg" className="w-full" onClick={handleConfirmComplete}>
+            <Button variant="brand1" size="lg" className="w-full" onClick={handleSuccess}>
               확인
             </Button>
-          </>
-        );
-      }
+          </div>
+        </>
+      );
     }
   };
 
   return (
-    <DialogContent onPointerDownOutside={resetAllStates} onEscapeKeyDown={resetAllStates}>
-      {renderContent()}
-    </DialogContent>
+    <>
+      <DialogContent onPointerDownOutside={resetAllStates} onEscapeKeyDown={resetAllStates}>
+        {renderContent()}
+      </DialogContent>
+
+      {/* 실패 모달 */}
+      {showFailureModal && (
+        <DialogContent onPointerDownOutside={handleRetry} onEscapeKeyDown={handleRetry}>
+          <DialogHeader>
+            <DialogTitle>결제 실패</DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="sr-only">결제 처리 중 오류가 발생했습니다.</DialogDescription>
+          <div className="w-full flex flex-col items-center gap-4 py-8">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <div className="text-center">
+              <div className="h5-b text-primary mb-2">결제에 실패했습니다</div>
+              <div className="p2 text-tertiary">{paymentError}</div>
+            </div>
+            <div className="w-full flex gap-3">
+              <Button variant="tertiary" size="lg" className="flex-1" onClick={handleRetry}>
+                다시 시도
+              </Button>
+              <Button variant="brand1" size="lg" className="flex-1" onClick={resetAllStates}>
+                닫기
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      )}
+    </>
   );
 }

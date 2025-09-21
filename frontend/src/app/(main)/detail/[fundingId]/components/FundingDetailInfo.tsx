@@ -11,27 +11,14 @@ import { Media } from "../../../../../components/cards/primitives/Media";
 import KakaoMap from "@/components/maps/KakaoMap"; 
 import { Calendar as CalendarIcon, Clock as TimeIcon, MapPin as LocationIcon } from "lucide-react"; 
 
-import type { FundingDetailData } from '@/types/fundingDetail';
+import { useFundingDetail } from '@/contexts/FundingDetailContext';
+import { formatTime, formatKoreanDate } from '@/utils/dateUtils';
 type TabId = 'funding-info' | 'movie-info' | 'theater-info' | 'refund-info';
 
-
-// ⛳️ 간단 유틸: 24시간 정수를 "HH:MM" 포맷으로
-const formatTime = (h: number) => String(h).padStart(2, "0") + ":00"; // ✅ 상영 시작/종료 시간이 정수(예: 14)로 온다고 가정
-
-// ⛳️ 간단 유틸: ISO 문자열을 "YYYY년 MM월 DD일 (요일)"로
-const formatKoreanDate = (iso: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const day = days[d.getDay()];
-  return `${y}년 ${m}월 ${dd}일 (${day})`;
-};
-
 // 🟢 FundingDetailInfo: 상세 정보 섹션 (탭/스크롤 내비 + 소개/상영물/영화관/환불)
-export default function FundingDetailInfo({ data }: { data: FundingDetailData }) {
+export default function FundingDetailInfo() {
+  // Context에서 데이터 가져오기
+  const { data } = useFundingDetail();
   // ✅ 상단 버튼(active 상태) 관리
   const [activeButton, setActiveButton] = useState("funding-info");
 
@@ -191,7 +178,7 @@ export default function FundingDetailInfo({ data }: { data: FundingDetailData })
                   {screen?.screenName ? `${screen.screenName}` : ""}
                   {screen?.isDolby ? " | Dolby Atmos" : ""}
                   {screen?.isImax ? " | IMAX" : ""}
-                  {screen?.isScreenX ? " | ScreenX" : ""}
+                  {screen?.isScreenx ? " | ScreenX" : ""}
                   {screen?.is4dx ? " | 4DX" : ""}
                   {screen?.isRecliner ? " | 리클라이너" : ""}
                 </p>

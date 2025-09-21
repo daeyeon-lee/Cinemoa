@@ -6,31 +6,28 @@ import Payment from '@/app/(main)/payment/Payment';               // 결제 모�
 import { HeartIcon } from '@/component/icon/heartIcon';           // 하트 아이콘
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요 토글)
 import { useAuthStore } from '@/stores/authStore';                // 로그인 사용자 상태
+import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingDetailContext';
 
 // ✅ 펀딩 전용 액션 섹션 Props: 최소한의 정보만 전달
 type ActionSectionProps = {
   fundingId: number;                         // 필수: 어떤 펀딩인지 식별 (캐시 Key)
-  userId?: string;                          // 로그인 사용자 ID
-  price: number;                             // 필수: 1인당 결제 금액
-  loadingState?: 'ready' | 'loading';        // 선택: 상위에서 강제 로딩 표시가 필요할 때
 };
 
 const ActionSection: React.FC<ActionSectionProps> = ({
   fundingId,
-  userId: propUserId, // 이름 바꿔줌 (prop에서 받은 userId)
-  price,
-  loadingState = 'ready',
 }) => {
+  // Context에서 데이터 가져오기
+  const { data: contextData, userId: contextUserId } = useFundingDetailContext();
   const { user } = useAuthStore();
   const storeUserId = user?.userId?.toString();
 
-  // ✅ props → store 순으로 fallback
-  const userId = propUserId || storeUserId;
+  // ✅ context → store 순으로 fallback
+  const userId = contextUserId || storeUserId;
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
 
-  // 상세데이터 캐시 조회
+  // 상세데이터 캐시 조회 (React Query로 최신 상태 유지)
   const { data: detailData } = useFundingDetail({
     fundingId: fundingId.toString(),
     userId,
@@ -48,6 +45,9 @@ const ActionSection: React.FC<ActionSectionProps> = ({
     isParticipated = detailData.stat.isParticipated ?? false;
   }
   
+  // Context에서 price 가져오기
+  const price = contextData.funding.price;
+  
 
   // ✅ 좋아요 버튼 클릭: 미로그인 방지 + 낙관적 업데이트
   const handleLikeClick = () => {
@@ -62,34 +62,13 @@ const ActionSection: React.FC<ActionSectionProps> = ({
     });
   };
 
-  // ✅ 로딩 스켈레톤(상위에서 강제 로딩을 지정한 경우)
-  if (loadingState === 'loading') {
-    return (
-      <div className="flex flex-col mt-5 gap-4">
-        <div className="inline-flex justify-between items-center">
-          <Skeleton className="h-4 w-12" />                        {/* '1인당' 자리 */}
-          <Skeleton className="h-5 w-16" />                        {/* 금액 자리 */}
-        </div>
-        <div className="inline-flex gap-2">
-          <Skeleton className="h-10 w-28" />                       {/* 좋아요 버튼 */}
-          <Skeleton className="h-10 flex-1" />                     {/* 참여하기 버튼 */}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col pt-5 border-t border-slate-600 gap-4">
       {/* 💵 가격 정보: 서버값 그대로 노출 */}
-      <div className="w-full inline-flex justify-between items-center">
-        <div className="inline-flex flex-col justify-start items-start">
-          <div className="justify-center h6 text-tertiary">1인당</div>   {/* 라벨 */}
-        </div>
-        <div className="inline-flex flex-col justify-start items-start">
-          <div className="justify-center h5-b text-primary">
-            {price.toLocaleString()}원                                {/* 금액(천단위 콤마) */}
-          </div>
-        </div>
+      <div className="w-full flex justify-between items-center">
+        <span className="h6 text-tertiary">1인당 결제 금액</span>
+        <span className="h4-b text-primary">{price.toLocaleString()}원</span>
       </div>
 
       {/* 🔘 액션 버튼 영역: 좋아요 + 참여하기(결제) */}
@@ -125,11 +104,25 @@ const ActionSection: React.FC<ActionSectionProps> = ({
             </Button>
           </DialogTrigger>
 
-          {/* 결제 모달: 서버 요구 파라미터 전달 */}
+          {/* 결제 모달: Context에서 데이터 가져오기 */}
           <Payment
             fundingId={fundingId}                                  // 결제 대상 펀딩
             userId={userId}                                        // 로그인 사용자 (없으면 결제 진행 불가 처리 필요)
             amount={price}                                         // 결제 금액
+            title={contextData.funding.title}                      // 펀딩 제목
+            videoName={contextData.screening.videoName}            // 영화 제목
+            fundingEndsOn={contextData.funding.fundingEndsOn}      // 펀딩 종료일
+            screenStartsOn={contextData.screening.screenStartsOn}  // 상영 시작 시간
+            screenEndsOn={contextData.screening.screenEndsOn}      // 상영 종료 시간
+            cinemaName={contextData.cinema.cinemaName}             // 영화관명
+            screenName={contextData.screen?.screenName}            // 상영관명
+            screenFeatures={{
+              isDolby: contextData.screen?.isDolby,
+              isImax: contextData.screen?.isImax,
+              isScreenx: contextData.screen?.isScreenx,
+              is4dx: contextData.screen?.is4dx,
+              isRecliner: contextData.screen?.isRecliner,
+            }}
           />
         </Dialog>
       </div>
