@@ -213,6 +213,8 @@ public class RedisService {
      */
     public void clearRanking() {
         redisTemplate.delete(FUNDING_RANK_KEY);
+    }
+
     public boolean exists(String seatKey) {
         return redisTemplate.hasKey(seatKey);
     }

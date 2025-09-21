@@ -5,6 +5,7 @@ import io.ssafy.cinemoa.funding.enums.FundingState;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,6 +20,11 @@ public class FundingListRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public List<CardTypeFundingInfoDto> findByFundingIdIn(List<Long> fundingIds, Long userId) {
+        // 빈 리스트인 경우 빈 결과 반환
+        if (fundingIds == null || fundingIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         String sql = """
                 SELECT
                     f.funding_id as funding_id,
