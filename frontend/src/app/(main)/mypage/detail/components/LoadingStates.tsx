@@ -42,3 +42,4 @@ export const InitialLoading: React.FC<InitialLoadingProps> = ({ isLoading }) => 
     </div>
   );
 };
+
