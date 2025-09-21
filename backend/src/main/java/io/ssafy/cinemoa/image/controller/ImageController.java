@@ -21,7 +21,6 @@ public class ImageController {
 
     @GetMapping("/{imageName}")
     public ResponseEntity<byte[]> getImage(@PathVariable String imageName) {
-        // 경로에서 실제 파일명만 추출 (cinemoa/images/banners/banner.png -> banner.png)
         ImageInfo imageResponse = imageService.getImage(imageName);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePrivate())

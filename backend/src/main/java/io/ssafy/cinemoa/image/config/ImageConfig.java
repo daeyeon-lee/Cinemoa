@@ -9,5 +9,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "image.api")
 public class ImageConfig {
 
-    private String base;
+    private String base = "C:\\cinemoa";
 }
