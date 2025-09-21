@@ -30,16 +30,20 @@ public class LikedFundingController {
      * 특정 사용자가 보고싶어요한 펀딩/투표 목록을 조회합니다. 무한 스크롤 방식으로 동작하며, 커서 기반 페이지네이션을 사용합니다.
      *
      * @param userId 조회할 사용자의 ID (Path Variable)
+     * @param type   펀딩/투표 타입 필터링 - 선택적 파라미터 (funding, vote)
      * @param cursor 다음 페이지 조회를 위한 커서 - 선택적 파라미터
+     * @param limit  한 번에 조회할 개수 - 선택적 파라미터 (기본값: 20)
      * @return 보고싶어요한 펀딩/투표 목록과 페이지네이션 정보
      */
     @GetMapping("/{userId}/like")
     public ResponseEntity<ApiResponse<?>> getLikedFundings(
             @PathVariable("userId") Long userId,
-            @RequestParam(value = "cursor", required = false) String cursor) {
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "cursor", required = false) String cursor,
+            @RequestParam(value = "limit", required = false) Integer limit) {
 
         // Service를 통해 보고싶어요한 펀딩/투표 목록 조회
-        CursorResponse<CardTypeFundingInfoDto> result = likedFundingService.getLikedFundings(userId, cursor);
+        CursorResponse<CardTypeFundingInfoDto> result = likedFundingService.getLikedFundings(userId, type, cursor, limit);
 
         // 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));

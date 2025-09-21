@@ -4,6 +4,7 @@ import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.CursorRequestDto;
 import io.ssafy.cinemoa.funding.dto.TimestampCursorInfo;
 import io.ssafy.cinemoa.funding.enums.FundingState;
+import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.global.enums.ResourceCode;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.response.CursorResponse;
@@ -34,14 +35,15 @@ public class LikedFundingRepository {
     /**
      * 보고싶어요 한 펀딩/투표 목록을 조회합니다.
      *
-     * @param userId  사용자 ID
-     * @param request 보고싶어요 목록 조회 요청
+     * @param userId       사용자 ID
+     * @param fundingType  펀딩/투표 타입 필터링
+     * @param request      보고싶어요 목록 조회 요청
      * @return 보고싶어요 한 펀딩/투표 목록
      */
-    public CursorResponse<CardTypeFundingInfoDto> findLikedFundings(Long userId, CursorRequestDto request) {
+    public CursorResponse<CardTypeFundingInfoDto> findLikedFundings(Long userId, FundingType fundingType, CursorRequestDto request) {
         // 1. 기본 쿼리 구성
         LikedQueryBuilder queryBuilder = new LikedQueryBuilder();
-        queryBuilder.buildBaseQuery(userId);
+        queryBuilder.buildBaseQuery(userId, fundingType);
 
         // 2. 동적 조건 추가 (커서와 타입 필터)
         addCursor(queryBuilder, request.getCursor());
@@ -173,7 +175,7 @@ public class LikedFundingRepository {
         @Getter
         private final List<Object> params = new ArrayList<>();
 
-        public void buildBaseQuery(Long userId) {
+        public void buildBaseQuery(Long userId, FundingType fundingType) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
                            f.funding_type, f.max_people,f.video_name, s.price,
@@ -194,6 +196,12 @@ public class LikedFundingRepository {
 
             // userId를 파라미터로 추가 (좋아요 조회용)
             params.add(userId);
+
+            // type 필터링 추가
+            if (fundingType != null) {
+                sql.append(" AND f.funding_type = ?");
+                params.add(fundingType.name());
+            }
         }
 
         public void addCursorCondition(TimestampCursorInfo cursorInfo) {
