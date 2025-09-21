@@ -11,9 +11,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class SeatExpirationListener implements MessageListener {
-    private final RedisTemplate<String, Object> redisTemplate;
-
     private static final Pattern SEAT_KEY_PATTERN = Pattern.compile("^seat:\\d+:\\d+$");
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
@@ -29,6 +28,5 @@ public class SeatExpirationListener implements MessageListener {
             redisTemplate.opsForValue().increment(remainSeatKey);
         }
     }
-
 }
 
