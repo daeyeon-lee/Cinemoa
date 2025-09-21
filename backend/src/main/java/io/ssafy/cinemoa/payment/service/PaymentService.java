@@ -3,41 +3,43 @@ package io.ssafy.cinemoa.payment.service;
 import io.ssafy.cinemoa.external.finance.Client.AccountDepositApiClient;
 import io.ssafy.cinemoa.external.finance.Client.AccountTransferApiClient;
 import io.ssafy.cinemoa.external.finance.Client.CardApiClient;
-import io.ssafy.cinemoa.external.finance.dto.CreditCardTransactionResponse;
 import io.ssafy.cinemoa.external.finance.dto.AccountDepositResponse;
 import io.ssafy.cinemoa.external.finance.dto.AccountTransferResponse;
-import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
+import io.ssafy.cinemoa.external.finance.dto.CreditCardTransactionResponse;
+import io.ssafy.cinemoa.funding.exception.SeatLockException;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
+import io.ssafy.cinemoa.global.enums.PaymentErrorCode;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
+import io.ssafy.cinemoa.global.exception.NoAuthorityException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
+import io.ssafy.cinemoa.global.redis.service.RedisService;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentRequest;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentResponse;
 import io.ssafy.cinemoa.payment.dto.FundingRefundRequest;
 import io.ssafy.cinemoa.payment.dto.FundingRefundResponse;
-import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 import io.ssafy.cinemoa.payment.enums.FundingOperationContext;
+import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 import io.ssafy.cinemoa.payment.repository.PaymentRepository;
 import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
     private final PaymentRepository paymentRepository;
     private final FundingRepository fundingRepository;
     private final UserRepository userRepository;
@@ -45,14 +47,15 @@ public class PaymentService {
     private final CardApiClient cardApiClient;
     private final AccountDepositApiClient accountDepositApiClient;
     private final AccountTransferApiClient accountTransferApiClient;
+    private final RedisService redisService;
 
     /**
      * 펀딩 참여 처리
-     * 
+     *
      * @param currentUserId 현재 사용자 ID
      * @param request       펀딩 참여 요청 데이터
      * @return FundingPaymentResponse 펀딩 참여 처리 결과
-     * 
+     *
      * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
      * @throws RuntimeException          카드 결제 실패 OR 계좌 입금 실패 시
      * @author HG
@@ -67,6 +70,13 @@ public class PaymentService {
         // if (!currentUserId.equals(targetUserId)) {
         // throw NoAuthorityException.ofUser();
         // }
+
+        String seatKey = "seat:" + fundingId + ":" + userId;
+
+        if (!redisService.exists(seatKey)) {
+            throw SeatLockException.ofNotHolding();
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
@@ -136,11 +146,11 @@ public class PaymentService {
 
     /**
      * 펀딩 참여금 환불 처리
-     * 
+     *
      * @param currentUserId 현재 사용자 ID (권한 검증용)
      * @param request       펀딩 환불 요청 데이터 (펀딩 ID, 대상 사용자 ID 포함)
      * @return FundingRefundResponse 환불 처리 결과
-     * 
+     *
      * @throws NoAuthorityException      현재 사용자가 대상 사용자와 다른 경우
      * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
      * @throws BadRequestException       참여하지 않은 펀딩에 대한 환불 요청 시
@@ -226,7 +236,7 @@ public class PaymentService {
 
     /**
      * 계좌 입금 처리
-     * 
+     *
      * @param fundingId 펀딩 ID
      * @param userId    사용자 ID
      * @param amount    입금 금액
@@ -291,7 +301,7 @@ public class PaymentService {
      * 펀딩 참여금 환불 api 응답 데이터 구성
      */
     private FundingRefundResponse buildRefundResponse(UserTransaction latestTransaction, Long fundingId,
-            Long targetUserId, User user) {
+                                                      Long targetUserId, User user) {
 
         FundingRefundResponse.RefundInfo refundInfo = FundingRefundResponse.RefundInfo.builder()
                 .refundAmount(latestTransaction.getBalance())
@@ -345,10 +355,10 @@ public class PaymentService {
 
     /**
      * 펀딩 종료 시간 검증
-     * 
+     *
      * 현재 시간이 펀딩 종료 시간(endsOn) 이후인지 확인하고,
      * 종료된 펀딩에 대한 요청을 차단합니다.
-     * 
+     *
      * @param funding 검증할 펀딩 객체
      * @param context 호출 컨텍스트 (PAYMENT 또는 REFUND)
      * @throws BadRequestException 펀딩이 종료된 경우
@@ -369,10 +379,10 @@ public class PaymentService {
 
     /**
      * 펀딩 참여 인원 검증
-     * 
+     *
      * 현재 참여자 수가 최대 인원에 도달했는지 확인하고,
      * 초과된 경우 참여를 차단합니다.
-     * 
+     *
      * @param fundingId 펀딩 ID
      * @param maxPeople 최대 참여 인원
      * @throws BadRequestException 참여 인원이 가득 찬 경우
@@ -396,10 +406,10 @@ public class PaymentService {
 
     /**
      * 중복 참여 검증
-     * 
+     *
      * 현재 사용자가 해당 펀딩에 이미 참여했는지 확인하고,
      * 이미 참여한 경우 중복 참여를 차단합니다.
-     * 
+     *
      * @param user    현재 사용자
      * @param funding 펀딩 객체
      * @throws BadRequestException 이미 참여한 펀딩인 경우
