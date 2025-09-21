@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 import CardManagement from '@/app/(main)/mypage/component/CardManagement';
 import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
+import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -70,6 +71,9 @@ export default function MyPage() {
 
   // 환불 계좌 수정 모달 상태
   const [isRefundAccountModalOpen, setIsRefundAccountModalOpen] = useState(false);
+
+  // 프로필 수정 모달 상태
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
   // const [imageurl,setImageurl] = useState<string>('');
 
@@ -149,11 +153,11 @@ export default function MyPage() {
         return;
       }
 
-      // API에서 모든 데이터 가져오기 
-      const response = await getFundingProposals(user.userId, undefined, undefined, 15);
+      // API에서 데이터 가져오기 (type 파라미터 전달)
+      const response = await getFundingProposals(user.userId, type, undefined, 15);
       let proposalsData = response.data.content;
 
-      // 클라이언트에서 타입별 필터링 (fundingType 기준)
+      // 클라이언트에서 추가 필터링 (fundingType 기준으로 한 번 더 확인)
       if (type === 'funding') {
         proposalsData = proposalsData.filter(item => item.funding.fundingType === 'FUNDING');
       } else if (type === 'vote') {
@@ -445,7 +449,7 @@ export default function MyPage() {
                 <Avatar src={userInfo?.profileImgUrl} size={72} />
                 <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
                   <div className="text-slate-50 text-2xl font-bold leading-loose">
-                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}
+                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
                   </div>
                   <div className="h-8 flex justify-start items-center gap-[14px]">
                     <Button
@@ -472,8 +476,9 @@ export default function MyPage() {
               variant="secondary"
               size="sm"
               className="w-28 px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+              onClick={() => setIsEditProfileModalOpen(true)}
             >
-              프로필 관리
+              프로필 수정
             </Button>
           </div>
 
@@ -483,7 +488,7 @@ export default function MyPage() {
             <div className="flex flex-col flex-1 justify-start items-start gap-2">
               <div className="w-full flex justify-between items-center">
                 <div className="text-slate-50 text-2xl font-bold leading-loose">
-                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
+                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}
                 </div>
                 {/* <Button
                   variant="secondary"
@@ -794,6 +799,13 @@ export default function MyPage() {
       <RefundAccountModal
         isOpen={isRefundAccountModalOpen}
         onClose={() => setIsRefundAccountModalOpen(false)}
+      />
+
+      {/* 프로필 수정 모달 */}
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => setIsEditProfileModalOpen(false)}
+        currentNickname={userInfo?.nickname}
       />
     </div>
   );

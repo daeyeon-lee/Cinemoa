@@ -3,6 +3,7 @@ import { useCardStore } from '@/stores/cardStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import BaseModal from './BaseModal';
 
 // 컴포넌트가 받을 props의 타입을 정의합니다.
 interface CardManagementProps {
@@ -67,10 +68,6 @@ const CardManagement: React.FC<CardManagementProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen, cards]);
 
-  // Hook 호출 이후에 조건부 렌더링 로직 실행
-  if (!isOpen) {
-    return null;
-  }
 
   // 이벤트 객체(e)의 타입을 명시합니다. (input 요소의 변경 이벤트)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,27 +138,8 @@ const CardManagement: React.FC<CardManagementProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-      onClick={onClose}
-    >
-      <div
-        className="p-10 bg-slate-800 rounded-[35px]"
-        // 이벤트 객체(e)의 타입을 명시합니다. (div 요소의 마우스 이벤트)
-        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
-      >
-        <form onSubmit={handleSubmit} className="w-[349px] flex flex-col justify-start items-start gap-6">
-          {/* 헤더 */}
-          <div className="self-stretch inline-flex justify-between items-center">
-            <h2 className="text-white text-lg font-medium leading-7">
-              등록 카드 관리
-            </h2>
-            <Button type="button" onClick={onClose} variant="ghost" size="icon" className="relative">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M4.29279 4.29308C4.48031 4.10561 4.73462 4.00029 4.99979 4.00029C5.26495 4.00029 5.51926 4.10561 5.70679 4.29308L9.99979 8.58608L14.2928 4.29308C14.385 4.19757 14.4954 4.12139 14.6174 4.06898C14.7394 4.01657 14.8706 3.98898 15.0034 3.98783C15.1362 3.98668 15.2678 4.01198 15.3907 4.06226C15.5136 4.11254 15.6253 4.18679 15.7192 4.28069C15.8131 4.37458 15.8873 4.48623 15.9376 4.60913C15.9879 4.73202 16.0132 4.8637 16.012 4.99648C16.0109 5.12926 15.9833 5.26048 15.9309 5.38249C15.8785 5.50449 15.8023 5.61483 15.7068 5.70708L11.4138 10.0001L15.7068 14.2931C15.8889 14.4817 15.9897 14.7343 15.9875 14.9965C15.9852 15.2587 15.88 15.5095 15.6946 15.6949C15.5092 15.8803 15.2584 15.9855 14.9962 15.9878C14.734 15.99 14.4814 15.8892 14.2928 15.7071L9.99979 11.4141L5.70679 15.7071C5.51818 15.8892 5.26558 15.99 5.00339 15.9878C4.74119 15.9855 4.49038 15.8803 4.30497 15.6949C4.11956 15.5095 4.01439 15.2587 4.01211 14.9965C4.00983 14.7343 4.11063 14.4817 4.29279 14.2931L8.58579 10.0001L4.29279 5.70708C4.10532 5.51955 4 5.26525 4 5.00008C4 4.73492 4.10532 4.48061 4.29279 4.29308Z" fill="#3F3F46"/>
-              </svg>
-            </Button>
-          </div>
+    <BaseModal isOpen={isOpen} onClose={onClose} title="등록 카드 관리" width="w-[349px]">
+      <form onSubmit={handleSubmit} className="w-full flex flex-col justify-start items-start gap-6">
           
           {/* 카드 번호 */}
           <div className="self-stretch flex flex-col justify-start items-start gap-3">
@@ -265,17 +243,16 @@ const CardManagement: React.FC<CardManagementProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
           
-          <Button 
-            type="submit" 
-            variant="brand1"
-            size="lg"
-            className="self-stretch py-3 bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
-          >
-            <div className="text-center text-white text-lg font-bold leading-7">등록</div>
-          </Button>
-        </form>
-      </div>
-    </div>
+        <Button 
+          type="submit" 
+          variant="brand1"
+          size="lg"
+          className="self-stretch py-3 bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+        >
+          <div className="text-center text-white text-lg font-bold leading-7">등록</div>
+        </Button>
+      </form>
+    </BaseModal>
   );
 };
 
