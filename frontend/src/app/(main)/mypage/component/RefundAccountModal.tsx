@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-// SVG 아이콘들을 별도 컴포넌트로 분리하여 가독성을 높입니다.
-const CloseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fillRule="evenodd" clipRule="evenodd" d="M4.29279 4.29308C4.48031 4.10561 4.73462 4.00029 4.99979 4.00029C5.26495 4.00029 5.51926 4.10561 5.70679 4.29308L9.99979 8.58608L14.2928 4.29308C14.385 4.19757 14.4954 4.12139 14.6174 4.06898C14.7394 4.01657 14.8706 3.98898 15.0034 3.98783C15.1362 3.98668 15.2678 4.01198 15.3907 4.06226C15.5136 4.11254 15.6253 4.18679 15.7192 4.28069C15.8131 4.37458 15.8873 4.48623 15.9376 4.60913C15.9879 4.73202 16.0132 4.8637 16.012 4.99648C16.0109 5.12926 15.9833 5.26048 15.9309 5.38249C15.8785 5.50449 15.8023 5.61483 15.7068 5.70708L11.4138 10.0001L15.7068 14.2931C15.8889 14.4817 15.9897 14.7343 15.9875 14.9965C15.9852 15.2587 15.88 15.5095 15.6946 15.6949C15.5092 15.8803 15.2584 15.9855 14.9962 15.9878C14.734 15.99 14.4814 15.8892 14.2928 15.7071L9.99979 11.4141L5.70679 15.7071C5.51818 15.8892 5.26558 15.99 5.00339 15.9878C4.74119 15.9855 4.49038 15.8803 4.30497 15.6949C4.11956 15.5095 4.01439 15.2587 4.01211 14.9965C4.00983 14.7343 4.11063 14.4817 4.29279 14.2931L8.58579 10.0001L4.29279 5.70708C4.10532 5.51955 4 5.26525 4 5.00008C4 4.73492 4.10532 4.48061 4.29279 4.29308Z" fill="#3F3F46"/>
-  </svg>
-);
+import BaseModal from './BaseModal';
 
 
 // 은행 목록
@@ -97,7 +91,6 @@ interface RefundAccountModalProps {
   }  
 
 const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
 
   const { user } = useAuthStore();
 
@@ -220,8 +213,14 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
 
   // '수정' 버튼 클릭 핸들러
   const handleSubmit = async () => {
+    // 유효성 검사 먼저 수행
     if (!bank || !accountNumber) {
       alert('은행과 계좌번호를 모두 입력해주세요.');
+      return;
+    }
+
+    if (!isAccountNumberValid) {
+      alert('계좌번호를 올바르게 입력해주세요.');
       return;
     }
 
@@ -230,54 +229,52 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
       return;
     }
 
-    if (!user?.userId) {
-      alert('사용자 정보를 찾을 수 없습니다.');
-      return;
-    }
+    // 모든 조건이 만족되었을 때만 서비스 미지원 메시지 표시
+    // TODO: 백엔드 API가 완성되면 주석 해제
+    alert('아직 지원하지 않는 서비스입니다.');
+    return;
 
-    try {
-      // 선택된 은행명에 해당하는 bankCode 찾기
-      const selectedBank = banks.find((bankOption) => bankOption.bankName === bank);
-      const bankCode = selectedBank ? selectedBank.bankCode : null;
+    // if (!bank || !accountNumber) {
+    //   alert('은행과 계좌번호를 모두 입력해주세요.');
+    //   return;
+    // }
 
-      if (!bankCode) {
-        alert('은행 코드를 찾을 수 없습니다.');
-        return;
-      }
+    // if (!isVerificationSuccess) {
+    //   alert('계좌 인증을 완료해주세요.');
+    //   return;
+    // }
 
-      // 환불계좌 변경 API 호출
-      await updateRefundAccount(user.userId, {
-        accountNo: accountNumber,
-        bankCode: bankCode,
-      });
+    // if (!user?.userId) {
+    //   alert('사용자 정보를 찾을 수 없습니다.');
+    //   return;
+    // }
 
-      alert('계좌 정보가 수정되었습니다.');
-      onClose();
-    } catch (error: any) {
-      console.error('환불계좌 변경 실패:', error);
-      alert('계좌 정보 수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
-    }
+    // try {
+    //   // 선택된 은행명에 해당하는 bankCode 찾기
+    //   const selectedBank = banks.find((bankOption) => bankOption.bankName === bank);
+    //   const bankCode = selectedBank ? selectedBank.bankCode : null;
+
+    //   if (!bankCode) {
+    //     alert('은행 코드를 찾을 수 없습니다.');
+    //     return;
+    //   }
+
+    //   // 환불계좌 변경 API 호출
+    //   await updateRefundAccount(user.userId, {
+    //     accountNo: accountNumber,
+    //     bankCode: bankCode,
+    //   });
+
+    //   alert('계좌 정보가 수정되었습니다.');
+    //   onClose();
+    // } catch (error: any) {
+    //   console.error('환불계좌 변경 실패:', error);
+    //   alert('계좌 정보 수정에 실패했습니다: ' + (error.message || '알 수 없는 오류'));
+    // }
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={onClose}
-    >
-      <div 
-        className="p-10 bg-slate-800 rounded-[35px] inline-flex justify-center items-center overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="w-80 inline-flex flex-col justify-start items-start gap-6">
-        {/* 헤더 */}
-        <div className="self-stretch inline-flex justify-between items-center">
-          <div className="flex justify-start items-center gap-2.5">
-            <div className="text-white text-lg font-medium leading-7">환불 계좌 관리</div>
-          </div>
-          <Button onClick={onClose} variant="ghost" size="sm" className="relative p-1 h-auto">
-            <CloseIcon />
-          </Button>
-        </div>
+    <BaseModal isOpen={isOpen} onClose={onClose} title="환불 계좌 관리">
 
         {/* 결제 은행 선택 */}
         <div className="self-stretch flex flex-col justify-start items-start gap-3">
@@ -400,16 +397,13 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
         {/* 수정 버튼 */}
         <Button
           onClick={handleSubmit}
-          disabled={!bank || !isAccountNumberValid || !isVerificationSuccess}
           variant={bank && isAccountNumberValid && isVerificationSuccess ? "brand1" : "secondary"}
           size="lg"
           className="self-stretch py-3 text-lg font-bold"
         >
           수정
         </Button>
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 };
 
