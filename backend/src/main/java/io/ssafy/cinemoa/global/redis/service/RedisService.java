@@ -44,4 +44,8 @@ public class RedisService {
     public List<Object> execute(RedisScript<List> script, List<String> keys, Object... args) {
         return redisTemplate.execute(script, keys, args);
     }
+
+    public boolean exists(String seatKey) {
+        return redisTemplate.hasKey(seatKey);
+    }
 }
