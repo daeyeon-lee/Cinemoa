@@ -14,10 +14,14 @@ public class SearchService {
     private final FundingFilterRepository filterRepository;
 
     public CursorResponse<CardTypeFundingInfoDto> search(SearchRequest request) {
+        if (request.getSortBy() == null) {
+            return filterRepository.findLatestWithFilters(request);
+        }
+
         return switch (request.getSortBy()) {
-            case LATEST -> filterRepository.findLatestWithFilters(request);
             case RECOMMENDED -> filterRepository.findRecommendedWithFilters(request);
             case POPULAR -> filterRepository.findPopularWithFilters(request);
+            default -> filterRepository.findLatestWithFilters(request);
         };
     }
 }

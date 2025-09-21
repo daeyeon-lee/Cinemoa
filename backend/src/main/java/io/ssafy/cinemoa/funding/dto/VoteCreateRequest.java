@@ -9,13 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VoteCreateRequest {
-    private long userId;
+    private Long userId;
     private String title;
     private String content;
-    private long categoryId;
+    private Long categoryId;
     private String videoName;
+    private String videoContent;
     private String posterUrl;
-    private long cinemaId;
+    private Long cinemaId;
     private LocalDate screenMinDate;
     private LocalDate screenMaxDate;
 }

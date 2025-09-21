@@ -8,6 +8,7 @@ import io.ssafy.cinemoa.cinema.repository.ScreenUnavailableTImeBatchRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
+import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
 import io.ssafy.cinemoa.funding.dto.FundingCreationResult;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
@@ -25,6 +26,7 @@ import io.ssafy.cinemoa.funding.event.AccountCreationRequestEvent;
 import io.ssafy.cinemoa.funding.event.FundingScoreUpdateEvent;
 import io.ssafy.cinemoa.funding.exception.SeatLockException;
 import io.ssafy.cinemoa.funding.repository.FundingEstimatedDayRepository;
+import io.ssafy.cinemoa.funding.repository.FundingListRepository;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
 import io.ssafy.cinemoa.funding.repository.entity.Funding;
@@ -34,13 +36,18 @@ import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
+import io.ssafy.cinemoa.image.enums.ImageCategory;
+import io.ssafy.cinemoa.image.service.ImageService;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,6 +55,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -109,9 +117,12 @@ public class FundingService {
     private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
     private final FundingRepository fundingRepository;
     private final FundingStatRepository statRepository;
+    private final FundingListRepository fundingListRepository;
 
     private final ScreenRepository screenRepository;
     private final CinemaRepository cinemaRepository;
+
+    private final ImageService imageService;
 
     private final UserRepository userRepository;
     private final UserFavoriteRepository userFavoriteRepository;
@@ -119,7 +130,7 @@ public class FundingService {
     private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
 
     @Transactional
-    public FundingCreationResult createFunding(FundingCreateRequest request) {
+    public FundingCreationResult createFunding(MultipartFile image, FundingCreateRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
 
@@ -137,19 +148,27 @@ public class FundingService {
             throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
         }
 
+        log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
+        if (image != null) {
+            String localPath = imageService.saveImage(image, ImageCategory.BANNER);
+            String imagePath = imageService.translatePath(localPath);
+            request.setPosterUrl(imagePath);
+        }
+
         Funding funding = Funding.builder()
                 .fundingType(FundingType.FUNDING)
                 .bannerUrl(request.getPosterUrl())
                 .content(request.getContent())
                 .title(request.getTitle())
                 .videoName(request.getVideoName())
+                .videoContent(request.getVideoContent())
                 .leader(user)
                 .maxPeople(request.getMaxPeople())
                 .screenDay(request.getScreenDay())
                 .screenStartsOn(request.getScreenStartsOn())
                 .screenEndsOn(request.getScreenEndsOn())
                 .category(category)
-                .state(FundingState.EVALUATING)
+                .state(FundingState.ON_PROGRESS)
                 .endsOn(request.getScreenDay().minusDays(7))
                 .cinema(cinema)
                 .screen(screen)
@@ -203,7 +222,7 @@ public class FundingService {
     }
 
     @Transactional
-    public void createVote(VoteCreateRequest request) {
+    public void createVote(MultipartFile image, VoteCreateRequest request) {
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(ResourceNotFoundException::ofUser);
@@ -211,16 +230,29 @@ public class FundingService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(ResourceNotFoundException::ofCategory);
 
+        Cinema cinema = cinemaRepository.findById(request.getCinemaId())
+                .orElseThrow(ResourceNotFoundException::ofCinema);
+
+        log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
+
+        if (image != null) {
+            String localPath = imageService.saveImage(image, ImageCategory.BANNER);
+            String imagePath = imageService.translatePath(localPath);
+            request.setPosterUrl(imagePath);
+        }
+
         Funding vote = Funding.builder()
                 .fundingType(FundingType.VOTE)
                 .bannerUrl(request.getPosterUrl())
                 .content(request.getContent())
                 .title(request.getTitle())
+                .cinema(cinema)
                 .videoName(request.getVideoName())
+                .videoContent(request.getVideoContent())
                 .leader(user)
                 .category(category)
                 .maxPeople(0)
-                .state(FundingState.EVALUATING)
+                .state(FundingState.ON_PROGRESS)
                 .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
                 .build();
 
@@ -253,16 +285,22 @@ public class FundingService {
 
         Category category = funding.getCategory();
         Category parentCategory = category.getParentCategory();
+        int price = 0;
+        int progressRate = 0;
+        if (funding.getMaxPeople() != 0) {
+            price = screen.getPrice() / funding.getMaxPeople();
+            progressRate = stat.getParticipantCount() * 100 / funding.getMaxPeople();
+        }
 
         FundingInfo fundingInfo = FundingInfo.builder()
                 .fundingId(funding.getFundingId())
-                .progressRate(stat.getParticipantCount() / funding.getMaxPeople() * 100)
+                .progressRate(progressRate)
                 .title(funding.getTitle())
                 .bannerUrl(funding.getBannerUrl())
                 .content(funding.getContent())
                 .state(funding.getState())
                 .fundingEndsOn(funding.getEndsOn())
-                .price(screen.getPrice() / funding.getMaxPeople())
+                .price(price)
                 .build();
 
         CategoryInfo categoryInfo = CategoryInfo.builder()
@@ -280,6 +318,7 @@ public class FundingService {
 
         VideoInfo videoInfo = VideoInfo.builder()
                 .videoName(funding.getVideoName())
+                .videoContent(funding.getVideoContent())
                 .screenStartsOn(funding.getScreenStartsOn())
                 .screenEndsOn(funding.getScreenEndsOn())
                 .build();
@@ -292,15 +331,19 @@ public class FundingService {
                 .viewCount(stat.getViewCount())
                 .build();
 
-        ScreenInfo screenInfo = ScreenInfo.builder()
-                .screenId(screen.getScreenId())
-                .screenName(screen.getScreenName())
-                .is4dx(screen.getIs4dx())
-                .isRecliner(screen.getIsRecliner())
-                .isScreenx(screen.getIsScreenX())
-                .isDolby(screen.getIsDolby())
-                .isImax(screen.getIsImax())
-                .build();
+        ScreenInfo screenInfo = null;
+
+        if (screen != null) {
+            screenInfo = ScreenInfo.builder()
+                    .screenId(screen.getScreenId())
+                    .screenName(screen.getScreenName())
+                    .is4dx(screen.getIs4dx())
+                    .isRecliner(screen.getIsRecliner())
+                    .isScreenx(screen.getIsScreenX())
+                    .isDolby(screen.getIsDolby())
+                    .isImax(screen.getIsImax())
+                    .build();
+        }
 
         CinemaInfo cinemaInfo = CinemaInfo.builder()
                 .city(cinema.getCity())
@@ -324,6 +367,27 @@ public class FundingService {
 
         eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
         return response;
+    }
+
+    @Transactional
+    public List<CardTypeFundingInfoDto> getFundingList(List<Long> fundingIds, Long userId) {
+
+        // 중복 제거 및 유효성 검사
+        List<Long> uniqueIds = fundingIds.stream()
+                .distinct()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (uniqueIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 최대 10개로 제한
+        if (uniqueIds.size() > 10) {
+            throw new IllegalArgumentException("최대 10개의 fundingId만 처리 가능합니다.");
+        }
+
+        List<CardTypeFundingInfoDto> fundings = fundingListRepository.findByFundingIdIn(uniqueIds, userId);
+        return fundings;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

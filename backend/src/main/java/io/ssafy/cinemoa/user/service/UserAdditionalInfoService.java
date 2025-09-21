@@ -14,9 +14,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAdditionalInfoService {
@@ -33,7 +35,7 @@ public class UserAdditionalInfoService {
 
         // 2. 1원 인증 해시값 검증 (보안 검증)
         String normalizedAccountNo = request.getAccountNo().replaceAll("-", "");
-        if (!wonAuthService.verifyHashForSignup(normalizedAccountNo, request.getHashValue())) {
+        if (!wonAuthService.verifyHashForSignup(normalizedAccountNo, request.getHash())) {
             throw BadRequestException.ofWonAuth("1원 인증이 필요하거나 만료되었습니다.");
         }
 
@@ -68,11 +70,14 @@ public class UserAdditionalInfoService {
     }
 
     private List<Category> validateCategories(List<Long> categoryIds) {
-        // 카테고리 개수 검증 (최소 1개, 최대 3개)
+        // 카테고리 개수 검증 (최소 4개, 최대 12개)
         if (categoryIds == null || categoryIds.isEmpty()) {
             throw BadRequestException.ofInput();
         }
-        if (categoryIds.size() > 3) {
+        if (categoryIds.size() < 4) {
+            throw BadRequestException.ofInput();
+        }
+        if (categoryIds.size() > 12) {
             throw BadRequestException.ofInput();
         }
 

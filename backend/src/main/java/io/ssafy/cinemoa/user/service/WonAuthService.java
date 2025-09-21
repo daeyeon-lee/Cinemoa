@@ -31,18 +31,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ✅ WonAuthService (회원가입 단계 전용)
- *
- * 목적
- *  - 입력으로 계좌번호만 받아서 다음 순서로 처리:
- *    1) 계좌 유효성 검증 (AccountVerify)
- *    2) 1원 송금 (WonSend)
- *  - 이후 사용자가 통장 입금내역/메모에서 확인한 인증코드로:
- *    3) 1원 인증 검증 (WonVerify)
- *
- * 특징
- *  - DB(User) 접근 없음 (회원가입 "이전" 단계이므로)
- *  - 외부 API 응답을 그대로 반환 (pass-through)
- *  - 네트워크/타임아웃 등 예외는 상위(@ControllerAdvice)에서 공통 처리
+ * <p>
+ * 목적 - 입력으로 계좌번호만 받아서 다음 순서로 처리: 1) 계좌 유효성 검증 (AccountVerify) 2) 1원 송금 (WonSend) - 이후 사용자가 통장 입금내역/메모에서 확인한 인증코드로: 3)
+ * 1원 인증 검증 (WonVerify)
+ * <p>
+ * 특징 - DB(User) 접근 없음 (회원가입 "이전" 단계이므로) - 외부 API 응답을 그대로 반환 (pass-through) - 네트워크/타임아웃 등 예외는 상위(@ControllerAdvice)에서 공통
+ * 처리
  */
 @Service
 @Slf4j
@@ -96,8 +90,7 @@ public class WonAuthService {
     }
 
     /**
-     * 값이 null이거나 공백이면 예외를 던지는 간단 검증 함수
-     * - 서비스 레벨에서의 "기본 방어" 용도
+     * 값이 null이거나 공백이면 예외를 던지는 간단 검증 함수 - 서비스 레벨에서의 "기본 방어" 용도
      */
     private void must(String v, String msg) {
         if (v == null || v.isBlank()) {
@@ -258,7 +251,6 @@ public class WonAuthService {
 
     // ============================ Redis 관련 메서드 ========================================================
 
-
     /**
      * Redis에서 1원 인증 해시값 검증
      * @param userId 사용자 ID (회원가입 후)
@@ -271,12 +263,12 @@ public class WonAuthService {
     //         // 회원가입 후에는 userId를 사용하여 검증
     //         String redisKey = REDIS_KEY_PREFIX + userId + ":" + accountNo;
     //         String savedHash = redisService.getValue(redisKey);
-            
+
     //         if (savedHash == null) {
     //             log.warn("Redis에서 해시값을 찾을 수 없음: key={}", redisKey);
     //             return false;
     //         }
-            
+
     //         boolean isValid = savedHash.equals(providedHash);
     //         if (isValid) {
     //             log.info("1원 인증 해시값 검증 성공: userId={}, accountNo={}", userId, accountNo);
@@ -285,7 +277,7 @@ public class WonAuthService {
     //         } else {
     //             log.warn("1원 인증 해시값 검증 실패: userId={}, accountNo={}", userId, accountNo);
     //         }
-            
+
     //         return isValid;
     //     } catch (Exception e) {
     //         log.error("Redis 해시값 검증 중 오류 발생: userId={}, accountNo={}", userId, accountNo, e);
@@ -295,6 +287,7 @@ public class WonAuthService {
 
     /**
      * 회원가입 단계에서 1원 인증 해시값을 Redis에 저장 (userId 없이)
+     *
      * @param accountNo 계좌번호
      * @param secretKey 해시값
      */
@@ -310,7 +303,8 @@ public class WonAuthService {
 
     /**
      * 회원가입 단계에서 1원 인증 해시값 검증 (userId 없이)
-     * @param accountNo 계좌번호
+     *
+     * @param accountNo    계좌번호
      * @param providedHash 클라이언트에서 제공한 해시값
      * @return 검증 성공 여부
      */
@@ -318,12 +312,13 @@ public class WonAuthService {
         try {
             String redisKey = REDIS_KEY_PREFIX + "signup:" + accountNo;
             String savedHash = redisService.getValue(redisKey);
-            
+
             if (savedHash == null) {
                 log.warn("Redis에서 회원가입용 해시값을 찾을 수 없음: key={}", redisKey);
                 return false;
             }
-            
+
+            log.info("저장되어 있는 해시값 : {}, 프론트에서 받은 해쉬값 : {}", savedHash, providedHash);
             boolean isValid = savedHash.equals(providedHash);
             if (isValid) {
                 log.info("회원가입용 1원 인증 해시값 검증 성공: accountNo={}", accountNo);
@@ -332,7 +327,7 @@ public class WonAuthService {
             } else {
                 log.warn("회원가입용 1원 인증 해시값 검증 실패: accountNo={}", accountNo);
             }
-            
+
             return isValid;
         } catch (Exception e) {
             log.error("회원가입용 Redis 해시값 검증 중 오류 발생: accountNo={}", accountNo, e);

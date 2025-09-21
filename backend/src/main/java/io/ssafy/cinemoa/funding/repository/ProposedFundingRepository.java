@@ -48,8 +48,7 @@ public class ProposedFundingRepository {
         List<CardTypeFundingInfoDto> result = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToCardTypeFundingInfoDto,
-                queryBuilder.getParams().toArray()
-        );
+                queryBuilder.getParams().toArray());
 
         boolean hasNext = result.size() > request.getLimit();
 
@@ -75,6 +74,9 @@ public class ProposedFundingRepository {
      * 제안 목록 조회를 위한 커서 조건을 추가합니다.
      */
     private void addCursor(ProposedQueryBuilder queryBuilder, String cursor) {
+        if (cursor == null) {
+            return;
+        }
         // 커서 조건 추가
         queryBuilder.addCursorCondition(parseCursor(cursor));
     }
@@ -113,14 +115,31 @@ public class ProposedFundingRepository {
         // 좋아요 여부
         boolean isLiked = rs.getBoolean("is_liked");
 
+        // 1. DB에서 날짜 문자열을 가져옵니다.
+        String endsOnStr = rs.getString("ends_on");
+        String screenDayStr = rs.getString("screen_day");
+        String screenMinDateStr = rs.getString("screen_min_date");
+        String screenMaxDateStr = rs.getString("screen_max_date");
+
+        // 2. NULL이 아닌 경우에만 LocalDate로 변환하고, NULL이면 그대로 null을 할당합니다.
+        LocalDate fundingEndsOn = (endsOnStr != null) ? LocalDate.parse(endsOnStr) : null;
+        LocalDate screenDate = (screenDayStr != null) ? LocalDate.parse(screenDayStr) : null;
+        LocalDate screenMinDate = (screenMinDateStr != null) ? LocalDate.parse(screenMinDateStr) : null;
+        LocalDate screenMaxDate = (screenMaxDateStr != null) ? LocalDate.parse(screenMaxDateStr) : null;
+
         CardTypeFundingInfoDto.BriefFundingInfo funding = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
                 .title(rs.getString("title"))
                 .bannerUrl(rs.getString("banner_url"))
                 .state(FundingState.valueOf(rs.getString("state")))
                 .progressRate(progressRate)
-                .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
-                .screenDate(LocalDate.parse(rs.getString("screen_day")))
+                .videoName(rs.getString("video_name"))
+                // .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
+                .fundingEndsOn(fundingEndsOn)
+                // .screenDate(LocalDate.parse(rs.getString("screen_day")))
+                .screenDate(screenDate)
+                .screenMinDate(screenMinDate)
+                .screenMaxDate(screenMaxDate)
                 .price(perPersonPrice)
                 .maxPeople(maxPeople)
                 .participantCount(participantCount)
@@ -153,18 +172,21 @@ public class ProposedFundingRepository {
         public void buildBaseQuery(Long userId) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, s.price,
+                           f.funding_type, f.max_people, f.video_name, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
+                           fed.min_date as screen_min_date,
+                           fed.max_date as screen_max_date,
                            CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
                            f.created_at as timestamp
                     FROM fundings f
                     LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                    LEFT JOIN funding_estimate_days fed ON fed.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    WHERE f.leader_id = ? AND f.funding_type = 'FUNDING'
+                    WHERE f.leader_id = ?
                     """);
 
             // userId를 파라미터로 추가 (좋아요 조회용, 제안자 조회용)
