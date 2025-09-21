@@ -101,9 +101,9 @@ public class FundingController {
         return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
     }
 
-    @GetMapping("/recommended-funding")
+    @GetMapping("/recommendation")
     public ResponseEntity<ApiResponse<List<?>>> getRecommendedFundings(
-            @RequestParam("userId") Long userId) {
+            @RequestParam(value = "userId", required = false) Long userId) {
 
         List<CardTypeFundingInfoDto> result = recommendedFundingListService.getRecommendedFundings(userId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));

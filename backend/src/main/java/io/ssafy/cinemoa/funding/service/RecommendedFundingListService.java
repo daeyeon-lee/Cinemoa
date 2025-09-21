@@ -2,7 +2,6 @@ package io.ssafy.cinemoa.funding.service;
 
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.repository.RecommendedFundingRepository;
-import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +30,6 @@ public class RecommendedFundingListService {
      */
     @Transactional(readOnly = true)
     public List<CardTypeFundingInfoDto> getRecommendedFundings(Long userId) {
-        // 1. 사용자 존재 여부 확인
-        if (userId != null && !userRepository.existsById(userId)) {
-            throw ResourceNotFoundException.ofUser();
-        }
-
         return recommendedFundingRepository.findRecommendedFundings(userId);
     }
 }
