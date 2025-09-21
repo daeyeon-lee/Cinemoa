@@ -98,8 +98,8 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
   const { data: cinemas, isLoading, error } = useGetCinemas('서울시', selectedDistrict === '전체' ? '' : selectedDistrict, selectedFeature);
   // 선택된 영화관의 상세 정보 조회
   const { data: cinemaDetail, isLoading: isDetailLoading } = useGetCinemaDetail(selectedCinemaId || 0);
-  // 선택된 상영관의 예약 가능 시간 조회
-  const { data: reservationTime, isLoading: isReservationTimeLoading } = useGetReservationTime(selectedScreenId || 0, selectedDate ? new Date(selectedDate) : new Date());
+  // 선택된 상영관의 예약 가능 시간 조회 (selectedDate가 있을 때만)
+  const { data: reservationTime, isLoading: isReservationTimeLoading } = useGetReservationTime(selectedScreenId || 0, selectedDate);
 
   // API 응답 데이터를 영화관 목록으로 처리
   useEffect(() => {

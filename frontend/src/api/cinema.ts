@@ -73,9 +73,7 @@ export const getReservationTime = async (screenId: number, targetDate: Date): Pr
   try {
     // Date 객체를 YYYY-MM-DD 형식으로 변환
     const targetDateString = formatDateToISOString(targetDate);
-
     const url = `https://j13a110.p.ssafy.io:8443/api/screen/${screenId}/available-time?targetDate=${targetDateString}`;
-
     const response = await fetch(url);
 
     if (!response.ok) {
