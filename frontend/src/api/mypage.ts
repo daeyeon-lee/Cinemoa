@@ -24,9 +24,8 @@ export const getUserInfo = async (userId: number): Promise<UserInfoResponse> => 
 // 내가 제안한 상영회 목록 조회 API
 export const getFundingProposals = async (
   userId: number = 2,
-  // type?: 'funding' | 'vote',
-  type?: string,
-  cursor?: number,
+  type?: 'funding' | 'vote',
+  cursor?: string,
   limit: number = 7,
 ): Promise<FundingProposalsResponse> => {
   try {
@@ -34,7 +33,7 @@ export const getFundingProposals = async (
     const queryParams = new URLSearchParams();
     console.log('type:', type, 'cursor:', cursor, 'limit:', limit);
     if (type) queryParams.append('type', type);
-    if (cursor) queryParams.append('cursor', cursor.toString());
+    if (cursor) queryParams.append('cursor', cursor);
     queryParams.append('limit', limit.toString());
 
     const response = await apiGet(`${BaseUrl}user/${userId}/funding-proposals?${queryParams}`);
@@ -57,15 +56,15 @@ export const getFundingProposals = async (
 export const getParticipatedFunding = async (
   userId: number,
   state?: 'ALL' | 'ON_PROGRESS' | 'CLOSE',
-  cursor?: number,
+  cursor?: string,
   limit: number = 7
 ): Promise<ParticipatedFundingResponse> => {
   try {
     // 쿼리 파라미터 구성
     const queryParams = new URLSearchParams();
     console.log('state:', state, 'cursor:', cursor, 'limit:', limit);
-    if (state) queryParams.append('state', state);
-    if (cursor) queryParams.append('cursor', cursor.toString());
+    if (state && state !== 'ALL') queryParams.append('state', state);
+    if (cursor) queryParams.append('cursor', cursor);
     queryParams.append('limit', limit.toString());
 
     const response = await apiGet(`${BaseUrl}user/${userId}/participated-funding?${queryParams}`);
@@ -88,7 +87,7 @@ export const getParticipatedFunding = async (
 export const getLikedFunding = async (
   userId: number,
   type?: 'funding' | 'vote',
-  cursor?: number,
+  cursor?: string,
   limit: number = 7
 ): Promise<LikedFundingResponse> => {
   try {
@@ -96,7 +95,7 @@ export const getLikedFunding = async (
     const queryParams = new URLSearchParams();
     console.log('type:', type, 'cursor:', cursor, 'limit:', limit);
     if (type) queryParams.append('type', type);
-    if (cursor) queryParams.append('cursor', cursor.toString());
+    if (cursor) queryParams.append('cursor', cursor);
     queryParams.append('limit', limit.toString());
 
     const response = await apiGet(`${BaseUrl}user/${userId}/like?${queryParams}`);

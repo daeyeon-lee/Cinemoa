@@ -544,7 +544,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 제안한 상영회</h2>
               {hasMoreProposals && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/proposals')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
@@ -627,7 +627,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 참여한 상영회</h2>
               {hasMoreParticipated && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/participated')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
@@ -710,7 +710,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 보고 싶은 상영회</h2>
               {hasMoreLiked && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/liked')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
