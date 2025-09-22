@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     // Redis 키 prefix 상수들
     private static final String FUNDING_VIEWS_BUCKET_PREFIX = "funding:views:bucket:";
@@ -52,14 +54,13 @@ public class RedisService {
     }
 
     public List<Object> execute(RedisScript<List> script, List<String> keys, Object... args) {
-        return redisTemplate.execute(script, keys, args);
+        return stringRedisTemplate.execute(script, keys, args);
     }
 
     // ===== 고정 30분 윈도우 버킷 시스템 =====
 
     /**
-     * 현재 시간을 30분 단위로 내림 처리하여 버킷 키 생성
-     * 예: 14:17 → 14:00, 14:45 → 14:30
+     * 현재 시간을 30분 단위로 내림 처리하여 버킷 키 생성 예: 14:17 → 14:00, 14:45 → 14:30
      */
     private String getCurrentBucketKey(String prefix) {
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
