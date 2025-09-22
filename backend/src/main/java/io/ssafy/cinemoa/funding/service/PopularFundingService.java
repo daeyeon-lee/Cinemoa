@@ -2,7 +2,7 @@ package io.ssafy.cinemoa.funding.service;
 
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.repository.FundingListRepository;
-import io.ssafy.cinemoa.global.redis.service.RedisService;
+import io.ssafy.cinemoa.global.redis.service.RedisRankingService;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PopularFundingService {
 
-    private final RedisService redisService;
+    private final RedisRankingService redisRankingService;
     private final FundingListRepository fundingListRepository;
 
     /**
@@ -24,7 +24,7 @@ public class PopularFundingService {
     public List<CardTypeFundingInfoDto> getTopPopularFundings(Long userId) {
         try {
             // 캐시에서 상위 10개 ID 조회
-            List<Long> cachedFundingIds = redisService.getCachedTop10FundingIds();
+            List<Long> cachedFundingIds = redisRankingService.getCachedTop10FundingIds();
 
             if (!cachedFundingIds.isEmpty()) {
                 log.debug("캐시에서 상위 10개 조회: {} 건", cachedFundingIds.size());
@@ -45,7 +45,7 @@ public class PopularFundingService {
      */
     private List<CardTypeFundingInfoDto> getTopPopularFundingsFromRanking(Long userId) {
         try {
-            List<Long> topFundingIds = redisService.getTop10FundingIds();
+            List<Long> topFundingIds = redisRankingService.getTop10FundingIds();
 
             return fundingListRepository.findByFundingIdIn(topFundingIds, userId);
 
@@ -65,7 +65,7 @@ public class PopularFundingService {
             log.info("■■■■■■■■ 인기 상영회 랭킹 배치 갱신 시작 ■■■■■■■■");
 
             // 현재 버킷의 모든 펀딩 ID 수집
-            var fundingIds = redisService.getAllFundingIdsInCurrentBucket();
+            var fundingIds = redisRankingService.getAllFundingIdsInCurrentBucket();
 
             if (fundingIds.isEmpty()) {
                 log.warn("현재 버킷에 활동이 있는 펀딩이 없습니다.");
@@ -75,7 +75,7 @@ public class PopularFundingService {
             log.info("활동이 있는 펀딩 {}개에 대해 점수 계산을 시작합니다.", fundingIds.size());
 
             // 기존 랭킹 초기화
-            redisService.clearRanking();
+            redisRankingService.clearRanking();
 
             List<Long> top10FundingIds = new ArrayList<>();
             int processedCount = 0;
@@ -86,15 +86,15 @@ public class PopularFundingService {
                     Long fundingId = Long.parseLong(fundingIdStr);
 
                     // 지난 30분 동안의 조회수와 좋아요 수 조회
-                    int views = redisService.getViewsInLast30Minutes(fundingId);
-                    int likes = redisService.getLikesInLast30Minutes(fundingId);
+                    int views = redisRankingService.getViewsInLast30Minutes(fundingId);
+                    int likes = redisRankingService.getLikesInLast30Minutes(fundingId);
 
                     // wilson-score 기반 점수 계산
                     double score = getWilsonScore(views, likes);
 
                     if (score > 0) {
                         // 랭킹 ZSET에 점수 업데이트
-                        redisService.updateRankingScore(fundingId, score);
+                        redisRankingService.updateRankingScore(fundingId, score);
 
                         log.debug("펀딩 {} 점수 업데이트: views={}, likes={}, score={}",
                                 fundingId, views, likes, score);
@@ -108,14 +108,14 @@ public class PopularFundingService {
             }
 
             // 상위 10개 ID 조회 및 캐시 저장
-            List<Long> top10Objects = redisService.getTop10FundingIds();
+            List<Long> top10Objects = redisRankingService.getTop10FundingIds();
             if (!top10Objects.isEmpty()) {
                 top10FundingIds = top10Objects.stream()
                         .map(id -> Long.valueOf(id.toString()))
                         .toList();
 
                 // 상위 10개 캐시 저장
-                redisService.cacheTop10FundingIds(top10FundingIds);
+                redisRankingService.cacheTop10FundingIds(top10FundingIds);
 
                 log.info("■■■■■■■■ 인기 상영회 랭킹 배치 갱신 완료 ■■■■■■■■");
                 log.info("처리된 펀딩: {} 개, 상위 10개 캐시 저장 완료", processedCount);

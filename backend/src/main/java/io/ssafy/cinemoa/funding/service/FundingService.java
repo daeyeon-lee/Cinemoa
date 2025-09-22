@@ -35,6 +35,7 @@ import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
+import io.ssafy.cinemoa.global.redis.service.RedisRankingService;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
 import io.ssafy.cinemoa.image.enums.ImageCategory;
 import io.ssafy.cinemoa.image.service.ImageService;
@@ -117,6 +118,7 @@ public class FundingService {
     private final UserRepository userRepository;
     private final UserFavoriteRepository userFavoriteRepository;
     private final RedisService redisService;
+    private final RedisRankingService redisRankingService;
     private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
 
     @Transactional
@@ -390,13 +392,13 @@ public class FundingService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void updateViewCount(Long fundingId) {
+    protected void updateViewCount(Long fundingId) {
         // DB 전체 조회수 증가
         statRepository.incrementViewCount(fundingId);
 
         // Redis 버킷에 조회수 카운트 증가
         try {
-            redisService.incrementViewBucket(fundingId);
+            redisRankingService.incrementViewBucket(fundingId);
             log.debug("Redis 버킷 조회수 증가: fundingId={}", fundingId);
         } catch (Exception e) {
             log.warn("Redis 버킷 조회수 업데이트 실패: fundingId={}, error={}", fundingId, e.getMessage());
