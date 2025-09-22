@@ -9,11 +9,11 @@ import { useAuthStore } from '@/stores/authStore';                // 로그인 �
 import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingDetailContext';
 
 // ✅ 펀딩 전용 액션 섹션 Props: 최소한의 정보만 전달
-type ActionSectionProps = {
+type FundingActionSectionProps = {
   fundingId: number;                         // 필수: 어떤 펀딩인지 식별 (캐시 Key)
 };
 
-const ActionSection: React.FC<ActionSectionProps> = ({
+const FundingActionSection: React.FC<FundingActionSectionProps> = ({
   fundingId,
 }) => {
   // Context에서 데이터 가져오기
@@ -130,5 +130,5 @@ const ActionSection: React.FC<ActionSectionProps> = ({
   );
 };
 
-export { ActionSection };
-export type { ActionSectionProps };
+export { FundingActionSection };
+export type { FundingActionSectionProps };

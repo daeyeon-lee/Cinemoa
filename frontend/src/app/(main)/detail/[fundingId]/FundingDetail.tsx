@@ -13,9 +13,10 @@ interface FundingDetailProps {
   userId?: string;                             // 🆕 URL에서 받은 userId
 }
 
-const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId }) => {
+const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId, userId: propUserId }) => {
   const { user } = useAuthStore();
-  const userId = user?.userId?.toString();
+  const userId = propUserId || user?.userId?.toString();
+  
   // React Query로 펀딩 상세 데이터 조회
   const {
     data: detailData,
@@ -27,7 +28,7 @@ const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId }) => {
     userId,
   });
 
-  console.log(detailData);
+  console.log('FundingDetail - detailData:', detailData);
 
   // 로딩 상태
   if (isLoading) {
@@ -64,7 +65,7 @@ const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId }) => {
     );
   }
 
-  // 펀딩 타입이 아닌 경우 (투표 등)
+  // 펀딩 타입이 아닌 경우 (투표 등) - 이제 DetailPageWrapper에서 처리하므로 여기서는 타입 안전
   if (detailData.type !== 'FUNDING') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">

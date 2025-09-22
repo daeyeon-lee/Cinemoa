@@ -6,9 +6,10 @@ type StatItemProps = {
   icon: 'people' | 'time';
   text: string;
   loadingState?: 'ready' | 'loading';
+  fill: string;
 };
 
-const StatItem: React.FC<StatItemProps> = ({ icon, text, loadingState = 'ready' }) => {
+const StatItem: React.FC<StatItemProps> = ({ icon, text, loadingState = 'ready', fill}) => {
   if (loadingState === 'loading') {
     return (
       <div className="flex justify-start items-center gap-2">
@@ -20,9 +21,9 @@ const StatItem: React.FC<StatItemProps> = ({ icon, text, loadingState = 'ready' 
 
   const renderIcon = () => {
     if (icon === 'people') {
-      return <PeopleIcon fill='#FF5768' />;
+      return <PeopleIcon fill={fill} />;
     } else if (icon === 'time') {
-      return <ClockIcon fill='#FF5768' />;
+      return <ClockIcon fill={fill} />;
     }
   };
 

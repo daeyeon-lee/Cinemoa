@@ -2,8 +2,7 @@ import React from 'react';
 import { Media } from '@/components/cards/primitives/Media';
 import { ProjectInfoSection } from '@/components/cards/sections/ProjectInfoSection';
 import { ProgressInfoSection } from '@/components/cards/sections/ProgressInfoSection';
-import { ActionSection } from '@/components/cards/sections/ActionSection';
-import { MobileFixedActions } from '@/components/cards/MobileFixedActions';
+import { FundingActionSection } from '@/app/(main)/detail/[fundingId]/components/FundingActionSection';
 import { useFundingDetail } from '@/contexts/FundingDetailContext';
 
 // 🟢 펀딩 상세 카드 Props 타입 정의
@@ -16,7 +15,7 @@ const FundingDetailCard: React.FC<FundingDetailCardProps> = ({
 }) => {
   // 🟢 Context에서 데이터 가져오기
   const { data, userId } = useFundingDetail();
-  const { funding, screening, stat, category } = data;
+  const { funding } = data;
 
   console.log("FundingDetailCard props:", userId)
 
@@ -37,7 +36,12 @@ const FundingDetailCard: React.FC<FundingDetailCardProps> = ({
         {/* 오른쪽: 프로젝트 정보 영역 */}
         <div className="flex-1 min-w-0 px-4 py-5 flex flex-col justify-between">
           {/* 프로젝트 기본 정보 */}
-          <ProjectInfoSection />
+          <ProjectInfoSection 
+            type="FUNDING"
+            categoryId={data.category.categoryId}
+            videoName={data.screening.videoName}
+            title={data.funding.title}
+          />
 
           {/* 진행 현황 + 액션 버튼 */}
           <div className="flex flex-col gap-4">
@@ -45,7 +49,7 @@ const FundingDetailCard: React.FC<FundingDetailCardProps> = ({
 
             {/* 데스크톱 전용 액션 버튼 */}
             <div className="sm:block hidden">
-              <ActionSection
+              <FundingActionSection
                 fundingId={fundingId}          // 자식이 캐시에서 likeCount, isLiked, isParticipated 조회
               />
             </div>
@@ -54,9 +58,11 @@ const FundingDetailCard: React.FC<FundingDetailCardProps> = ({
       </div>
 
       {/* 모바일 전용 하단 고정 액션 버튼 */}
-      <MobileFixedActions
-        fundingId={fundingId}              // 자식이 캐시에서 상태 조회
-      />
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-800 px-5 pb-5 sm:hidden">
+        <FundingActionSection
+          fundingId={fundingId}              // 자식이 캐시에서 상태 조회
+        />
+      </div>
     </>
   );
 };
