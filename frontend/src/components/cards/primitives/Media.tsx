@@ -9,16 +9,10 @@ type MediaProps = {
   aspect?: '16/9' | '4/3' | '1/1' | '7/10' | 'auto';
   rounded?: boolean;
   loadingState?: 'ready' | 'loading' | 'error';
+  className?: string;
 };
 
-const Media: React.FC<MediaProps> = ({
-  src,
-  alt = '',
-  height = 570,
-  aspect = '16/9',
-  rounded = true,
-  loadingState = 'ready',
-}) => {
+const Media: React.FC<MediaProps> = ({ src, alt = '', height = 570, aspect = '16/9', rounded = true, loadingState = 'ready', className }) => {
   const aspectClasses = {
     '16/9': 'aspect-video',
     '4/3': 'aspect-[4/3]',
@@ -27,7 +21,7 @@ const Media: React.FC<MediaProps> = ({
     auto: '',
   };
 
-  const baseClasses = cn('w-full overflow-hidden', rounded && 'rounded-xl', aspect !== 'auto' && aspectClasses[aspect]);
+  const baseClasses = cn('w-full overflow-hidden', rounded && 'rounded-xl', aspect !== 'auto' && aspectClasses[aspect], className);
 
   if (loadingState === 'loading') {
     return <Skeleton className={cn(baseClasses)} style={{ height: aspect === 'auto' ? height : undefined }} />;
@@ -35,10 +29,7 @@ const Media: React.FC<MediaProps> = ({
 
   if (loadingState === 'error') {
     return (
-      <div
-        className={cn(baseClasses, 'bg-slate-700 flex items-center justify-center text-slate-400')}
-        style={{ height: aspect === 'auto' ? height : undefined }}
-      >
+      <div className={cn(baseClasses, 'bg-slate-700 flex items-center justify-center text-slate-400')} style={{ height: aspect === 'auto' ? height : undefined }}>
         <span className="text-sm">이미지를 불러올 수 없습니다</span>
       </div>
     );
@@ -46,12 +37,7 @@ const Media: React.FC<MediaProps> = ({
 
   return (
     <div className={baseClasses}>
-      <img
-        src={src}
-        alt={alt}
-        className="w-full h-full object-cover"
-        style={{ height: aspect === 'auto' ? height : undefined }}
-      />
+      <img src={src} alt={alt} className="w-full h-full object-cover bg-BG-2" style={{ height: aspect === 'auto' ? height : undefined }} />
     </div>
   );
 };

@@ -117,9 +117,9 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
     <div className="w-full cursor-pointer transition-transform hover:scale-[1.02]" onClick={handleCardClick}>
       <div className="bg-BG-1 rounded-xl p-3 gap-3">
         {/* 이미지영역 */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 items-stretch">
           <div className="flex-1 relative">
-            <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" loadingState={loadingState} />
+            <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" loadingState={loadingState} className="h-full w-full" />
             {/* 상태 태그 오버레이 */}
             {showStateTag &&
               (() => {
@@ -133,12 +133,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               })()}
           </div>
           {/* 이미지 오른쪽 바코드 */}
-          <div className="flex flex-col items-center justify-between gap-2 h-full">
+          <div className="w-6 flex flex-col items-center justify-between gap-2">
             {isFunding ? (
               <>
                 {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
-                <button 
-                  onClick={handleVoteClick} 
+                <button
+                  onClick={handleVoteClick}
                   className="p-0 rounded-full transition-transform hover:scale-110"
                   disabled={isLoading}
                 >
@@ -146,12 +146,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
                 </button>
                 {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
                 <div className="flex-1 min-h-0">
-                  <BarcodeDecor height="full" />
+                  <BarcodeDecor height="full" className="flex-1" />
                 </div>
               </>
             ) : (
-              /* 투표 카드: 바코드만 h-full로 전체 높이 채움 */
-              <BarcodeDecor height="full" />
+              /* 투표 카드: 바코드만 전체 높이 채움 */
+              <BarcodeDecor height="full" className="flex-1" />
             )}
           </div>
         </div>
