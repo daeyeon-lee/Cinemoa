@@ -84,6 +84,7 @@ export const getReservationTime = async (screenId: number, targetDate: Date): Pr
 
     const data = await response.json();
     console.log('예약 가능시간:', data.data);
+    console.log('url:', url);
 
     return data.data;
   } catch (error) {

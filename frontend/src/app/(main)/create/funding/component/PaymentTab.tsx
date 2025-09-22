@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +21,8 @@ interface PaymentTabProps {
 export default function PaymentTab({ onNext, onPrev, fundingId, amount }: PaymentTabProps) {
   const router = useRouter();
   const { user } = useAuthStore();
+  const userId = user?.userId;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentData, setPaymentData] = useState({
     cardNumber1: '',

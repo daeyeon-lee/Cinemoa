@@ -13,6 +13,7 @@ import { createFunding } from '@/api/funding';
 import { CalendarDemo } from '@/components/calenderdemo';
 import { theaterinfo, fundinginfo, movieinfo, CreateFundingParams } from '@/types/funding';
 import { useAuthStore } from '@/stores/authStore';
+import { holdSeats } from '@/api/payment';
 
 interface TheaterInfoTabProps {
   onNext: (data: { fundingId: number; amount: number }) => void;
@@ -46,6 +47,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
 
   // 다음 단계로 넘어가는 핸들러
   const handleNext = async () => {
+    console.log('🚀 handleNext 함수 시작됨 (TheaterInfoTab)');
     // 전달받은 데이터 확인
 
     // 각각의 정보를 구조화해서 API 요청
@@ -77,9 +79,8 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
 
     try {
       const result = await createFunding(completeData, posterUrl || '');
-      console.log('=== 펀딩 생성 성공 ===');
-      console.log('응답:', result);
       const fundingId = result.data.fundingId;
+      await holdSeats(fundingId, user?.userId || 0);
       alert('펀딩이 성공적으로 생성되었습니다!');
 
       // fundingId와 1인당 결제 금액을 함께 전달
@@ -88,7 +89,6 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
         amount: perPersonAmount,
       });
     } catch (error) {
-      console.error('=== 펀딩 생성 실패 ===');
       console.error('에러:', error);
       alert('펀딩 생성에 실패했습니다. 다시 시도해주세요.');
     }
@@ -242,6 +242,46 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
     setSelectedDate(''); // 날짜 초기화
     setSelectedStartTime(''); // 시작 시간 초기화
     setSelectedEndTime(''); // 종료 시간 초기화
+  };
+
+  // 연속된 시간 구간을 찾는 함수
+  const getConsecutiveTimeSlots = (availableTime: number[]) => {
+    if (!availableTime || availableTime.length === 0) return [];
+
+    const sortedTime = [...availableTime].sort((a, b) => a - b);
+    const slots: number[][] = [];
+    let currentSlot = [sortedTime[0]];
+
+    for (let i = 1; i < sortedTime.length; i++) {
+      if (sortedTime[i] === sortedTime[i - 1] + 1) {
+        // 연속된 시간이면 현재 슬롯에 추가
+        currentSlot.push(sortedTime[i]);
+      } else {
+        // 연속되지 않으면 새로운 슬롯 시작
+        slots.push(currentSlot);
+        currentSlot = [sortedTime[i]];
+      }
+    }
+    slots.push(currentSlot); // 마지막 슬롯 추가
+
+    return slots;
+  };
+
+  // 선택된 시작시간이 포함된 연속 구간을 찾는 함수
+  const getValidEndTimes = (startHour: number, availableTime: number[]) => {
+    const consecutiveSlots = getConsecutiveTimeSlots(availableTime);
+
+    // 시작시간이 포함된 구간 찾기
+    const currentSlot = consecutiveSlots.find((slot) => slot.includes(startHour));
+    if (!currentSlot) {
+      return [];
+    }
+
+    // 시작시간 이후의 구간 내 시간들만 반환 (available_time 내에서만)
+    const startIndex = currentSlot.indexOf(startHour);
+    const remainingSlot = currentSlot.slice(startIndex + 1);
+
+    return remainingSlot;
   };
 
   // 시작 시간 선택 핸들러
@@ -475,13 +515,20 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                 <SelectContent>
                   {reservationTime?.available_time
                     ?.filter((hour) => {
+                      // 시작시간은 최대 22시까지만 허용
+                      if (hour > 22) return false;
+
                       // 오늘 날짜가 선택된 경우 현재 시간 이후만 표시
                       const dateOnly = selectedDate.split(' ')[0]; // 요일 정보 제거
                       if (dateOnly === new Date().toISOString().split('T')[0]) {
                         const currentHour = new Date().getHours();
-                        return hour > currentHour;
+                        if (hour <= currentHour) return false;
                       }
-                      return true;
+
+                      // 해당 시간에 대해 유효한 종료시간이 있는지 확인
+                      const validEndTimes = getValidEndTimes(hour, reservationTime.available_time);
+                      // 유효한 종료시간이 없는 경우 시작시간에서 제외
+                      return validEndTimes.length > 0;
                     })
                     ?.map((hour) => (
                       <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
@@ -499,7 +546,14 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                   대관 종료 시간 <span className="text-Brand1-Primary">*</span>
                 </h4>
               </div>
-              <Select value={selectedEndTime} onValueChange={setSelectedEndTime} disabled={!selectedStartTime || !selectedScreenId || isReservationTimeLoading}>
+              <Select
+                value={selectedEndTime}
+                onValueChange={setSelectedEndTime}
+                disabled={(() => {
+                  const isDisabled = !selectedStartTime || !selectedScreenId || isReservationTimeLoading;
+                  return isDisabled;
+                })()}
+              >
                 <SelectTrigger className="w-full h-10">
                   <SelectValue
                     placeholder={
@@ -516,25 +570,30 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {reservationTime?.available_time
-                    ?.filter((hour) => {
-                      // 시작 시간 이후의 시간만 표시
-                      const startHour = parseInt(selectedStartTime.split(':')[0]);
-                      if (hour <= startHour) return false;
+                  {(() => {
+                    if (!reservationTime?.available_time || !selectedStartTime) return [];
 
-                      // 오늘 날짜가 선택된 경우 현재 시간 이후만 표시
+                    const startHour = parseInt(selectedStartTime.split(':')[0]);
+
+                    const validEndTimes = getValidEndTimes(startHour, reservationTime.available_time);
+
+                    // 오늘 날짜가 선택된 경우 현재 시간 이후만 표시
+                    const filteredEndTimes = validEndTimes.filter((hour) => {
                       const dateOnly = selectedDate.split(' ')[0]; // 요일 정보 제거
+
                       if (dateOnly === new Date().toISOString().split('T')[0]) {
                         const currentHour = new Date().getHours();
                         return hour > currentHour;
                       }
                       return true;
-                    })
-                    .map((hour) => (
+                    });
+
+                    return filteredEndTimes.map((hour) => (
                       <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
                         {`${hour.toString().padStart(2, '0')}:00`}
                       </SelectItem>
-                    )) || []}
+                    ));
+                  })()}
                 </SelectContent>
               </Select>
             </div>

@@ -97,7 +97,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
     }
 
     console.log('[추천api] 성공:', `${result.data.content.length}개 조회`);
-    
+
     // ApiRecommendationResponse는 이제 ApiSearchResponse와 동일한 구조
     console.log('추천 api result:', result);
     return result;
@@ -136,10 +136,7 @@ export const getExpiringSoonFunding = async (userId?: number): Promise<ApiSearch
 };
 
 // Search API fallback 함수
-const getSearchFunding = async (params: {
-  sortBy: 'RECOMMENDED' | 'POPULAR';
-  size: number;
-}): Promise<ApiSearchResponse> => {
+const getSearchFunding = async (params: { sortBy: 'RECOMMENDED' | 'POPULAR'; size: number }): Promise<ApiSearchResponse> => {
   const url = `${process.env.NEXT_PUBLIC_BASE_URL}search?sortBy=${params.sortBy}&size=${params.size}`;
 
   const response = await fetch(url, {
