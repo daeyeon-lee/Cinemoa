@@ -1,11 +1,13 @@
 import React from 'react';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import { CineCardHorizontal } from '@/components/cards/CineCardHorizontal';
-import type { ListCardData } from '@/components/cards/CineCardVertical';
+import type { CardItem } from '@/types/mypage';
+import type { ApiSearchItem } from '@/types/searchApi';
 
 interface CardGridProps {
   data: any[];
-  convertToCardData: (item: any) => ListCardData;
+  convertToCardData: (item: any) => CardItem;
+  convertCardItemToApiSearchItem: (cardItem: CardItem) => ApiSearchItem;
   onCardClick: (fundingId: number) => void;
   onVoteClick: (id: number) => void;
 }
@@ -13,6 +15,7 @@ interface CardGridProps {
 const CardGrid: React.FC<CardGridProps> = ({ 
   data, 
   convertToCardData, 
+  convertCardItemToApiSearchItem,
   onCardClick, 
   onVoteClick
 }) => {
@@ -23,7 +26,7 @@ const CardGrid: React.FC<CardGridProps> = ({
           {/* PC/태블릿: 세로 카드 */}
           <div className="hidden sm:block">
             <CineCardVertical
-              data={convertToCardData(item)}
+              data={convertCardItemToApiSearchItem(convertToCardData(item))}
               onCardClick={onCardClick}
               onVoteClick={onVoteClick}
             />
@@ -31,7 +34,7 @@ const CardGrid: React.FC<CardGridProps> = ({
           {/* 모바일: 가로 카드 */}
           <div className="block sm:hidden w-full">
             <CineCardHorizontal
-              data={convertToCardData(item)}
+              data={convertCardItemToApiSearchItem(convertToCardData(item))}
               onCardClick={onCardClick}
               onVoteClick={onVoteClick}
             />
