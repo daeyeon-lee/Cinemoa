@@ -144,9 +144,7 @@ export const getPopularFunding = async (userId?: number): Promise<GetPopularFund
     
     // 에러 발생 시 빈 응답 반환
     return {
-      data: {
-        content: []
-      },
+      data: [],
       code: 500,
       message: '인기 상영회 조회 중 오류가 발생했습니다.',
       state: 'FAIL'
