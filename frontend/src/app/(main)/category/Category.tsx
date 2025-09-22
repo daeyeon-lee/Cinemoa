@@ -2,15 +2,18 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+// 필터 ui
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 import { SortBar } from '@/components/filters/SortBar';
+// 반응형 카드 리스트
 import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
-import type { CardItem } from '@/components/lists/ResponsiveCardList';
+// 카테고리
 import { STANDARD_CATEGORIES, findCategoryValueById, type CategoryValue } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
+// 목록조회 hook
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
 import { useAuthStore } from '@/stores/authStore';
@@ -127,6 +130,8 @@ export default function Category() {
     isFetchingNextPage,
     isLoading,
     error: !!error,
+    searchParams,
+    dataPages: data?.pages?.length || 0,
   });
 
   // 필터 초기화 핸들러
@@ -206,9 +211,9 @@ export default function Category() {
             onVoteClick={handleVoteClick}
             onResetFilters={handleResetFilters}
             onRetry={handleRetry}
-            // onLoadMore={handleLoadMore}
-            // hasNextPage={hasNextPage}
-            // isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={handleLoadMore}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
           />
         </div>
       }
