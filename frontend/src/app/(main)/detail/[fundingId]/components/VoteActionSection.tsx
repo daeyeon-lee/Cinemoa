@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';                  // 버튼 컴포넌트
+import ShareIcon from '@/component/icon/shareIcon';           // 하트 아이콘
 // import { Skeleton } from '@/components/ui/skeleton';              // 로딩 스켈레톤
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';   // 모달 컴포넌트
-import { HeartIcon } from '@/component/icon/heartIcon';           // 하트 아이콘
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';   // 모달 컴포넌트
 import { StatItem } from '@/components/cards/primitives/StatItem';
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요 토글)
 import { useAuthStore } from '@/stores/authStore';                // 로그인 사용자 상태
@@ -18,12 +18,26 @@ const VoteActionSection: React.FC< VoteActionSectionProps> = ({
   fundingId,
 }) => {
   // Context에서 데이터 가져오기
-  const { data: contextData, userId: contextUserId, stat, daysLeft } = useVoteDetailContext();
+  const { data: contextData, userId: contextUserId } = useVoteDetailContext();
+  const { funding } = contextData;
+
+  // 로그인 사용자 정보
   const { user } = useAuthStore();
   const storeUserId = user?.userId?.toString();
 
   // ✅ context → store 순으로 fallback
   const userId = contextUserId || storeUserId;
+
+  // 남은 날짜 계산
+  const calculateDaysLeft = (endDateString: string): number => {
+    const endDateObj = new Date(endDateString);
+    const now = new Date();
+    const diffTime = endDateObj.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const daysLeft = calculateDaysLeft(funding.fundingEndsOn);
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
@@ -62,9 +76,6 @@ const VoteActionSection: React.FC< VoteActionSectionProps> = ({
     currentLikeCount = detailData.stat.likeCount;
   }
   
-  // Context에서 price 가져오기
-  const price = contextData.funding.price;
-  
 
   // ✅ 좋아요 버튼 클릭: 미로그인 방지 + 낙관적 업데이트
   const handleLikeClick = () => {
@@ -89,29 +100,27 @@ const VoteActionSection: React.FC< VoteActionSectionProps> = ({
             <StatItem icon="people" fill="#2CD8CE" text={`${currentLikeCount}명이 보고 싶어해요`} />
           </div>
           <div className="min-w-0">
-            <StatItem icon="time" fill="#2CD8CE" text={`${daysLeft}일 후 수요조사 종료`} />
+            <StatItem icon="time" fill="#2CD8CE" text={`${daysLeft}일 후 종료`} />
           </div>
         </div>
         {/* 🔘 액션 버튼 영역: 좋아요 + 참여하기(결제) */}
         <div className="w-full inline-flex justify-start items-center gap-2">
+          {/* 링크 공유 */}
+          <Button variant="outline" size="lg" textSize="lg" onClick={() => setShareDialogOpen(true)}>
+            <ShareIcon stroke={currentIsLiked ? '#FF5768' : '#94A3B8'} /> {/* 색상 토글 */}
+          </Button>
+
           {/* ❤️ 좋아요 버튼: 낙관적 업데이트로 즉시 반영 */}
           <Button
-            variant="outline"                                        // 외곽선 스타일
+            variant={currentIsLiked ? "subtle" : "brand2"}       // 좋아요 상태에 따라 variant 변경
             size="lg"                                                // 라지 사이즈
             textSize="lg"                                            // 라지 폰트 (커스텀 prop 가정)
-            className={`${
-              currentIsLiked
-                ? 'h5-b border-Brand1-Strong text-Brand1-Strong gap-1 hover:border-Brand1-Strong hover:text-Brand1-Strong'
-                : 'h5-b gap-1'
-            }`}
+            className="w-full h5-b gap-1"                            // 공통 스타일만 유지
             onClick={handleLikeClick}                                // 클릭 핸들러
             disabled={likeMutation.isPending}                        // 중복 클릭 방지
           >
+            {currentIsLiked ? "보고 싶어요 취소" : "나도 보고 싶어요"}
           </Button>
-          <Button variant="secondary" size="md" className="rounded-[25px]" onClick={() => setShareDialogOpen(true)}>
-            링크 공유
-          </Button>
-
         </div>
       </div>
 

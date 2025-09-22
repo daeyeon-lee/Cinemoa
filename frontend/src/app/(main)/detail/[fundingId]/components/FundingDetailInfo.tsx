@@ -69,7 +69,7 @@ export default function FundingDetailInfo() {
     <section>
       {/* ✅ 네비게이션 버튼 행: 펀딩 소개 / 상영물 정보 / 영화관 정보 / 환불 및 위약 정보 */}
       <div className="flex flex-col gap-10 mt-10">
-        <div className="grid grid-cols-2 sm:flex sm:flex-nowrap w-full px-4 py-2 gap-2 sm:overflow-x-auto">
+        <div className="grid grid-cols-2 md:flex md:flex-nowrap w-full px-4 py-2 gap-2 md:overflow-x-auto">
           <Button
             variant={activeButton === "funding-info" ? "brand1" : "tertiary"} // ✅ 현재 탭과 일치하면 강조
             size="md"

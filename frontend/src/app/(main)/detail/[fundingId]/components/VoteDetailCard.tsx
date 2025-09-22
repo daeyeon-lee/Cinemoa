@@ -21,7 +21,7 @@ const VoteDetailCard: React.FC<VoteDetailCardProps> = ({
   return (
     <>
       {/* 메인 레이아웃: 이미지 + 정보 */}
-      <div className="w-full min-w-0 py-5 flex flex-col sm:flex-row justify-between sm:gap-12">
+      <div className="w-full min-w-0 px-4 flex flex-col sm:flex-row justify-between sm:gap-12">
         {/* 왼쪽: 영화 배너 이미지 */}
         <div className="w-full sm:w-[465px] h-auto sm:h-[420px]">
           <Media
@@ -33,7 +33,7 @@ const VoteDetailCard: React.FC<VoteDetailCardProps> = ({
         </div>
 
         {/* 오른쪽: 프로젝트 정보 영역 */}
-        <div className="flex-1 min-w-0 px-4 py-5 flex flex-col justify-between">
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
           {/* 프로젝트 기본 정보 */}
           <ProjectInfoSection 
             type="VOTE"
@@ -52,7 +52,7 @@ const VoteDetailCard: React.FC<VoteDetailCardProps> = ({
       </div>
 
       {/* 모바일 전용 하단 고정 액션 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-500 sm:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-800 px-5 pb-5 sm:hidden">
         <VoteActionSection
           fundingId={fundingId}              // 자식이 캐시에서 상태 조회
         />

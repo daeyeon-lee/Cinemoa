@@ -5,14 +5,12 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button"; 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; 
 import { Separator } from "@/components/ui/separator"; 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"; 
-import { Input } from "@/components/ui/input"; 
 import { Media } from "../../../../../components/cards/primitives/Media"; 
 import KakaoMap from "@/components/maps/KakaoMap"; 
 import { Calendar as CalendarIcon, Clock as TimeIcon, MapPin as LocationIcon } from "lucide-react"; 
 
 import { useVoteDetail } from '@/contexts/VoteDetailContext';
-import { formatTime, formatKoreanDate } from '@/utils/dateUtils';
+import { formatKoreanDate } from '@/utils/dateUtils';
 type TabId = 'funding-info' | 'movie-info' | 'theater-info' | 'refund-info';
 
 // 🟢 FundingDetailInfo: 상세 정보 섹션 (탭/스크롤 내비 + 소개/상영물/영화관/환불)
@@ -22,30 +20,11 @@ export default function VoteDetailInfo() {
   // ✅ 상단 버튼(active 상태) 관리
   const [activeButton, setActiveButton] = useState("funding-info");
 
-  // ✅ 공유 다이얼로그 열림 여부
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-
-  // ✅ 화면 중앙 커스텀 알림 문구 (예: "링크가 복사되었습니다")
-  const [alertMessage, setAlertMessage] = useState("");
-
   // ✅ 버튼 클릭 시 active 상태 변경 + 해당 섹션으로 스크롤
   const handleButtonClick = (buttonId: TabId, targetId: TabId) => {
     setActiveButton(buttonId); // 버튼 활성화 상태 변경
     // 지정된 id의 섹션으로 부드럽게 스크롤 이동
     document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // ✅ 현재 페이지 링크 복사
-  const handleCopyLink = async () => {
-    try {
-      const href = typeof window !== "undefined" ? window.location.href : "";
-      await navigator.clipboard.writeText(href);
-      setAlertMessage("링크가 복사되었습니다.");
-      setTimeout(() => setAlertMessage(""), 1500); // 1.5초 뒤 알림 닫기
-    } catch {
-      setAlertMessage("복사에 실패했습니다. 다시 시도해주세요.");
-      setTimeout(() => setAlertMessage(""), 1500);
-    }
   };
 
   // ✅ data 구조 분해: 사용되는 필드만 추출
@@ -65,46 +44,39 @@ export default function VoteDetailInfo() {
     <section>
       {/* ✅ 네비게이션 버튼 행: 펀딩 소개 / 상영물 정보 / 영화관 정보 / 환불 및 위약 정보 */}
       <div className="flex flex-col gap-10 mt-10">
-        <div className="grid grid-cols-2 sm:flex sm:flex-nowrap w-full px-4 py-2 gap-2 sm:overflow-x-auto">
+        <div className="flex px-4 py-2 gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <Button
-            variant={activeButton === "funding-info" ? "brand1" : "tertiary"} // ✅ 현재 탭과 일치하면 강조
+            variant={activeButton === "funding-info" ? "brand2" : "subtle"} // ✅ 현재 탭과 일치하면 강조
             size="md"
-            className="rounded-[25px]"
+            className="rounded-[25px] flex-shrink-0 whitespace-nowrap"
             onClick={() => handleButtonClick("funding-info", "funding-info")}
           >
             펀딩 소개
           </Button>
           <Button
-            variant={activeButton === "movie-info" ? "brand1" : "tertiary"}
+            variant={activeButton === "movie-info" ? "brand2" : "subtle"}
             size="md"
-            className="rounded-[25px]"
+            className="rounded-[25px] flex-shrink-0 whitespace-nowrap"
             onClick={() => handleButtonClick("movie-info", "movie-info")}
           >
             상영물 정보
           </Button>
           <Button
-            variant={activeButton === "theater-info" ? "brand1" : "tertiary"}
+            variant={activeButton === "theater-info" ? "brand2" : "subtle"}
             size="md"
-            className="rounded-[25px]"
+            className="rounded-[25px] flex-shrink-0 whitespace-nowrap"
             onClick={() => handleButtonClick("theater-info", "theater-info")}
           >
             영화관 정보
           </Button>
           <Button
-            variant={activeButton === "refund-info" ? "brand1" : "tertiary"}
+            variant={activeButton === "refund-info" ? "brand2" : "subtle"}
             size="md"
-            className="rounded-[25px]"
+            className="rounded-[25px] flex-shrink-0 whitespace-nowrap"
             onClick={() => handleButtonClick("refund-info", "refund-info")}
           >
             환불 및 위약 정보
           </Button>
-
-          {/* 공유하기: 필요 시 오른쪽 정렬용 보조 버튼 */}
-          <div className="sm:ml-auto">
-            <Button variant="secondary" size="md" className="rounded-[25px]" onClick={() => setShareDialogOpen(true)}>
-              링크 공유
-            </Button>
-          </div>
         </div>
 
         {/* ✅ 펀딩 소개 섹션 */}
@@ -219,52 +191,6 @@ export default function VoteDetailInfo() {
           </CardContent>
         </Card>
       </div>
-
-      {/* ✅ 공유 다이얼로그 */}
-      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-        <DialogContent variant="share" className="space-y-6">
-          <DialogHeader className="space-y-2">
-            <DialogTitle className="text-center">링크 공유</DialogTitle>
-            <DialogDescription className="text-center text-tertiary">
-              현재 페이지의 링크를 복사하여 공유할 수 있습니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="h5 text-secondary">현재 페이지 링크</label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  className="flex-1 h-10 p2 text-secondary bg-BG-1 border-stroke-3 focus:border-primary-500 transition-colors"
-                  value={typeof window !== "undefined" ? window.location.href : ""}
-                  type="text"
-                  readOnly
-                />
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="h-10 px-4 whitespace-nowrap"
-                  onClick={handleCopyLink}
-                >
-                  복사
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ✅ 중앙 띄우는 커스텀 알림 (토스트 대용) */}
-      {alertMessage && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center animate-in fade-in duration-200">
-          {/* 어두운 배경 오버레이 */}
-          <div className="absolute inset-0 bg-black/80" />
-          {/* 알림창 컨텐츠 */}
-          <div className="relative bg-BG-2 text-primary px-8 py-6 rounded-2xl shadow-2xl max-w-md w-max text-center animate-in zoom-in-95 duration-200">
-            <p className="h6-b">{alertMessage}</p>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
