@@ -33,6 +33,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
   const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
   const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
   const [isLoading, setIsLoading] = useState(false);
+  // const [lastRequestTime, setLastRequestTime] = useState<number>(0);
   
   // 현재 좋아요 상태와 좋아요 수
   const currentIsLiked = localIsLiked;
@@ -62,10 +63,15 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
       return;
     }
     
-    // 중복 클릭 방지
-    if (isLoading) return;
+    // 중복 클릭 방지 (로딩 중이거나 최근 1초 내 요청)
+    // const now = Date.now();
+    // if (isLoading || (now - lastRequestTime < 1000)) {
+    //   console.log('[CineCardVertical] 중복 요청 방지:', { isLoading, timeSinceLastRequest: now - lastRequestTime });
+    //   return;
+    // }
     
     setIsLoading(true);
+    // setLastRequestTime(now);
     
     // 낙관적 업데이트 - 즉시 로컬 상태 변경
     setLocalIsLiked(!currentIsLiked);
@@ -83,6 +89,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
       setLocalIsLiked(currentIsLiked);
       setLocalLikeCount(currentLikeCount);
       console.error('좋아요 토글 실패:', error);
+      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
