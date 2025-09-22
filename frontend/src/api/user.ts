@@ -1,6 +1,6 @@
 import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
-import type { ApiSearchResponse, ApiRecommendationResponse } from '@/types/searchApi';
+import type { ApiSearchResponse } from '@/types/searchApi';
 import type { GetPopularFundingResponse, GetClosingSoonFundingResponse } from '@/types/home';
 
 // 사용자 추가 정보 입력 API
@@ -89,19 +89,27 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
       return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
     }
 
-    const result: ApiRecommendationResponse = await response.json();
-
-    // 데이터가 비어있으면 fallback
-    if (!result.data || !result.data.content || result.data.content.length === 0) {
+    const rawResult = await response.json();
+    
+    // 데이터가 비어있으면 fallback (변환 전에 미리 체크)
+    if (!rawResult.data || rawResult.data.length === 0) {
       console.warn('[추천api] 빈 데이터, search fallback 사용');
       return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
     }
-
-    console.log('[추천api] 성공:', `${result.data.content.length}개 조회`);
     
-    // ApiRecommendationResponse는 이제 ApiSearchResponse와 동일한 구조
-    console.log('추천 api result:', result);
-    return result;
+    console.log('[추천api] 성공:', rawResult);
+    
+    // rawResult를 ApiSearchResponse 구조로 변환하여 반환
+    return {
+      data: {
+        content: rawResult.data,
+        nextCursor: null,
+        hasNext: false
+      },
+      code: rawResult.code,
+      message: rawResult.message,
+      state: rawResult.state
+    };
   } catch (error) {
     console.error('[추천api] 오류, search fallback 사용:', error);
     return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
