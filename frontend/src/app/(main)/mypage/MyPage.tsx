@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
-import type { ListCardData } from '@/components/cards/CineCardVertical';
+import type { CardItem } from '@/types/mypage';
+import type { ApiSearchItem } from '@/types/searchApi';
 import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFunding } from '@/api/mypage';
 import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
@@ -296,26 +297,26 @@ export default function MyPage() {
     }
   }, [likedType]);
 
-  // API 데이터를 ListCardData 형식으로 변환
-  // 내가 제안한 상영회 데이터를 ListCardData 형식으로 변환
-  const convertToCardData = (proposal: FundingProposal): ListCardData => {
+  // CardItem을 ApiSearchItem으로 변환하는 함수
+  const convertCardItemToApiSearchItem = (cardItem: CardItem): ApiSearchItem => {
     return {
       funding: {
-        fundingId: proposal.funding.fundingId,
-        title: proposal.funding.title,
-        bannerUrl: proposal.funding.bannerUrl,
-        state: proposal.funding.state,
-        progressRate: proposal.funding.progressRate,
-        fundingEndsOn: proposal.funding.fundingEndsOn,
-        screenDate: proposal.funding.screenDate,
-        screenMinDate: proposal.funding.screenMinDate,
-        screenMaxDate: proposal.funding.screenMaxDate,
-        price: proposal.funding.price,
-        maxPeople: proposal.funding.maxPeople,
-        participantCount: proposal.funding.participantCount,
-        favoriteCount: proposal.funding.favoriteCount,
-        isLiked: proposal.funding.isLiked,
-        fundingType: proposal.funding.fundingType,
+        ...cardItem.funding,
+        state: cardItem.funding.state as any,
+        screenDate: cardItem.funding.screenDate || '',
+      },
+      cinema: cardItem.cinema,
+    };
+  };
+
+  // API 데이터를 CardItem 형식으로 변환
+  // 내가 제안한 상영회 데이터를 CardItem 형식으로 변환
+  const convertToCardData = (proposal: FundingProposal): CardItem => {
+    return {
+      funding: {
+        ...proposal.funding,
+        state: proposal.funding.state as any,
+        screenDate: proposal.funding.screenDate || '',
       },
       cinema: {
         cinemaId: proposal.cinema.cinemaId,
@@ -326,25 +327,13 @@ export default function MyPage() {
     };
   };
 
-  // 참여한 상영회 데이터를 ListCardData 형식으로 변환
-  const convertParticipatedToCardData = (participated: ParticipatedFunding): ListCardData => {
+  // 참여한 상영회 데이터를 CardItem 형식으로 변환
+  const convertParticipatedToCardData = (participated: ParticipatedFunding): CardItem => {
     return {
       funding: {
-        fundingId: participated.funding.fundingId,
-        title: participated.funding.title,
-        bannerUrl: participated.funding.bannerUrl,
-        state: participated.funding.state,
-        progressRate: participated.funding.progressRate,
-        fundingEndsOn: participated.funding.fundingEndsOn,
-        screenDate: participated.funding.screenDate,
-        screenMinDate: participated.funding.screenMinDate,
-        screenMaxDate: participated.funding.screenMaxDate,
-        price: participated.funding.price,
-        maxPeople: participated.funding.maxPeople,
-        participantCount: participated.funding.participantCount,
-        favoriteCount: participated.funding.favoriteCount,
-        isLiked: participated.funding.isLiked,
-        fundingType: participated.funding.fundingType,
+        ...participated.funding,
+        state: participated.funding.state as any,
+        screenDate: participated.funding.screenDate || '',
       },
       cinema: {
         cinemaId: participated.cinema.cinemaId,
@@ -355,28 +344,17 @@ export default function MyPage() {
     };
   };
 
-  // 보고싶어요 한 상영회 데이터를 ListCardData 형식으로 변환
-  const convertLikedToCardData = (liked: LikedFunding): ListCardData => {
+  // 보고싶어요 한 상영회 데이터를 CardItem 형식으로 변환
+  const convertLikedToCardData = (liked: LikedFunding): CardItem => {
     // price가 0보다 크면 FUNDING, 아니면 VOTE로 구분
     const fundingType = liked.funding.price > 0 ? 'FUNDING' : 'VOTE';
 
     return {
       funding: {
-        fundingId: liked.funding.fundingId,
-        title: liked.funding.title,
-        bannerUrl: liked.funding.bannerUrl,
-        state: liked.funding.state,
-        progressRate: liked.funding.progressRate,
-        fundingEndsOn: liked.funding.fundingEndsOn,
-        screenDate: liked.funding.screenDate,
-        screenMinDate: liked.funding.screenMinDate,
-        screenMaxDate: liked.funding.screenMaxDate,
-        price: liked.funding.price,
-        maxPeople: liked.funding.maxPeople,
-        participantCount: liked.funding.participantCount,
-        favoriteCount: liked.funding.favoriteCount,
-        isLiked: liked.funding.isLiked,
+        ...liked.funding,
         fundingType: fundingType,
+        state: liked.funding.state as any,
+        screenDate: liked.funding.screenDate || '',
       },
       cinema: {
         cinemaId: liked.cinema.cinemaId,
@@ -388,12 +366,13 @@ export default function MyPage() {
   };
 
   // 샘플 데이터
-  const sampleCardData: ListCardData = {
+  const sampleCardData: CardItem = {
     funding: {
       fundingId: 1,
       title: '샘플 영화를 봅시다',
+      videoName: '샘플 영화',
       bannerUrl: '/images/image.png',
-      state: 'ACTIVE',
+      state: 'ON_PROGRESS',
       progressRate: 75,
       fundingEndsOn: '2024-12-31T23:59:59',
       screenDate: '2025-01-15T19:00:00',
@@ -412,12 +391,13 @@ export default function MyPage() {
     },
   };
 
-  const sampleVoteData: ListCardData = {
+  const sampleVoteData: CardItem = {
     funding: {
       fundingId: 2,
       title: '투표 영화 제목',
+      videoName: '투표 영화',
       bannerUrl: '/images/image.png',
-      state: 'ACTIVE',
+      state: 'ON_PROGRESS',
       progressRate: 0,
       fundingEndsOn: '2024-12-31T23:59:59',
       screenDate: '2025-01-15T19:00:00',
@@ -607,7 +587,7 @@ export default function MyPage() {
                   {myProposals.map((proposal, index) => (
                     <div key={proposal.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
                       <CineCardVertical
-                        data={convertToCardData(proposal)}
+                        data={convertCardItemToApiSearchItem(convertToCardData(proposal))}
                         onCardClick={handleCardClick}
                         onVoteClick={(id) => console.log('투표 클릭:', id)}
                         showStateTag={true}
@@ -690,8 +670,8 @@ export default function MyPage() {
                   {myParticipated.map((participated, index) => (
                     <div key={participated.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
                       <CineCardVertical
-                        data={convertParticipatedToCardData(participated)}
-                        onCardClick={(id) => console.log('카드 클릭:', id)}
+                        data={convertCardItemToApiSearchItem(convertParticipatedToCardData(participated))}
+                        onCardClick={handleCardClick}
                         onVoteClick={(id) => console.log('투표 클릭:', id)}
                         showStateTag={true}
                         stateTagClassName="state state-active"
@@ -773,8 +753,8 @@ export default function MyPage() {
                   {myLiked && myLiked.map((liked, index) => (
                     <div key={liked.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
                       <CineCardVertical
-                        data={convertLikedToCardData(liked)}
-                        onCardClick={(id) => console.log('카드 클릭:', id)}
+                        data={convertCardItemToApiSearchItem(convertLikedToCardData(liked))}
+                        onCardClick={handleCardClick}
                         onVoteClick={(id) => console.log('투표 클릭:', id)}
                         showStateTag={true}
                         stateTagClassName="state state-active"

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '../primitives/Progress';
 import { ApiSearchItem } from '@/types/searchApi';
+import { addFundingLike, deleteFundingLike } from '@/api/fundingActions';
+import { useAuthStore } from '@/stores/authStore';
 
 type HorizontalRightProps = {
   data: ApiSearchItem;
@@ -12,6 +14,19 @@ type HorizontalRightProps = {
 const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 'ready', onVoteClick }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
+  // 좋아요 토글을 위한 상태 관리
+  const { user } = useAuthStore();
+  const userId = user?.userId?.toString();
+  
+  // 로컬 상태로 좋아요 상태 관리
+  const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
+  const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 현재 좋아요 상태와 좋아요 수
+  const currentIsLiked = localIsLiked;
+  const currentLikeCount = localLikeCount;
+
   const calculateDaysLeft = (endDate: string): number => {
     const end = new Date(endDate);
     const now = new Date();
@@ -21,6 +36,46 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
   };
 
   const daysLeft = calculateDaysLeft(data.funding.fundingEndsOn);
+
+  const handleVoteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // 로그인 체크
+    if (!userId) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+    
+    // 중복 클릭 방지
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    // 낙관적 업데이트 - 즉시 로컬 상태 변경
+    setLocalIsLiked(!currentIsLiked);
+    setLocalLikeCount(currentIsLiked ? currentLikeCount - 1 : currentLikeCount + 1);
+    
+    try {
+      // API 호출
+      if (currentIsLiked) {
+        await deleteFundingLike(data.funding.fundingId, userId);
+      } else {
+        await addFundingLike(data.funding.fundingId, userId);
+      }
+    } catch (error) {
+      // 에러 시 롤백
+      setLocalIsLiked(currentIsLiked);
+      setLocalLikeCount(currentLikeCount);
+      console.error('좋아요 토글 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+    
+    // 기존 onVoteClick 콜백도 호출
+    if (onVoteClick) {
+      onVoteClick(data.funding.fundingId);
+    }
+  };
 
   return (
     <div className="w-[114px] bg-BG-1 rounded-xl self-stretch p-3 inline-flex flex-col justify-between items-start">
@@ -48,7 +103,7 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
         <div className="w-full flex flex-col justify-between h-full">
           {/* 오-상단 --명이 보고싶어요 */}
           <div className="text-slate-50 text-p2-b leading-normal">
-            {data.funding.favoriteCount}명이
+            {currentLikeCount}명이
             <br /> 보고싶어요
           </div>
           {/* 오-하단 */}
@@ -57,10 +112,11 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onVoteClick && onVoteClick(data.funding.fundingId)}
-              className={`w-full gap-1 ${data.funding.isLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}
+              onClick={handleVoteClick}
+              disabled={isLoading}
+              className={`w-full gap-1 ${currentIsLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}
             >
-              <span className="text-lg">{data.funding.isLiked ? '♥' : '♡'}</span>
+              <span className="text-lg">{currentIsLiked ? '♥' : '♡'}</span>
               보고싶어요
             </Button>
           </div>
