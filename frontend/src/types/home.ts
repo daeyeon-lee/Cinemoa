@@ -67,11 +67,7 @@ export interface GetClosingSoonFundingParams {
  * 종료 임박 상영회 조회 응답
  */
 export interface GetClosingSoonFundingResponse {
-  data: {
-    content: ApiSearchItem[];
-    nextCursor: string | null;
-    hasNext: boolean;
-  };
+  data: ApiSearchItem[];
   code: number;
   message: string;
   state: 'SUCCESS' | 'FAIL' | 'ERROR';
