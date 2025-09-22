@@ -30,15 +30,15 @@ const isValidResponse = (page: any): page is ApiSearchResponse => {
 const getNextPageParam = (lastPage: ApiSearchResponse, _: ApiSearchResponse[], lastPageParam: string | number) => {
   if (!isValidResponse(lastPage)) return undefined;
 
-  const { hasNext, nextCursor, content } = lastPage.data;
+  const { hasNextPage, nextCursor, content } = lastPage.data;
 
-  if (hasNext && nextCursor) {
+  if (hasNextPage && nextCursor) {
     // 서버 페이지네이션: nextCursor 사용
     console.log('[useSearch] 다음 서버 페이지:', nextCursor);
     return nextCursor;
   }
 
-  if (!hasNext && content) {
+  if (!hasNextPage && content) {
     // 클라이언트 페이지네이션: 16개씩 슬라이싱 계산
     const currentPage = typeof lastPageParam === 'number' ? lastPageParam : 0;
     const nextStartIndex = (currentPage + 1) * PAGE_SIZE;
@@ -63,9 +63,9 @@ const selectData = (data: InfiniteData<ApiSearchResponse, string | number>) => {
     return { ...data, content: [] };
   }
 
-  const { hasNext, content: allItems } = firstPage.data;
+  const { hasNextPage, content: allItems } = firstPage.data;
 
-  if (hasNext) {
+  if (hasNextPage) {
     // 서버 페이지네이션: 모든 페이지 평탄화
     const content = data.pages.filter(isValidResponse).flatMap((page) => page.data?.content || []);
 
@@ -104,7 +104,7 @@ export function useSearch(params: UseSearchParams = {}) {
 
       console.log('[useSearch] 응답:', {
         itemCount: response.data?.content?.length || 0,
-        hasNext: response.data?.hasNext,
+        hasNextPage: response.data?.hasNextPage,
         nextCursor: response.data?.nextCursor,
       });
 

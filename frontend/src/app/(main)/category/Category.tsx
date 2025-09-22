@@ -174,6 +174,25 @@ export default function Category() {
     // TODO: 좋아요 토글 로직 구현
   }, []);
 
+  // 무한 스크롤 처리
+  const handleScroll = useCallback(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    if (scrollTop + windowHeight >= documentHeight - 100) {
+      console.log('[Category] 스크롤 감지 - 다음 페이지 로드');
+      fetchNextPage();
+    }
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
   return (
     <ListShell
       header={

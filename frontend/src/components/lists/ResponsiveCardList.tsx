@@ -4,6 +4,7 @@ import { CineCardHorizontal } from '@/components/cards/CineCardHorizontal';
 import { Button } from '@/components/ui/button';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { ApiSearchItem } from '@/types/searchApi';
+import { LoadingIndicator, NoMoreData } from '@/app/(main)/mypage/detail/components/LoadingStates';
 
 /**
  * 카드 아이템 타입
@@ -230,19 +231,6 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
         ))}
       </div>
 
-      {/* 자동 무한스크롤 트리거 영역 */}
-      {/* 이 요소가 화면에 보이면 자동으로 다음 페이지가 로드됩니다 */}
-      {hasNextPage && <div ref={observerRef} className="h-20 flex items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg my-4">
-        {isFetchingNextPage ? (
-          <div className="text-blue-600 text-sm font-medium">
-            더 많은 콘텐츠를 불러오는 중...
-          </div>
-        ) : (
-          <div className="text-blue-500 text-xs">
-            무한스크롤 트리거 영역 (디버깅용)
-          </div>
-        )}
-      </div>}
 
       {/* 수동 로드 더보기 버튼 (백업용 - 자동 스크롤이 작동하지 않을 때) */}
       {hasNextPage && !isFetchingNextPage && (
@@ -252,6 +240,10 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
           </Button>
         </div>
       )}
+
+      {/* 무한스크롤 로딩 상태 */}
+      <LoadingIndicator isLoadingMore={isFetchingNextPage} />
+      <NoMoreData hasNextPage={hasNextPage} dataLength={items.length} />
     </div>
   );
 };
