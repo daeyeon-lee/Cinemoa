@@ -16,6 +16,7 @@ interface CategoryButtonProps {
   uniformWidth?: boolean;
   onClick?: () => void;
   className?: string;
+  notchColor?: string;
 }
 
 export function CategoryButton({
@@ -28,6 +29,7 @@ export function CategoryButton({
   uniformWidth = false,
   onClick,
   className,
+  notchColor = 'bg-BG-0',
 }: CategoryButtonProps) {
   const isVotePage = page === 'vote';
 
@@ -80,8 +82,8 @@ export function CategoryButton({
       {/* 노치 */}
       {showNotches && (
         <>
-          <div className="absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 bg-BG-0 w-4 h-4 -left-2" />
-          <div className="absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 bg-BG-0 w-4 h-4 -right-2" />
+          <div className={`absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 ${notchColor} w-4 h-4 -left-2`} />
+          <div className={`absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 ${notchColor} w-4 h-4 -right-2`} />
         </>
       )}
     </div>

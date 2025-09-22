@@ -34,7 +34,7 @@ const CategorySelectSection: React.FC<CategorySelectSectionProps> = ({ categorie
     return subCategoryItems;
   }, [selectedCategory]);
 
-  const handleCategoryChange = (newCategory: string) => {
+  const handleCategoryChange = (newCategory: CategoryValue) => {
     onCategoryChange(newCategory);
     onSubCategoryChange(null); // 2차 카테고리 초기화
   };
