@@ -24,7 +24,6 @@ public class FundingDetailResponse {
     private ScreenInfo screen;
     private CinemaInfo cinema;
 
-
     @Data
     @Builder
     @NoArgsConstructor
@@ -74,6 +73,7 @@ public class FundingDetailResponse {
         private Integer viewCount;
         private Integer likeCount;
         private Boolean isLiked;
+        private Boolean isParticipated;
     }
 
     @Data

@@ -39,6 +39,8 @@ import io.ssafy.cinemoa.global.redis.service.RedisRankingService;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
 import io.ssafy.cinemoa.image.enums.ImageCategory;
 import io.ssafy.cinemoa.image.service.ImageService;
+import io.ssafy.cinemoa.payment.enums.UserTransactionState;
+import io.ssafy.cinemoa.payment.repository.UserTransactionRepository;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import java.time.LocalDate;
@@ -62,394 +64,400 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class FundingService {
-  private static final String SEAT_RESERVATION_SCRIPT = """
-      local fundingId = KEYS[1]
-              local userId = KEYS[2]
-              local availableSeats = tonumber(ARGV[1])
-              local ttl = tonumber(ARGV[2])
+    private static final String SEAT_RESERVATION_SCRIPT = """
+            local fundingId = KEYS[1]
+                    local userId = KEYS[2]
+                    local availableSeats = tonumber(ARGV[1])
+                    local ttl = tonumber(ARGV[2])
+            
+                    local seatKey = "seat:" .. fundingId .. ":" .. userId
+            
+                    -- 사용자가 이미 점유했는지 확인
+                    if redis.call("exists", seatKey) == 1 then
+                        return {0, "ALREADY_HOLDING"}
+                    end
+            
+                    -- 현재 점유중인 좌석 수 확인
+                    local pattern = "seat:" .. fundingId .. ":*"
+                    local occupiedSeats = #(redis.call("keys", pattern))
+            
+                    if occupiedSeats >= availableSeats then
+                        return {0, "NO_SEATS_LEFT"}
+                    end
+            
+                    -- 사용자 점유 등록
+                    redis.call("setex", seatKey, ttl, "reserved")
+            
+                    return {1, "SUCCESS"}
+            """;
+    private static final String RELEASE_SEAT_SCRIPT = """
+            local fundingId = KEYS[1]
+            local userId = KEYS[2]
+            
+            local seatKey = "seat:" .. fundingId .. ":" .. userId
+            
+            -- 점유한 좌석이 있는지 확인
+            if redis.call("exists", seatKey) == 0 then
+                return {0}
+            end
+            
+            redis.call("del",seatKey")
+            
+            return {1}
+            """;
+    private final CategoryRepository categoryRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
+    private final FundingRepository fundingRepository;
+    private final FundingStatRepository statRepository;
+    private final FundingListRepository fundingListRepository;
 
-              local seatKey = "seat:" .. fundingId .. ":" .. userId
+    private final ScreenRepository screenRepository;
+    private final CinemaRepository cinemaRepository;
 
-              -- 사용자가 이미 점유했는지 확인
-              if redis.call("exists", seatKey) == 1 then
-                  return {0, "ALREADY_HOLDING"}
-              end
+    private final ImageService imageService;
 
-              -- 현재 점유중인 좌석 수 확인
-              local pattern = "seat:" .. fundingId .. ":*"
-              local occupiedSeats = #(redis.call("keys", pattern))
+    private final UserRepository userRepository;
+    private final UserFavoriteRepository userFavoriteRepository;
+    private final UserTransactionRepository userTransactionRepository;
+    private final RedisService redisService;
+    private final RedisRankingService redisRankingService;
+    private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
 
-              if occupiedSeats >= availableSeats then
-                  return {0, "NO_SEATS_LEFT"}
-              end
+    @Transactional
+    public FundingCreationResult createFunding(MultipartFile image, FundingCreateRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(ResourceNotFoundException::ofUser);
 
-              -- 사용자 점유 등록
-              redis.call("setex", seatKey, ttl, "reserved")
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(ResourceNotFoundException::ofCategory);
 
-              return {1, "SUCCESS"}
-      """;
-  private static final String RELEASE_SEAT_SCRIPT = """
-      local fundingId = KEYS[1]
-      local userId = KEYS[2]
+        Cinema cinema = cinemaRepository.findById(request.getCinemaId())
+                .orElseThrow(ResourceNotFoundException::ofCinema);
 
-      local seatKey = "seat:" .. fundingId .. ":" .. userId
+        Screen screen = screenRepository.findById(request.getScreenId())
+                .orElseThrow(ResourceNotFoundException::ofScreen);
 
-      -- 점유한 좌석이 있는지 확인
-      if redis.call("exists", seatKey) == 0 then
-          return {0}
-      end
+        if (!unavailableTImeBatchRepository.insertRangeIfAvailable(screen.getScreenId(), request.getScreenDay(),
+                request.getScreenStartsOn(), request.getScreenEndsOn())) {
+            throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
+        }
 
-      redis.call("del",seatKey")
+        log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
+        if (image != null) {
+            String localPath = imageService.saveImage(image, ImageCategory.BANNER);
+            String imagePath = imageService.translatePath(localPath);
+            request.setPosterUrl(imagePath);
+        }
 
-      return {1}
-      """;
-  private final CategoryRepository categoryRepository;
-  private final ApplicationEventPublisher eventPublisher;
-  private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
-  private final FundingRepository fundingRepository;
-  private final FundingStatRepository statRepository;
-  private final FundingListRepository fundingListRepository;
+        Funding funding = Funding.builder()
+                .fundingType(FundingType.FUNDING)
+                .bannerUrl(request.getPosterUrl())
+                .content(request.getContent())
+                .title(request.getTitle())
+                .videoName(request.getVideoName())
+                .videoContent(request.getVideoContent())
+                .leader(user)
+                .maxPeople(request.getMaxPeople())
+                .screenDay(request.getScreenDay())
+                .screenStartsOn(request.getScreenStartsOn())
+                .screenEndsOn(request.getScreenEndsOn())
+                .category(category)
+                .state(FundingState.ON_PROGRESS)
+                .endsOn(request.getScreenDay().minusDays(7))
+                .cinema(cinema)
+                .screen(screen)
+                .build();
 
-  private final ScreenRepository screenRepository;
-  private final CinemaRepository cinemaRepository;
+        fundingRepository.save(funding);
 
-  private final ImageService imageService;
-
-  private final UserRepository userRepository;
-  private final UserFavoriteRepository userFavoriteRepository;
-  private final RedisService redisService;
-  private final RedisRankingService redisRankingService;
-  private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
-
-  @Transactional
-  public FundingCreationResult createFunding(MultipartFile image, FundingCreateRequest request) {
-    User user = userRepository.findById(request.getUserId())
-        .orElseThrow(ResourceNotFoundException::ofUser);
-
-    Category category = categoryRepository.findById(request.getCategoryId())
-        .orElseThrow(ResourceNotFoundException::ofCategory);
-
-    Cinema cinema = cinemaRepository.findById(request.getCinemaId())
-        .orElseThrow(ResourceNotFoundException::ofCinema);
-
-    Screen screen = screenRepository.findById(request.getScreenId())
-        .orElseThrow(ResourceNotFoundException::ofScreen);
-
-    if (!unavailableTImeBatchRepository.insertRangeIfAvailable(screen.getScreenId(), request.getScreenDay(),
-        request.getScreenStartsOn(), request.getScreenEndsOn())) {
-      throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
+        FundingStat fundingStat = FundingStat.builder()
+                .funding(funding)
+                .build();
+        statRepository.save(fundingStat);
+        eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
+ 
+        return new FundingCreationResult(funding.getFundingId());
     }
 
-    log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
-    if (image != null) {
-      String localPath = imageService.saveImage(image, ImageCategory.BANNER);
-      String imagePath = imageService.translatePath(localPath);
-      request.setPosterUrl(imagePath);
+    @Transactional
+    public void holdSeatOf(Long userId, Long fundingId) {
+        // put seat info on redis, then reduce remaining seats.
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+
+        FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+
+        int availableSeats = funding.getMaxPeople() - fundingStat.getParticipantCount();
+
+        if (availableSeats <= 0) {
+            throw SeatLockException.ofNoRemainingSeat();
+        }
+
+        List<Object> result = redisService.execute(
+                RedisScript.of(SEAT_RESERVATION_SCRIPT, List.class),
+                Arrays.asList(fundingId.toString(), userId.toString()),
+                String.valueOf(availableSeats),
+                "180");
+
+        Long success = (Long) result.get(0);
+        String message = (String) result.get(1);
+
+        if (success == 0) {
+            switch (message) {
+                case "NO_SEATS_LEFT":
+                    throw SeatLockException.ofNoRemainingSeat();
+                case "ALREADY_HOLDING":
+                    throw SeatLockException.ofAlreadyHolding();
+            }
+        }
     }
 
-    Funding funding = Funding.builder()
-        .fundingType(FundingType.FUNDING)
-        .bannerUrl(request.getPosterUrl())
-        .content(request.getContent())
-        .title(request.getTitle())
-        .videoName(request.getVideoName())
-        .videoContent(request.getVideoContent())
-        .leader(user)
-        .maxPeople(request.getMaxPeople())
-        .screenDay(request.getScreenDay())
-        .screenStartsOn(request.getScreenStartsOn())
-        .screenEndsOn(request.getScreenEndsOn())
-        .category(category)
-        .state(FundingState.ON_PROGRESS)
-        .endsOn(request.getScreenDay().minusDays(7))
-        .cinema(cinema)
-        .screen(screen)
-        .build();
+    public void unholdSeatOf(Long userId, Long fundingId) {
+        List<Object> result = redisService.execute(
+                RedisScript.of(RELEASE_SEAT_SCRIPT, List.class),
+                Arrays.asList(fundingId.toString(), userId.toString()));
 
-    fundingRepository.save(funding);
-
-    FundingStat fundingStat = FundingStat.builder()
-        .funding(funding)
-        .build();
-    statRepository.save(fundingStat);
-    eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
-
-    return new FundingCreationResult(funding.getFundingId());
-  }
-
-  @Transactional
-  public void holdSeatOf(Long userId, Long fundingId) {
-    // put seat info on redis, then reduce remaining seats.
-    Funding funding = fundingRepository.findById(fundingId)
-        .orElseThrow(ResourceNotFoundException::ofFunding);
-
-    FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
-        .orElseThrow(ResourceNotFoundException::ofFunding);
-
-    int availableSeats = funding.getMaxPeople() - fundingStat.getParticipantCount();
-
-    if (availableSeats <= 0) {
-      throw SeatLockException.ofNoRemainingSeat();
+        Integer success = (Integer) result.get(0);
+        if (success == 0) {
+            throw SeatLockException.ofNotHolding();
+        }
     }
 
-    List<Object> result = redisService.execute(
-        RedisScript.of(SEAT_RESERVATION_SCRIPT, List.class),
-        Arrays.asList(fundingId.toString(), userId.toString()),
-        String.valueOf(availableSeats),
-        "180");
+    @Transactional
+    public void createVote(MultipartFile image, VoteCreateRequest request) {
 
-    Long success = (Long) result.get(0);
-    String message = (String) result.get(1);
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(ResourceNotFoundException::ofUser);
 
-    if (success == 0) {
-      switch (message) {
-        case "NO_SEATS_LEFT":
-          throw SeatLockException.ofNoRemainingSeat();
-        case "ALREADY_HOLDING":
-          throw SeatLockException.ofAlreadyHolding();
-      }
-    }
-  }
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(ResourceNotFoundException::ofCategory);
 
-  public void unholdSeatOf(Long userId, Long fundingId) {
-    List<Object> result = redisService.execute(
-        RedisScript.of(RELEASE_SEAT_SCRIPT, List.class),
-        Arrays.asList(fundingId.toString(), userId.toString()));
+        Cinema cinema = cinemaRepository.findById(request.getCinemaId())
+                .orElseThrow(ResourceNotFoundException::ofCinema);
 
-    Integer success = (Integer) result.get(0);
-    if (success == 0) {
-      throw SeatLockException.ofNotHolding();
-    }
-  }
+        log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
 
-  @Transactional
-  public void createVote(MultipartFile image, VoteCreateRequest request) {
+        if (image != null) {
+            String localPath = imageService.saveImage(image, ImageCategory.BANNER);
+            String imagePath = imageService.translatePath(localPath);
+            request.setPosterUrl(imagePath);
+        }
 
-    User user = userRepository.findById(request.getUserId())
-        .orElseThrow(ResourceNotFoundException::ofUser);
+        Funding vote = Funding.builder()
+                .fundingType(FundingType.VOTE)
+                .bannerUrl(request.getPosterUrl())
+                .content(request.getContent())
+                .title(request.getTitle())
+                .cinema(cinema)
+                .videoName(request.getVideoName())
+                .videoContent(request.getVideoContent())
+                .leader(user)
+                .category(category)
+                .maxPeople(0)
+                .state(FundingState.ON_PROGRESS)
+                .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(5)))
+                .build();
 
-    Category category = categoryRepository.findById(request.getCategoryId())
-        .orElseThrow(ResourceNotFoundException::ofCategory);
+        FundingEstimatedDay estimatedDay = new FundingEstimatedDay(null, vote, request.getScreenMinDate(),
+                request.getScreenMaxDate());
 
-    Cinema cinema = cinemaRepository.findById(request.getCinemaId())
-        .orElseThrow(ResourceNotFoundException::ofCinema);
+        fundingRepository.save(vote);
 
-    log.info("받은 이미지가 존재하는지? : {} 사이즈 : {}", image != null, image != null ? image.getSize() : 0);
-
-    if (image != null) {
-      String localPath = imageService.saveImage(image, ImageCategory.BANNER);
-      String imagePath = imageService.translatePath(localPath);
-      request.setPosterUrl(imagePath);
+        FundingStat fundingStat = FundingStat.builder()
+                .funding(vote)
+                .build();
+        fundingEstimatedDayRepository.save(estimatedDay);
+        statRepository.save(fundingStat);
     }
 
-    Funding vote = Funding.builder()
-        .fundingType(FundingType.VOTE)
-        .bannerUrl(request.getPosterUrl())
-        .content(request.getContent())
-        .title(request.getTitle())
-        .cinema(cinema)
-        .videoName(request.getVideoName())
-        .videoContent(request.getVideoContent())
-        .leader(user)
-        .category(category)
-        .maxPeople(0)
-        .state(FundingState.ON_PROGRESS)
-        .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(5)))
-        .build();
+    @Transactional
+    public FundingDetailResponse getFundingDetail(Long fundingId, Long userId) {
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
 
-    FundingEstimatedDay estimatedDay = new FundingEstimatedDay(null, vote, request.getScreenMinDate(),
-        request.getScreenMaxDate());
+        FundingStat stat = statRepository.findByFunding_FundingId(fundingId)
+                .orElseThrow(InternalServerException::ofUnknown);
 
-    fundingRepository.save(vote);
+        Boolean isLiked = userId != null
+                && userFavoriteRepository.existsByUser_IdAndFunding_FundingId(userId, fundingId);
 
-    FundingStat fundingStat = FundingStat.builder()
-        .funding(vote)
-        .build();
-    fundingEstimatedDayRepository.save(estimatedDay);
-    statRepository.save(fundingStat);
-  }
+        Boolean isParticipated = userId != null
+                && userTransactionRepository.existsByFunding_FundingIdAndUser_IdAndState(fundingId, userId,
+                UserTransactionState.SUCCESS);
 
-  @Transactional
-  public FundingDetailResponse getFundingDetail(Long fundingId, Long userId) {
-    Funding funding = fundingRepository.findById(fundingId)
-        .orElseThrow(ResourceNotFoundException::ofFunding);
+        Screen screen = funding.getScreen();
+        Cinema cinema = funding.getCinema();
+        User proposer = funding.getLeader();
 
-    FundingStat stat = statRepository.findByFunding_FundingId(fundingId)
-        .orElseThrow(InternalServerException::ofUnknown);
+        Category category = funding.getCategory();
+        Category parentCategory = category.getParentCategory();
+        int price = 0;
+        int progressRate = 0;
+        if (funding.getMaxPeople() != 0) {
+            price = (int) Math.ceil((double) screen.getPrice() / funding.getMaxPeople() / 10) * 10;
+            progressRate = stat.getParticipantCount() * 100 / funding.getMaxPeople();
+        }
 
-    Boolean isLiked = userId != null
-        && userFavoriteRepository.existsByUser_IdAndFunding_FundingId(userId, fundingId);
+        FundingEstimatedDay estimatedDay = fundingEstimatedDayRepository.findByFunding_FundingId(fundingId);
 
-    Screen screen = funding.getScreen();
-    Cinema cinema = funding.getCinema();
-    User proposer = funding.getLeader();
+        FundingInfo fundingInfo = FundingInfo.builder()
+                .fundingId(funding.getFundingId())
+                .progressRate(progressRate)
+                .title(funding.getTitle())
+                .bannerUrl(funding.getBannerUrl())
+                .content(funding.getContent())
+                .state(funding.getState())
+                .fundingEndsOn(funding.getEndsOn())
+                .price(price)
+                .build();
 
-    Category category = funding.getCategory();
-    Category parentCategory = category.getParentCategory();
-    int price = 0;
-    int progressRate = 0;
-    if (funding.getMaxPeople() != 0) {
-      price = (int) Math.ceil((double) screen.getPrice() / funding.getMaxPeople() / 10) * 10;
-      progressRate = stat.getParticipantCount() * 100 / funding.getMaxPeople();
+        if (estimatedDay != null) {
+            fundingInfo.setScreenMinDate(estimatedDay.getMinDate());
+            fundingInfo.setScreenMaxDate(estimatedDay.getMaxDate());
+        }
+
+        CategoryInfo categoryInfo = CategoryInfo.builder()
+                .categoryId(category.getCategoryId())
+                .categoryName(category.getTagName())
+                .parentCategoryId(parentCategory.getCategoryId())
+                .parentCategoryName(parentCategory.getTagName())
+                .build();
+
+        ProposerInfo proposerInfo = ProposerInfo.builder()
+                .proposerId(proposer.getId())
+                .nickname(proposer.getNickname())
+                .profileImgUrl(proposer.getProfileImgUrl())
+                .build();
+
+        VideoInfo videoInfo = VideoInfo.builder()
+                .videoName(funding.getVideoName())
+                .videoContent(funding.getVideoContent())
+                .screenStartsOn(funding.getScreenStartsOn())
+                .screenEndsOn(funding.getScreenEndsOn())
+                .build();
+
+        FundingStatInfo statInfo = FundingStatInfo.builder()
+                .maxPeople(funding.getMaxPeople())
+                .isLiked(isLiked)
+                .isParticipated(isParticipated)
+                .participantCount(stat.getParticipantCount())
+                .likeCount(stat.getFavoriteCount())
+                .viewCount(stat.getViewCount())
+                .build();
+
+        ScreenInfo screenInfo = null;
+
+        if (screen != null) {
+            screenInfo = ScreenInfo.builder()
+                    .screenId(screen.getScreenId())
+                    .screenName(screen.getScreenName())
+                    .is4dx(screen.getIs4dx())
+                    .isRecliner(screen.getIsRecliner())
+                    .isScreenx(screen.getIsScreenX())
+                    .isDolby(screen.getIsDolby())
+                    .isImax(screen.getIsImax())
+                    .build();
+        }
+
+        CinemaInfo cinemaInfo = CinemaInfo.builder()
+                .city(cinema.getCity())
+                .cinemaId(cinema.getCinemaId())
+                .cinemaName(cinema.getCinemaName())
+                .district(cinema.getDistrict())
+                .build();
+
+        FundingDetailResponse response = FundingDetailResponse.builder()
+                .type(funding.getFundingType())
+                .funding(fundingInfo)
+                .screening(videoInfo)
+                .stat(statInfo)
+                .proposer(proposerInfo)
+                .screen(screenInfo)
+                .category(categoryInfo)
+                .cinema(cinemaInfo)
+                .build();
+
+        updateViewCount(fundingId);
+
+        eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
+        return response;
     }
 
-    FundingEstimatedDay estimatedDay = fundingEstimatedDayRepository.findByFunding_FundingId(fundingId);
+    @Transactional
+    public List<CardTypeFundingInfoDto> getFundingList(List<Long> fundingIds, Long userId) {
 
-    FundingInfo fundingInfo = FundingInfo.builder()
-        .fundingId(funding.getFundingId())
-        .progressRate(progressRate)
-        .title(funding.getTitle())
-        .bannerUrl(funding.getBannerUrl())
-        .content(funding.getContent())
-        .state(funding.getState())
-        .fundingEndsOn(funding.getEndsOn())
-        .price(price)
-        .build();
+        // 중복 제거 및 유효성 검사
+        List<Long> uniqueIds = fundingIds.stream()
+                .distinct()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-    if (estimatedDay != null) {
-      fundingInfo.setScreenMinDate(estimatedDay.getMinDate());
-      fundingInfo.setScreenMaxDate(estimatedDay.getMaxDate());
+        if (uniqueIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 최대 10개로 제한
+        if (uniqueIds.size() > 10) {
+            throw new IllegalArgumentException("최대 10개의 fundingId만 처리 가능합니다.");
+        }
+
+        List<CardTypeFundingInfoDto> fundings = fundingListRepository.findByFundingIdIn(uniqueIds, userId);
+        return fundings;
     }
 
-    CategoryInfo categoryInfo = CategoryInfo.builder()
-        .categoryId(category.getCategoryId())
-        .categoryName(category.getTagName())
-        .parentCategoryId(parentCategory.getCategoryId())
-        .parentCategoryName(parentCategory.getTagName())
-        .build();
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void updateViewCount(Long fundingId) {
+        // DB 전체 조회수 증가
+        statRepository.incrementViewCount(fundingId);
 
-    ProposerInfo proposerInfo = ProposerInfo.builder()
-        .proposerId(proposer.getId())
-        .nickname(proposer.getNickname())
-        .profileImgUrl(proposer.getProfileImgUrl())
-        .build();
-
-    VideoInfo videoInfo = VideoInfo.builder()
-        .videoName(funding.getVideoName())
-        .videoContent(funding.getVideoContent())
-        .screenStartsOn(funding.getScreenStartsOn())
-        .screenEndsOn(funding.getScreenEndsOn())
-        .build();
-
-    FundingStatInfo statInfo = FundingStatInfo.builder()
-        .maxPeople(funding.getMaxPeople())
-        .isLiked(isLiked)
-        .participantCount(stat.getParticipantCount())
-        .likeCount(stat.getFavoriteCount())
-        .viewCount(stat.getViewCount())
-        .build();
-
-    ScreenInfo screenInfo = null;
-
-    if (screen != null) {
-      screenInfo = ScreenInfo.builder()
-          .screenId(screen.getScreenId())
-          .screenName(screen.getScreenName())
-          .is4dx(screen.getIs4dx())
-          .isRecliner(screen.getIsRecliner())
-          .isScreenx(screen.getIsScreenX())
-          .isDolby(screen.getIsDolby())
-          .isImax(screen.getIsImax())
-          .build();
+        // Redis 버킷에 조회수 카운트 증가
+        try {
+            redisRankingService.incrementViewBucket(fundingId);
+            log.debug("Redis 버킷 조회수 증가: fundingId={}", fundingId);
+        } catch (Exception e) {
+            log.warn("Redis 버킷 조회수 업데이트 실패: fundingId={}, error={}", fundingId, e.getMessage());
+        }
     }
 
-    CinemaInfo cinemaInfo = CinemaInfo.builder()
-        .city(cinema.getCity())
-        .cinemaId(cinema.getCinemaId())
-        .cinemaName(cinema.getCinemaName())
-        .district(cinema.getDistrict())
-        .build();
-
-    FundingDetailResponse response = FundingDetailResponse.builder()
-        .type(funding.getFundingType())
-        .funding(fundingInfo)
-        .screening(videoInfo)
-        .stat(statInfo)
-        .proposer(proposerInfo)
-        .screen(screenInfo)
-        .category(categoryInfo)
-        .cinema(cinemaInfo)
-        .build();
-
-    updateViewCount(fundingId);
-
-    eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
-    return response;
-  }
-
-  @Transactional
-  public List<CardTypeFundingInfoDto> getFundingList(List<Long> fundingIds, Long userId) {
-
-    // 중복 제거 및 유효성 검사
-    List<Long> uniqueIds = fundingIds.stream()
-        .distinct()
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-
-    if (uniqueIds.isEmpty()) {
-      return Collections.emptyList();
-    }
-    // 최대 10개로 제한
-    if (uniqueIds.size() > 10) {
-      throw new IllegalArgumentException("최대 10개의 fundingId만 처리 가능합니다.");
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateFundingAccount(Long fundingId, String accountNo) {
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+        funding.setFundingAccount(accountNo);
+        fundingRepository.saveAndFlush(funding);
     }
 
-    List<CardTypeFundingInfoDto> fundings = fundingListRepository.findByFundingIdIn(uniqueIds, userId);
-    return fundings;
-  }
+    // wilson-score 기반 점수 계산
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recalculateScore(Long fundingId) {
+        FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
+                .orElseThrow(InternalServerException::ofUnknown);
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  protected void updateViewCount(Long fundingId) {
-    // DB 전체 조회수 증가
-    statRepository.incrementViewCount(fundingId);
+        int views = fundingStat.getViewCount();
+        int likes = fundingStat.getFavoriteCount();
 
-    // Redis 버킷에 조회수 카운트 증가
-    try {
-      redisRankingService.incrementViewBucket(fundingId);
-      log.debug("Redis 버킷 조회수 증가: fundingId={}", fundingId);
-    } catch (Exception e) {
-      log.warn("Redis 버킷 조회수 업데이트 실패: fundingId={}, error={}", fundingId, e.getMessage());
-    }
-  }
+        double engagementRate = views > 0 ? (double) likes / views : 0;
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void updateFundingAccount(Long fundingId, String accountNo) {
-    Funding funding = fundingRepository.findById(fundingId)
-        .orElseThrow(ResourceNotFoundException::ofFunding);
-    funding.setFundingAccount(accountNo);
-    fundingRepository.saveAndFlush(funding);
-  }
+        double confidence = calculateWilsonScore(likes, views - likes);
 
-  // wilson-score 기반 점수 계산
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void recalculateScore(Long fundingId) {
-    FundingStat fundingStat = statRepository.findByFunding_FundingId(fundingId)
-        .orElseThrow(InternalServerException::ofUnknown);
+        double viewScore = Math.log(1 + views) / Math.log(1000);
 
-    int views = fundingStat.getViewCount();
-    int likes = fundingStat.getFavoriteCount();
+        double finalScore = (confidence * 0.6 + engagementRate * 0.4) * viewScore * 100;
 
-    double engagementRate = views > 0 ? (double) likes / views : 0;
-
-    double confidence = calculateWilsonScore(likes, views - likes);
-
-    double viewScore = Math.log(1 + views) / Math.log(1000);
-
-    double finalScore = (confidence * 0.6 + engagementRate * 0.4) * viewScore * 100;
-
-    fundingStat.setRecommendScore(finalScore);
-  }
-
-  private double calculateWilsonScore(int positive, int negative) {
-    int total = positive + negative;
-    if (total == 0) {
-      return 0;
+        fundingStat.setRecommendScore(finalScore);
     }
 
-    double p = (double) positive / total;
-    double z = 1.96; // 95% 신뢰구간
+    private double calculateWilsonScore(int positive, int negative) {
+        int total = positive + negative;
+        if (total == 0) {
+            return 0;
+        }
 
-    return (p + z * z / (2 * total) - z * Math.sqrt((p * (1 - p) + z * z / (4 * total)) / total))
-        / (1 + z * z / total);
-  }
+        double p = (double) positive / total;
+        double z = 1.96; // 95% 신뢰구간
+
+        return (p + z * z / (2 * total) - z * Math.sqrt((p * (1 - p) + z * z / (4 * total)) / total))
+                / (1 + z * z / total);
+    }
 }
