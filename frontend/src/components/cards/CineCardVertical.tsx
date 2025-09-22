@@ -5,46 +5,16 @@ import { PerforationLine } from './primitives/PerforationLine';
 import { VoteInfo } from './blocks/VoteInfo';
 import { FundingInfo } from './blocks/FundingInfo';
 import { HeartIcon } from '@/component/icon/heartIcon';
-
-// 목록 API에 맞춘 데이터 타입 정의 (펀딩/투표 공통)
-type ListCardData = {
-  funding: {
-    fundingId: number;
-    title: string;
-    bannerUrl: string;
-    state: string;
-    progressRate: number;
-    fundingEndsOn: string;
-    screenDate?: string;
-    screenMinDate?: string;
-    screenMaxDate?: string;
-    price: number;
-    maxPeople: number;
-    participantCount: number;
-    favoriteCount: number;
-    isLiked: boolean;
-    fundingType: 'FUNDING' | 'VOTE';
-  };
-  cinema: {
-    cinemaId: number;
-    cinemaName: string;
-    city: string;
-    district: string;
-  };
-};
-
-// 호환성을 위한 타입 별칭
-type FundingData = ListCardData;
-type VoteData = ListCardData;
+import { ApiSearchItem, FundingType, FundingState } from '@/types/searchApi';
 
 type CineCardProps = {
-  data: FundingData | VoteData;
+  data: ApiSearchItem;
   loadingState?: 'ready' | 'loading' | 'error';
   onCardClick?: (id: number) => void;
   onVoteClick?: (id: number) => void;
   showStateTag?: boolean;
   stateTagClassName?: string;
-  getStateBadgeInfo?: (state: string, fundingType: 'FUNDING' | 'VOTE') => { text: string; className: string };
+  getStateBadgeInfo?: (state: FundingState, fundingType: FundingType) => { text: string; className: string };
 };
 
 const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
@@ -191,4 +161,4 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
 };
 
 export { CineCardVertical };
-export type { FundingData, VoteData, ListCardData };
+export type { CineCardProps };
