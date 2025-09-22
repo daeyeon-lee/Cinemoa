@@ -2,12 +2,12 @@ import React from 'react';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import { CineCardHorizontal } from '@/components/cards/CineCardHorizontal';
 import { Button } from '@/components/ui/button';
-import type { ListCardData } from '@/components/cards/CineCardVertical';
+import type { ApiSearchItem } from '@/types/searchApi';
 
 /**
- * 카드 아이템 타입 (기존 ListCardData와 동일)
+ * 카드 아이템 타입
  */
-type CardItem = ListCardData;
+type CardItem = ApiSearchItem;
 
 /**
  * ResponsiveCardList 컴포넌트의 props 타입
@@ -98,8 +98,9 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
                   funding: {
                     fundingId: index,
                     title: '',
+                    videoName: '',
                     bannerUrl: '',
-                    state: '',
+                    state: 'ON_PROGRESS',
                     progressRate: 0,
                     fundingEndsOn: '',
                     screenDate: '',
@@ -132,8 +133,9 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
                 funding: {
                   fundingId: index,
                   title: '',
+                  videoName: '',
                   bannerUrl: '',
-                  state: '',
+                  state: 'ON_PROGRESS',
                   progressRate: 0,
                   fundingEndsOn: '',
                   screenDate: '',

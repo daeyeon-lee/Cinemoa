@@ -1,6 +1,7 @@
 import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
-import type { ApiSearchResponse, ApiRecommendationResponse } from '@/types/searchApi';
+import type { ApiSearchResponse } from '@/types/searchApi';
+import type { GetPopularFundingResponse, GetClosingSoonFundingResponse } from '@/types/home';
 
 // 사용자 추가 정보 입력 API
 export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserInfoRequest): Promise<UpdateUserInfoResponse> => {
@@ -9,7 +10,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
     // console.log('사용자 ID:', userId);
     // console.log('요청 데이터:', data);
 
-    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/${userId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +42,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
 // 환불계좌 변경 API
 export const updateRefundAccount = async (userId: number, data: UpdateRefundAccountRequest): Promise<UpdateRefundAccountResponse> => {
   try {
-    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}/refund-account`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/${userId}/refund-account`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -88,50 +89,103 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
       return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
     }
 
-    const result: ApiRecommendationResponse = await response.json();
+    const rawResult = await response.json();
 
-    // 데이터가 비어있으면 fallback
-    if (!result.data || !result.data.content || result.data.content.length === 0) {
+    // 데이터가 비어있으면 fallback (변환 전에 미리 체크)
+    if (!rawResult.data || rawResult.data.length === 0) {
       console.warn('[추천api] 빈 데이터, search fallback 사용');
       return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
     }
 
-    console.log('[추천api] 성공:', `${result.data.content.length}개 조회`);
+    console.log('[추천api] 성공:', rawResult);
 
-    // ApiRecommendationResponse는 이제 ApiSearchResponse와 동일한 구조
-    console.log('추천 api result:', result);
-    return result;
+    // rawResult를 ApiSearchResponse 구조로 변환하여 반환
+    return {
+      data: {
+        content: rawResult.data,
+        nextCursor: null,
+        hasNext: false,
+      },
+      code: rawResult.code,
+      message: rawResult.message,
+      state: rawResult.state,
+    };
   } catch (error) {
     console.error('[추천api] 오류, search fallback 사용:', error);
     return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
   }
 };
 
-// 인기 상영회 조회 API (임시: search로 대체)
-export const getPopularFunding = async (userId?: number): Promise<ApiSearchResponse> => {
+// 인기 상영회 조회 API
+export const getPopularFunding = async (userId?: number): Promise<GetPopularFundingResponse> => {
   try {
-    // TODO: 백엔드 개발 완료 후 실제 API 사용
-    // const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular${userId ? `?userId=${userId}` : ''}`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
 
-    console.log('[인기api] 개발 중, search로 대체');
-    return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+    console.log('[인기api] 요청 URL:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 쿠키 포함
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[인기api] 응답 오류:', response.status, errorData);
+
+      // 404 에러 처리 (존재하지 않는 사용자)
+      if (response.status === 404) {
+        throw new Error(`존재하지 않는 사용자입니다. (code: ${errorData.code || 40401})`);
+      }
+
+      throw new Error(`인기 상영회 조회 실패: ${response.status}`);
+    }
+
+    const data: GetPopularFundingResponse = await response.json();
+    console.log('[인기api] 응답 성공:', data);
+
+    return data;
   } catch (error) {
     console.error('[인기api] 오류:', error);
-    return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+
+    // 에러 발생 시 빈 응답 반환
+    return {
+      data: [],
+      code: 500,
+      message: '인기 상영회 조회 중 오류가 발생했습니다.',
+      state: 'FAIL',
+    };
   }
 };
 
-// 종료 임박 상영회 조회 API (임시: search로 대체)
-export const getExpiringSoonFunding = async (userId?: number): Promise<ApiSearchResponse> => {
+// 종료 임박 상영회 조회 API
+export const getExpiringSoonFunding = async (userId?: number): Promise<GetClosingSoonFundingResponse> => {
   try {
-    // TODO: 백엔드 개발 완료 후 실제 API 사용
-    // const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/expiring${userId ? `?userId=${userId}` : ''}`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/expiring${userId ? `?userId=${userId}` : ''}`;
 
-    console.log('[종료임박api] 개발 중, search로 대체');
-    return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 5 });
+    console.log('[종료임박api] 요청 URL:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: GetClosingSoonFundingResponse = await response.json();
+    console.log('[종료임박api] 응답 데이터:', data);
+
+    return data;
   } catch (error) {
     console.error('[종료임박api] 오류:', error);
-    return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 5 });
+    throw error;
   }
 };
 
