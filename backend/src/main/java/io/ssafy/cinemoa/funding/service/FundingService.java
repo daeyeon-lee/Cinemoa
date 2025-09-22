@@ -307,7 +307,7 @@ public class FundingService {
                 .build();
 
         if (estimatedDay != null) {
-            fundingInfo.setScreenMaxDate(estimatedDay.getMinDate());
+            fundingInfo.setScreenMinDate(estimatedDay.getMinDate());
             fundingInfo.setScreenMaxDate(estimatedDay.getMaxDate());
         }
 
