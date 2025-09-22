@@ -92,7 +92,7 @@ export default function VotePage() {
           <Button
             variant={voteActiveTab === 'vote-funding-info' ? 'brand2' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
             disabled
           >
             <span className="md:inline">수요조사 소개</span>
@@ -100,7 +100,7 @@ export default function VotePage() {
           <Button
             variant={voteActiveTab === 'vote-movie-info' ? 'brand2' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
             disabled
           >
             <span className="md:inline">상영물 정보</span>
@@ -108,7 +108,7 @@ export default function VotePage() {
           <Button
             variant={voteActiveTab === 'vote-theater-info' ? 'brand2' : 'tertiary'}
             size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
             disabled
           >
             <span className="md:inline">영화관 정보</span>
