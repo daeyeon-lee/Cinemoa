@@ -34,6 +34,7 @@ export type FundingDetailData = {
   // 상영 정보 (펀딩은 '시각만 숫자'로 제공)
   screening: {
     videoName: string;
+    videoContent?: string;
     screenStartsOn: number; // 예: 19 (19시)
     screenEndsOn: number;   // 예: 21 (21시)
   };
@@ -104,6 +105,7 @@ export type VoteDetailData = {
   // 상영 정보 (투표는 ISO string으로 제공)
   screening: {
     videoName: string;
+    videoContent?: string;
   };
 
   // 참여 정보

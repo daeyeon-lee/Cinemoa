@@ -119,8 +119,8 @@ export default function FundingDetailInfo() {
           <CardContent>
             {/* 서버에서 내려주는 소개문(없으면 기본 안내) */}
             <p className="p">
-              {funding?.content
-                ? funding.content
+              {screening?.videoContent
+                ? screening.videoContent
                 : "같이 영화 보실 분들 구합니다! 보고 싶은 영화를 상영관 대관으로 함께 즐겨요. 펀딩 성공을 위해 많은 참여 부탁드립니다."}
             </p>
           </CardContent>
@@ -153,8 +153,8 @@ export default function FundingDetailInfo() {
                 </h6>
                 <p className="p2 text-tertiary">
                   {/* 실제 설명 필드가 없다면 간단 안내 문구 */}
-                  {screening?.videoName
-                    ? screening.videoName
+                  {screening?.videoContent
+                    ? screening.videoContent
                     : "상영물 상세 설명은 준비 중입니다."}
                 </p>
               </div>

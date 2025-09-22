@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from './separator';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-const cardVariants = cva('w-full bg-BG-0 px-4', {
+const cardVariants = cva('w-full bg-BG-0', {
   variants: {
     variant: {
       default: '',
