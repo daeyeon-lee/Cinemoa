@@ -14,11 +14,11 @@ export const viewport = {
   initialScale: 1, // 페이지 로드시 100%로 표시
 };
 
+// 로그인 페이지 레이아웃 (navbar, footer 없음)
 export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="sm:w-[1200px] min-h-screen flex flex-col">
-      {/* 네비게이션 바 없음 */}
-      <main className="flex-1">{children}</main>
+    <div className="w-full min-h-screen">
+      <main className="w-full max-w-full">{children}</main>
     </div>
   );
 }

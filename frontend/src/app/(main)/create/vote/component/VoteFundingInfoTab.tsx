@@ -56,7 +56,7 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem className="flex ">
+              <FormItem className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 ">
                 <FormLabel className="h5-b text-primary w-[375px] sm:pt-2">
                   수요조사 제목 <span className="text-Brand1-Primary">*</span>
                   <p className="text-p3 text-tertiary">수요조사 제목을 적어주세요</p>
@@ -75,7 +75,7 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
             control={form.control}
             name="content"
             render={({ field }) => (
-              <FormItem className="flex">
+              <FormItem className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
                 <FormLabel className="h5-b text-primary w-[375px] sm:pt-2">
                   수요조사 내용 <span className="text-Brand1-Primary">*</span>
                   <p className="text-p3 text-tertiary">수요조사 내용을 자세히 설명해주세요.</p>
@@ -90,11 +90,11 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
             )}
           />
           {/* 이전 다음 바튼 */}
-          <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
-            <Button variant="tertiary" size="lg" onClick={onPrev} className="w-[138px]">
+          <div className="pt-4 flex justify-center gap-2">
+            <Button variant="tertiary" size="lg" onClick={onPrev} className="w-[138px] max-lg:w-full">
               이전
             </Button>
-            <Button type="button" variant="brand2" size="lg" onClick={handleNext} className="w-[138px]">
+            <Button type="button" variant="brand2" size="lg" onClick={handleNext} className="w-[138px] max-lg:w-full">
               다음
             </Button>
           </div>

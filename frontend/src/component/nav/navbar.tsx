@@ -1,6 +1,6 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 import SearchIcon from '@/component/icon/searchIcon';
 import UserIcon from '@/component/icon/userIcon';
@@ -17,7 +17,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isClient, setIsClient] = useState(false);
   const { user, isLoggedIn } = useAuthStore();
+
+  // 클라이언트 사이드에서만 인증 상태 확인
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   const isActive = (path: string) => {
     if (path === '/') {
       return pathname === '/';
@@ -61,9 +67,9 @@ export default function Navbar() {
     }
   };
   return (
-    <header className="bg-slate-900 border-b border-slate-900 py-3 pt-[108px] lg:pt-4">
+    <header className="bg-slate-900 border-b border-slate-900 py-5 lg:pt-4">
       {/* 모바일 레이아웃 - 두 줄 */}
-      <div className="border-b border-1 border-[#1E293B] lg:hidden">
+      <div className="border-b border-1 border-[#1E293B] px-5 lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
         <div className="flex items-center justify-between mb-4">
           <Link href="/" className="cursor-pointer">
@@ -71,7 +77,7 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center space-x-4">
             <SearchIcon />
-            {isLoggedIn() ? (
+            {isClient && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer">
                   <UserIcon />
@@ -109,7 +115,7 @@ export default function Navbar() {
       </div>
 
       {/* 데스크톱 레이아웃 - 한 줄 */}
-      <div className="hidden lg:flex items-center justify-between">
+      <div className="hidden max-w-[1200px] mx-auto lg:flex items-center justify-between lg:px-5 px-2">
         <div className="flex items-start justify-center gap-16 h-full">
           {/* 로고-홈으로 이동 */}
           {/* 홈 주소로 변경함 */}
@@ -156,7 +162,7 @@ export default function Navbar() {
                 </div>
               </div>
             )}
-            {isLoggedIn() ? (
+            {isClient && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="flex-none cursor-pointer">
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">

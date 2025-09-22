@@ -1,48 +1,39 @@
 import React from 'react';
 import { FundingInfo } from '../blocks/FundingInfo';
 import { VoteInfo } from '../blocks/VoteInfo';
-import { FundingData, VoteData } from '../CineCardVertical';
+import { ApiSearchItem, FundingType } from '@/types/searchApi';
 
 type VerticalBottomProps = {
-  data: FundingData | VoteData;
+  data: ApiSearchItem;
+  fundingType: FundingType;
   loadingState?: 'ready' | 'loading' | 'error';
   onVoteClick?: (fundingId: number) => void;
 };
 
-const VerticalBottom: React.FC<VerticalBottomProps> = ({
-  data,
-  loadingState = 'ready',
-  onVoteClick
-}) => {
-  const isFunding = data.type === 'funding';
+const VerticalBottom: React.FC<VerticalBottomProps> = ({ data, fundingType, loadingState = 'ready', onVoteClick }) => {
+  const isFunding = fundingType === 'FUNDING';
 
   if (isFunding) {
-    const fundingData = data as FundingData;
     return (
       <FundingInfo
-        price={fundingData.funding.price}
-        progressRate={fundingData.funding.progressRate}
-        participantCount={fundingData.participation.participantCount}
-        maxPeople={fundingData.participation.maxPeople}
-        fundingEndsOn={fundingData.funding.fundingEndsOn}
+        price={data.funding.price}
+        progressRate={data.funding.progressRate}
+        participantCount={data.funding.participantCount}
+        maxPeople={data.funding.maxPeople}
+        fundingEndsOn={data.funding.fundingEndsOn}
         loadingState={loadingState}
       />
     );
   } else {
-    const voteData = data as VoteData;
     const handleVoteClick = () => {
       if (onVoteClick) {
-        onVoteClick(voteData.vote.voteId);
+        onVoteClick(data.funding.fundingId);
       }
     };
 
     return (
       <div onClick={handleVoteClick}>
-        <VoteInfo
-          likeCount={voteData.participation.likeCount}
-          isLiked={voteData.participation.isLike}
-          loadingState={loadingState}
-        />
+        <VoteInfo likeCount={data.funding.favoriteCount} isLiked={data.funding.isLiked} loadingState={loadingState} />
       </div>
     );
   }

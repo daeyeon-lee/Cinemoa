@@ -42,8 +42,8 @@ const SortBar: React.FC<SortBarProps> = ({ sortBy, onSortChange, isClosed, onIsC
   // API 쿼리 파라미터와 일치하는 정렬 옵션
   const sortOptions: { value: SortBy; label: string }[] = [
     { value: 'LATEST', label: '최신순' },
-    { value: 'POPULAR', label: '인기순' },
-    { value: 'RECOMMENDED', label: '추천순' },
+    { value: 'POPULAR', label: '조회도순' },
+    { value: 'RECOMMENDED', label: '인기순' },
   ];
 
   return (

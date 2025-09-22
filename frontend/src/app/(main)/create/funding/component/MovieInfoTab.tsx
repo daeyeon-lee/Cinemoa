@@ -227,77 +227,75 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   return (
     <div className="space-y-8">
       {/* 카테고리 선택 */}
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <h4 className="h5-b text-primary">
-              카테고리 선택하기 <span className="text-Brand1-Primary">*</span>
-            </h4>
-            <p className="p3 text-tertiary">전체 카테고리 중 1개만 선택해주세요.</p>
-          </div>
-
-          {/* 카테고리 섹션들 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {categories.map((category) => (
-              <div key={category.categoryId}>
-                <div className="flex items-center mb-2">
-                  {(() => {
-                    const getIcon = (categoryName: string) => {
-                      switch (categoryName) {
-                        case '영화':
-                          return MovieIcon;
-                        case '시리즈':
-                          return SeriesIcon;
-                        case '공연':
-                          return ConcertIcon;
-                        case '스포츠 중계':
-                          return SportsIcon;
-                        default:
-                          return MovieIcon;
-                      }
-                    };
-                    const IconComponent = getIcon(category.categoryName);
-                    return <IconComponent className="w-4 h-4 mr-1" />;
-                  })()}
-                  <h3 className="text-sm sm:text-p2-b text-Brand1-Strong">{category.categoryName}</h3>
-                </div>
-                <div className="w-full flex flex-nowrap gap-2">
-                  {category.childCategories.map((item) => {
-                    const categoryValue = item.categoryId.toString();
-                    const isSelected = selectedCategoryId === categoryValue;
-                    const isDisabled = selectedCategoryId !== '' && selectedCategoryId !== categoryValue;
-                    return (
-                      <Button
-                        variant="outline"
-                        key={item.categoryId}
-                        size="sm"
-                        textSize="sm"
-                        onClick={() => handleCategorySelect(item.categoryId.toString())}
-                        disabled={isDisabled}
-                        className={`flex-1 rounded-[6px] text-xs ${
-                          isSelected
-                            ? 'text-Brand1-Strong border-Brand1-Strong hover:border-Brand1-Secondary'
-                            : isDisabled
-                            ? 'text-tertiary border-stroke-4 opacity-50 cursor-not-allowed'
-                            : 'text-tertiary border-stroke-4 hover:border-stroke-2'
-                        }`}
-                      >
-                        {item.categoryName}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* 카테고리 에러 메시지 */}
-          {categoryError && <div className="text-Brand1-Primary p3 mt-2">{categoryError}</div>}
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <h4 className="h5-b text-primary">
+            카테고리 선택하기 <span className="text-Brand1-Primary">*</span>
+          </h4>
+          <p className="p3 text-tertiary">전체 카테고리 중 1개만 선택해주세요.</p>
         </div>
+
+        {/* 카테고리 섹션들 */}
+        <div className="grid max-lg:grid-cols-1 grid-cols-2 gap-6 ">
+          {categories.map((category) => (
+            <div key={category.categoryId}>
+              <div className="flex items-center mb-2 overflow-x-auto">
+                {(() => {
+                  const getIcon = (categoryName: string) => {
+                    switch (categoryName) {
+                      case '영화':
+                        return MovieIcon;
+                      case '시리즈':
+                        return SeriesIcon;
+                      case '공연':
+                        return ConcertIcon;
+                      case '스포츠 중계':
+                        return SportsIcon;
+                      default:
+                        return MovieIcon;
+                    }
+                  };
+                  const IconComponent = getIcon(category.categoryName);
+                  return <IconComponent className="w-4 h-4 mr-1" />;
+                })()}
+                <h3 className="p2-b text-Brand1-Strong">{category.categoryName}</h3>
+              </div>
+              <div className="w-full flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide">
+                {category.childCategories.map((item) => {
+                  const categoryValue = item.categoryId.toString();
+                  const isSelected = selectedCategoryId === categoryValue;
+                  const isDisabled = selectedCategoryId !== '' && selectedCategoryId !== categoryValue;
+                  return (
+                    <Button
+                      variant="outline"
+                      key={item.categoryId}
+                      size="sm"
+                      textSize="sm"
+                      onClick={() => handleCategorySelect(item.categoryId.toString())}
+                      disabled={isDisabled}
+                      className={`flex-1 rounded-[6px] p2-b ${
+                        isSelected
+                          ? 'text-Brand1-Strong border-Brand1-Strong hover:border-Brand1-Secondary'
+                          : isDisabled
+                          ? 'text-tertiary border-stroke-4 opacity-50 cursor-not-allowed'
+                          : 'text-tertiary border-stroke-4 hover:border-stroke-2'
+                      }`}
+                    >
+                      {item.categoryName}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* 카테고리 에러 메시지 */}
+        {categoryError && <div className="text-Brand1-Primary p3 mt-2">{categoryError}</div>}
       </div>
 
       {/* 상영물 제목 및 이미지 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-3">
+        <div className="space-y-3 max-lg:space-y-6">
           <div className="space-y-1">
             <h4 className="h5-b text-primary">
               상영물 제목 <span className="text-Brand1-Primary">*</span>
@@ -313,7 +311,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   setMovieTitle(e.target.value);
                   setTitleError(''); // 제목 에러 메시지 초기화
                 }}
-                className="flex-1"
+                className="flex-1 placeholder:text-p2-b"
               />
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
@@ -354,19 +352,23 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                             onClick={() => handleMovieSelect(item.id.toString())}
                           >
                             {item.poster_path ? (
-                              <img src={`https://image.tmdb.org/t/p/w185${item.poster_path}`} alt={getMediaTitle(item)} className="w-12 h-16 object-cover rounded flex-shrink-0" />
+                              <img
+                                src={`https://image.tmdb.org/t/p/w185${item.poster_path}`}
+                                alt={getMediaTitle(item)}
+                                className="max-lg:h-full max-lg:object-contain w-12 h-16 object-cover rounded-[6px] flex-shrink-0"
+                              />
                             ) : (
                               <div className="w-12 h-16 bg-BG-2 rounded-[6px] flex items-center justify-center flex-shrink-0">
                                 <Image className="w-6 h-6 text-tertiary" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="h6 text-primary">
+                              <div className="h6 text-primary max-lg:text-p2-b">
                                 {getMediaTitle(item)}
                                 {getMediaDate(item) ? ` (${getMediaDate(item)?.split('-')[0]})` : ''}
                               </div>
-                              <div className="p3 text-primary">{getMediaTypeKorean(item.media_type)}</div>
-                              {item.overview && <div className="p3 text-tertiary mt-1 line-clamp-2">{item.overview}</div>}
+                              <div className="p3 text-primary max-lg:text-p3-b">{getMediaTypeKorean(item.media_type)}</div>
+                              {item.overview && <div className="p3 text-tertiary mt-1 line-clamp-2 max-lg:text-caption1-b">{item.overview}</div>}
                             </div>
                           </div>
                         ))}
@@ -466,9 +468,9 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
             <CardContent className="h-[350px]">
               <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
               {selectedImage ? (
-                <div className="flex justify-between gap-3">
-                  <div className="flex flex-col gap-2">
-                    <img src={selectedImage} alt="선택된 상영물 이미지" className="w-[200px] h-[280px] object-cover rounded-[6px]" />
+                <div className="flex justify-between gap-3 max-sm:flex max-sm:justify-center">
+                  <div className="flex flex-col gap-2 ">
+                    <img src={selectedImage} alt="선택된 상영물 이미지" className="w-[200px] h-[280px] object-fill max-sm:w-full max-sm:object-fill rounded-[6px]" />
                     <div className="flex gap-2">
                       <Button variant="outline" size="md" onClick={handleUploadClick} className="flex-1">
                         변경
@@ -478,8 +480,8 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="bg-BG-1 border border-stroke-3 rounded-[6px] p-8 h-full max-w-sm">
+                  <div className="flex-1 h-full max-sm:hidden">
+                    <div className="bg-BG-1 border border-stroke-3 rounded-[6px] p-3 h-[325px] overflow-y-auto scrollbar-hide">
                       <div className="flex items-start gap-3 ">
                         <div className="w-6 h-6 rounded-full bg-Brand1-Primary flex justify-center items-center flex-shrink-0">
                           <span className="text-primary p1-b">!</span>
@@ -487,7 +489,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                         <p className="h6-b text-primary">이미지 업로드 안내</p>
                       </div>
                       <div className="space-y-1 mt-2">
-                        <ul className="space-y-2 mt-4">
+                        <ul className="space-y-2 mt-4 max-sm:space-y-1">
                           <li className="p2 text-secondary">• 이미지는 1개 이상 필수로 업로드 해주세요.</li>
                           <li className="p2 text-secondary">• 상영물 검색 시 자동으로 이미지가 등록됩니다.</li>
                           <li className="p2 text-secondary">• 직접 이미지를 업로드할 수 있습니다.</li>
@@ -519,11 +521,11 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
         </div>
       </div>
       {/* 이전 다음 바튼 */}
-      <div className="pt-4 flex justify-center sm:flex-row gap-2 sm:gap-4">
-        <Button variant="tertiary" size="lg" className="w-[138px]" onClick={onPrev}>
+      <div className="pt-4 flex justify-center gap-2">
+        <Button variant="tertiary" size="lg" className="w-[138px] max-lg:w-full" onClick={onPrev}>
           이전
         </Button>
-        <Button type="button" variant="brand1" size="lg" className="w-[138px]" onClick={handleNext}>
+        <Button type="button" variant="brand1" size="lg" className="w-[138px] max-lg:w-full" onClick={handleNext}>
           다음
         </Button>
       </div>

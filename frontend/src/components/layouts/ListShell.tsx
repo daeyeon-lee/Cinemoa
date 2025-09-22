@@ -29,18 +29,17 @@ interface ListShellProps {
  */
 const ListShell: React.FC<ListShellProps> = ({ header, sidebar, content, className }) => {
   return (
-    <div className={`min-h-screen mt-16 ${className || ''}`}>
+    <div className={`min-h-screen mt-16 max-lg:mt-0 max-lg:px-5 px-4 ${className || ''}`}>
       {/* 상단 필터바 영역 */}
-      <div className="w-full pb-7">{header}</div>
+      <div className="max-lg:hidden w-full pb-7">{header}</div>
 
       {/* 하단 메인 컨테이너 */}
-      <div className="flex justify-between max-w-full mx-auto">
-        {/* 좌측 보조 필터 영역 (데스크톱: 200px 고정) */}
-        {/* 초기화 버튼에 아이콘 추가! */}
+      <div className="flex flex-col lg:flex-row justify-between max-w-full mx-auto gap-6">
+        {/* 좌측 보조 필터 영역 (데스크톱: 200px 고정, 모바일: 숨김) */}
         <div className="w-56 flex-shrink-0">{sidebar}</div>
 
-        {/* 우측 콘텐츠 영역 (최대 920px) */}
-        <div className="flex-1 max-w-[920px]">{content}</div>
+        {/* 우측 콘텐츠 영역 (데스크톱: 최대 920px, 모바일: 전체 너비) */}
+        <div className="flex-1 lg:max-w-[920px] w-full">{content}</div>
       </div>
     </div>
   );

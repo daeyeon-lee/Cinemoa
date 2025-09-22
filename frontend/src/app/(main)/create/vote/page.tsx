@@ -78,7 +78,7 @@ export default function VotePage() {
   };
 
   return (
-    <div className="px-2 min-h-screen pt-4 sm:pt-12">
+    <div className="lg:px-5 px-3 min-h-screen pt-4 sm:pt-12">
       <div className="flex flex-col gap-10  w-full">
         <Card className="flex flex-col gap-4 px-4 sm:px-6">
           <CardHeader className="max-sm:text-center">
@@ -88,15 +88,30 @@ export default function VotePage() {
         </Card>
 
         {/* 네비게이션 탭 */}
-        <div className="w-full flex px-4 py-2">
-          <Button variant={voteActiveTab === 'vote-funding-info' ? 'brand2' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
-            수요조사 소개
+        <div className="w-full flex px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-2 lg:px-4 lg:py-2">
+          <Button
+            variant={voteActiveTab === 'vote-funding-info' ? 'brand2' : 'tertiary'}
+            size="md"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            disabled
+          >
+            <span className="md:inline">수요조사 소개</span>
           </Button>
-          <Button variant={voteActiveTab === 'vote-movie-info' ? 'brand2' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
-            상영물 정보
+          <Button
+            variant={voteActiveTab === 'vote-movie-info' ? 'brand2' : 'tertiary'}
+            size="md"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            disabled
+          >
+            <span className="md:inline">상영물 정보</span>
           </Button>
-          <Button variant={voteActiveTab === 'vote-theater-info' ? 'brand2' : 'tertiary'} size="md" className="flex-1 rounded-[25px] mx-1" disabled>
-            영화관 정보
+          <Button
+            variant={voteActiveTab === 'vote-theater-info' ? 'brand2' : 'tertiary'}
+            size="md"
+            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-7 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-xs sm:text-xs md:text-sm lg:text-sm"
+            disabled
+          >
+            <span className="md:inline">영화관 정보</span>
           </Button>
         </div>
 

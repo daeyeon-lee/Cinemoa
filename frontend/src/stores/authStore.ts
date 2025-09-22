@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { useCardStore } from './cardStore';
 
 interface User {
   userId: number;
@@ -14,35 +16,42 @@ interface User {
 
 interface AuthStore {
   user: User | null;
-
-  // Actions
   setUser: (user: User) => void;
   clearUser: () => void;
   updateUserInfo: (updates: Partial<User>) => void;
   isLoggedIn: () => boolean;
 }
 
-export const useAuthStore = create<AuthStore>()((set, get) => ({
-  user: null,
-
-  setUser: (user) =>
-    set({
-      user,
-    }),
-
-  clearUser: () =>
-    set({
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set, get) => ({
       user: null,
+
+      setUser: (user) =>
+        set({
+          user,
+        }),
+
+      clearUser: () => {
+        set({
+          user: null,
+        });
+        // 로그아웃 시 카드 정보도 함께 삭제
+        useCardStore.getState().clearCards();
+      },
+
+      updateUserInfo: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
+
+      isLoggedIn: () => {
+        const { user } = get();
+        return !!user;
+      },
     }),
-
-  updateUserInfo: (updates) =>
-    set((state) => ({
-      user: state.user ? { ...state.user, ...updates } : null,
-    })),
-
-  isLoggedIn: () => {
-    const { user } = get();
-    return !!user;
-  },
-}));
-
+    {
+      name: 'auth-storage', // localStorage 키 이름
+    },
+  ),
+);

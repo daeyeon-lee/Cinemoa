@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +21,8 @@ interface PaymentTabProps {
 export default function PaymentTab({ onNext, onPrev, fundingId, amount }: PaymentTabProps) {
   const router = useRouter();
   const { user } = useAuthStore();
+  const userId = user?.userId;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentData, setPaymentData] = useState({
     cardNumber1: '',
@@ -103,61 +105,49 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
   return (
     <div className="space-y-8">
       <div className="space-y-8">
-        <div className="w-full flex gap-4">
-          {/* 카드 번호  */}
+        <div className="w-full flex flex-col sm:flex-row gap-4 sm:gap-4">
+          {/* 카드 번호 */}
           <div className="flex-1 space-y-2">
-            <Label className="h5-b text-primary">
+            <Label className="h5-b text-primary max-lg:text-p2-b">
               카드 번호 <span className="text-Brand1-Primary">*</span>
             </Label>
             <div className="flex gap-2">
-              <Input
-                placeholder="1234"
-                maxLength={4}
-                className="bg-BG-2 text-center"
-                value={paymentData.cardNumber1}
-                onChange={(e) => setPaymentData({ ...paymentData, cardNumber1: e.target.value })}
-              />
+              <Input placeholder="앞 4자리" maxLength={4} className="bg-BG-2 " value={paymentData.cardNumber1} onChange={(e) => setPaymentData({ ...paymentData, cardNumber1: e.target.value })} />
               <Input
                 type="password"
-                placeholder="5678"
+                placeholder="****"
                 maxLength={4}
-                className="bg-BG-2 text-center"
+                className="bg-BG-2 "
                 value={paymentData.cardNumber2}
                 onChange={(e) => setPaymentData({ ...paymentData, cardNumber2: e.target.value })}
               />
               <Input
                 type="password"
-                placeholder="9123"
+                placeholder="****"
                 maxLength={4}
-                className="bg-BG-2 text-center"
+                className="bg-BG-2 "
                 value={paymentData.cardNumber3}
                 onChange={(e) => setPaymentData({ ...paymentData, cardNumber3: e.target.value })}
               />
-              <Input
-                placeholder="4567"
-                maxLength={4}
-                className="bg-BG-2 text-center"
-                value={paymentData.cardNumber4}
-                onChange={(e) => setPaymentData({ ...paymentData, cardNumber4: e.target.value })}
-              />
+              <Input placeholder="뒤 4자리" maxLength={4} className="bg-BG-2" value={paymentData.cardNumber4} onChange={(e) => setPaymentData({ ...paymentData, cardNumber4: e.target.value })} />
             </div>
           </div>
 
-          {/* 유효기간과 CVC*/}
+          {/* CVC와 유효기간 */}
           <div className="flex-1 flex gap-4">
-            {/* 유효기간*/}
+            {/* CVC */}
             <div className="flex-1 space-y-2">
-              <Label className="h5-b text-primary">
+              <Label className="h5-b text-primary max-lg:text-p2-b">
+                CVC <span className="text-Brand1-Primary">*</span>
+              </Label>
+              <Input type="password" placeholder="***" maxLength={3} className="bg-BG-2" value={paymentData.cvc} onChange={(e) => setPaymentData({ ...paymentData, cvc: e.target.value })} />
+            </div>
+            {/* 유효기간 */}
+            <div className="flex-1 space-y-2">
+              <Label className="h5-b text-primary max-lg:text-p2-b">
                 유효 기간 (MM/YY) <span className="text-Brand1-Primary">*</span>
               </Label>
               <Input placeholder="MM/YY" maxLength={5} className="bg-BG-2" value={paymentData.expiryDate} onChange={handleExpiryDateChange} onKeyDown={handleExpiryDateKeyDown} />
-            </div>
-            {/* CVC*/}
-            <div className="flex-1 space-y-2">
-              <Label className="h5-b text-primary">
-                CVC <span className="text-Brand1-Primary">*</span>
-              </Label>
-              <Input type="password" placeholder="3자리" maxLength={3} className="bg-BG-2" value={paymentData.cvc} onChange={(e) => setPaymentData({ ...paymentData, cvc: e.target.value })} />
             </div>
           </div>
         </div>
@@ -165,7 +155,7 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
         {/* 비밀번호와 생년월일 */}
         <div className="flex justify-between gap-4">
           <div className="flex-1 space-y-2">
-            <Label className="h5-b text-primary">
+            <Label className="h5-b text-primary max-lg:text-p2-b">
               비밀번호 <span className="text-Brand1-Primary">*</span>
             </Label>
             <Input
@@ -178,8 +168,8 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
             />
           </div>
           <div className="flex-1 space-y-2">
-            <Label className="h5-b text-primary">
-              생년월일(YYMMDD) <span className="text-Brand1-Primary">*</span>
+            <Label className="h5-b text-primary max-lg:text-p2-b">
+              생년 월일 (YYMMDD) <span className="text-Brand1-Primary">*</span>
             </Label>
             <Input placeholder="주민번호 앞 6자리" maxLength={6} className="bg-BG-2" value={paymentData.birthDate} onChange={(e) => setPaymentData({ ...paymentData, birthDate: e.target.value })} />
           </div>
@@ -200,11 +190,11 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
       </div>
       <div>
         {/* 이전 다음 바튼 */}
-        <div className="pt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
-          <Button variant="tertiary" size="lg" className="w-full" onClick={onPrev}>
+        <div className="pt-4 flex justify-center gap-2">
+          <Button variant="tertiary" size="lg" className="w-[138px] max-lg:w-full" onClick={onPrev}>
             이전
           </Button>
-          <Button type="button" variant="brand1" size="lg" className="w-full" onClick={handleNext} disabled={isSubmitting}>
+          <Button type="button" variant="brand1" size="lg" className="w-[138px] max-lg:w-full" onClick={handleNext} disabled={isSubmitting}>
             {isSubmitting ? '처리 중...' : '결제 하기'}
           </Button>
         </div>

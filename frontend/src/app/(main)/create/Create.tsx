@@ -42,7 +42,7 @@ export default function Create() {
             <h2 className="h4-b text-primary">신뢰 및 정책 확인</h2>
           </div>
 
-          <div className="self-stretch w-full mt-4 px-3 sm:px-4 py-4 bg-inverse rounded-[12px] inline-flex flex-col justify-start items-start">
+          <div className="self-stretch w-full mt-4 px-3 py-4 bg-inverse rounded-[12px] inline-flex flex-col justify-start items-start">
             <div className="self-stretch pb-[0.68px] flex flex-col justify-start items-start">
               <div className="self-stretch justify-center">
                 <span className="p2 text-secondary">• 정산을 위해 </span>

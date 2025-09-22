@@ -48,6 +48,7 @@ export interface SearchParams {
 export interface ApiFunding {
   fundingId: number;
   title: string;
+  videoName: string;
   bannerUrl: string;
   state: FundingState;
   progressRate: number;
@@ -92,6 +93,12 @@ export interface ApiSearchResponse {
   message: string;
   state: ApiState;
 }
+
+/**
+ * /funding/recommendation API 응답
+ * ApiSearchResponse와 동일한 구조
+ */
+export type ApiRecommendationResponse = ApiSearchResponse;
 
 // ========================================
 // UI 변환 타입 (필요한 경우)

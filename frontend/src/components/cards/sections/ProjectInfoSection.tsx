@@ -1,48 +1,27 @@
 import React from 'react';
 import { CategoryBreadcrumb } from '../primitives/CategoryBreadcrumb';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFundingDetail } from '@/contexts/FundingDetailContext';
 
-type ProjectInfoSectionProps = {
-  categoryId?: number;
-  movieTitle: string;
-  projectTitle: string;
-  type?: 'funding' | 'vote';
-  loadingState?: 'ready' | 'loading';
-};
-
-const ProjectInfoSection: React.FC<ProjectInfoSectionProps> = ({
-  categoryId,
-  movieTitle,
-  projectTitle,
-  type = 'funding',
-  loadingState = 'ready',
-}) => {
-  if (loadingState === 'loading') {
-    return (
-      <div className={`flex flex-col ${type === 'funding' ? 'gap-4' : 'gap-3'}`}>
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-4 w-full" />
-      </div>
-    );
-  }
+const ProjectInfoSection = () => {
+  const { data } = useFundingDetail();
+  const { category, screening, funding } = data;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-full min-w-0">
       <div className="flex flex-col justify-start items-start">
-        <CategoryBreadcrumb categoryId={categoryId} />
+        <CategoryBreadcrumb categoryId={category.categoryId} />
       </div>
 
-      <div className="flex flex-col justify-start items-start">
-        <div className="justify-center h3-b text-primary">{movieTitle}</div>
+      <div className="w-full min-w-0">
+        <div className="justify-center h3-b text-primary">{screening.videoName}</div>
       </div>
 
-      <div className="flex flex-col justify-start items-start">
-        <div className="justify-center h6 text-secondary">{projectTitle}</div>
+      <div className="w-full min-w-0">
+        <div className="justify-center h6 text-secondary">{funding.title}</div>
       </div>
     </div>
   );
 };
 
 export { ProjectInfoSection };
-export type { ProjectInfoSectionProps };

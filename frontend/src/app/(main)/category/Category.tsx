@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
@@ -20,6 +21,7 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
  */
 export default function Category() {
   console.log('🎯 [Category] 컴포넌트 렌더링');
+  const router = useRouter();
 
   // 필터 상태 관리 (categoryId 기반)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null); // 1차 카테고리 ID
@@ -97,9 +99,7 @@ export default function Category() {
     // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
     // selectedTheaterType에는 한글 label이 들어있으므로 백엔드용 value로 변환
     if (selectedTheaterType.length > 0) {
-      const theaterValues = selectedTheaterType
-        .map((label) => theaterTypes.find((type) => type.label === label)?.value)
-        .filter(Boolean);
+      const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean);
       if (theaterValues.length > 0) {
         params.theaterType = theaterValues as string[];
       }
@@ -112,16 +112,7 @@ export default function Category() {
 
     console.log('📤 [Category] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [
-    sortBy,
-    selectedCategory,
-    selectedSubCategory,
-    selectedRegions,
-    selectedTheaterType,
-    showClosed,
-    categories,
-    theaterTypes,
-  ]);
+  }, [sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
@@ -161,10 +152,13 @@ export default function Category() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 🖱️ 카드 클릭 핸들러
-  const handleCardClick = useCallback((id: number) => {
-    console.log('🎯 [Category] 펜딩 카드 클릭:', id);
-    // TODO: 상세 페이지 이동 로직 구현
-  }, []);
+  const handleCardClick = useCallback(
+    (id: number) => {
+      console.log('🎯 [Category] 펀딩 카드 클릭:', id);
+      router.push(`/detail/${id}`);
+    },
+    [router],
+  );
 
   // ❤️ 좋아요 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {
@@ -185,7 +179,7 @@ export default function Category() {
         />
       }
       sidebar={
-        <div className="space-y-10">
+        <div className="max-lg:hidden space-y-10">
           {/* 지역 필터 */}
           <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} />
 

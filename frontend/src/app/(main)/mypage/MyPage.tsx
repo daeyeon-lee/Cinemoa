@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
-import type { ListCardData } from '@/components/cards/CineCardVertical';
-import { getUserInfo, getFundingProposals } from '@/api/mypage';
-import type { UserInfo, FundingProposal } from '@/types/mypage';
+import type { CardItem } from '@/types/mypage';
+import type { ApiSearchItem } from '@/types/searchApi';
+import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFunding } from '@/api/mypage';
+import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
+import CardManagement from '@/app/(main)/mypage/component/CardManagement';
+import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
+import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -34,19 +38,46 @@ function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
 
 export default function MyPage() {
   const router = useRouter();
-  
+
+  // 카드 클릭 핸들러 - 상세페이지로 이동
+  const handleCardClick = (fundingId: number) => {
+    console.log('카드 클릭:', fundingId);
+    router.push(`/detail/${fundingId}`);
+  };
+
   // 사용자 정보 상태
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // 내가 제안한 상영회 상태
   const [myProposals, setMyProposals] = useState<FundingProposal[]>([]);
   const [isProposalsLoading, setIsProposalsLoading] = useState(true);
   const [hasMoreProposals, setHasMoreProposals] = useState(false);
   const [proposalType, setProposalType] = useState<'funding' | 'vote' | undefined>(undefined);
 
+  // 내가 참여한 상영회 상태
+  const [myParticipated, setMyParticipated] = useState<ParticipatedFunding[]>([]);
+  const [isParticipatedLoading, setIsParticipatedLoading] = useState(true);
+  const [hasMoreParticipated, setHasMoreParticipated] = useState(false);
+  const [participatedState, setParticipatedState] = useState<'ALL' | 'ON_PROGRESS' | 'CLOSE' | undefined>(undefined);
+
+  // 내가 보고싶어요 한 상영회 상태
+  const [myLiked, setMyLiked] = useState<LikedFunding[]>([]);
+  const [isLikedLoading, setIsLikedLoading] = useState(true);
+  const [hasMoreLiked, setHasMoreLiked] = useState(false);
+  const [likedType, setLikedType] = useState<'funding' | 'vote' | undefined>(undefined);
+
+  // 카드 관리 모달 상태
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+
+  // 환불 계좌 수정 모달 상태
+  const [isRefundAccountModalOpen, setIsRefundAccountModalOpen] = useState(false);
+
+  // 프로필 수정 모달 상태
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+
   // const [imageurl,setImageurl] = useState<string>('');
-  
+
   // state에 따른 뱃지 색상과 문구 매핑
   const getStateBadgeInfo = (state: string, fundingType: 'FUNDING' | 'VOTE') => {
     switch (state) {
@@ -68,14 +99,14 @@ export default function MyPage() {
         return { text: '알 수 없음', className: 'bg-slate-500 text-white' };
     }
   };
-  
+
   // 사용자 정보 조회
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         setIsLoading(true);
         const { user, isLoggedIn } = useAuthStore.getState();
-        
+
         // 로그인하지 않은 경우 기본값 설정
         if (!isLoggedIn() || !user?.userId) {
           setUserInfo({
@@ -87,12 +118,14 @@ export default function MyPage() {
 
         const response = await getUserInfo(user.userId);
         // response.data 예시: { nickname: '펀딩 테스트 유저', profile_img_url: 'https://picsum.photos/id/1/200' }
-        const { nickname, profile_img_url } = response.data as any; // ← 서버 응답 키  // 서버 응답 키 설명: 스네이크 케이스로 내려옴
+        // const { nickname, profile_img_url } = response.data as any; // 서버 응답 키가 스네이크 케이스로 내려온다고 보았는데
+        console.log('response.data:', response.data);
+        const { nickname, profileImgUrl } = response.data as any; // 서버 응답 키 카멜 케이스로 내려옴
         setUserInfo({
-          nickname,                         // ← 동일 키라 그대로 할당
-          profileImgUrl: profile_img_url,   // ← 여기가 핵심: camelCase로 변환 저장
+          nickname,
+          // profileImgUrl: profile_img_url,   // 원래 camelCase로 변환 저장했는데 이미지가 렌더링 안 됨
+          profileImgUrl: profileImgUrl,
         });
-        console.log(response.data);
       } catch (err) {
         console.error('사용자 정보 조회 오류:', err);
         // API 서버가 준비되지 않은 경우 기본값 사용 (console 에러 방지)
@@ -113,7 +146,7 @@ export default function MyPage() {
     try {
       setIsProposalsLoading(true);
       const { user, isLoggedIn } = useAuthStore.getState();
-      
+
       // 로그인하지 않은 경우 빈 배열 설정
       if (!isLoggedIn() || !user?.userId) {
         setMyProposals([]);
@@ -121,13 +154,23 @@ export default function MyPage() {
         return;
       }
 
-      const response = await getFundingProposals(user.userId, type, undefined, 7);
-      setMyProposals(response.data.content); // 내가 제안한 상영회 목록 -> state 업데이트
+      // API에서 데이터 가져오기 (type 파라미터 전달)
+      const response = await getFundingProposals(user.userId, type, undefined, 15);
+      let proposalsData = response.data.content;
+
+      // 클라이언트에서 추가 필터링 (fundingType 기준으로 한 번 더 확인)
+      if (type === 'funding') {
+        proposalsData = proposalsData.filter(item => item.funding.fundingType === 'FUNDING');
+      } else if (type === 'vote') {
+        proposalsData = proposalsData.filter(item => item.funding.fundingType === 'VOTE');
+      }
+
+      setMyProposals(proposalsData);
       setHasMoreProposals(response.data.hasNextPage);
     } catch (err) {
       console.error('내가 제안한 상영회 조회 오류:', err);
-      setMyProposals([]); // 내가 제안한 상영회 목록 -> state 초기화
-      setHasMoreProposals(false); 
+      setMyProposals([]);
+      setHasMoreProposals(false);
     } finally {
       setIsProposalsLoading(false);
     }
@@ -142,26 +185,138 @@ export default function MyPage() {
   useEffect(() => {
     if (proposalType !== undefined) {
       fetchMyProposals(proposalType);
+    } else {
+      // proposalType이 undefined일 때는 전체 데이터 조회
+      fetchMyProposals();
     }
   }, [proposalType]);
 
-  // API 데이터를 ListCardData 형식으로 변환
-  const convertToCardData = (proposal: FundingProposal): ListCardData => {
+  // 내가 참여한 상영회 조회
+  const fetchMyParticipated = async (state?: 'ALL' | 'ON_PROGRESS' | 'CLOSE') => {
+    try {
+      setIsParticipatedLoading(true);
+      const { user, isLoggedIn } = useAuthStore.getState();
+
+      // 로그인하지 않은 경우 빈 배열 설정
+      if (!isLoggedIn() || !user?.userId) {
+        setMyParticipated([]);
+        setHasMoreParticipated(false);
+        return;
+      }
+
+      const response = await getParticipatedFunding(user.userId, state, undefined, 15);
+      let participatedData = response.data.content;
+
+      // 클라이언트에서 2차 필터링
+      if (state === 'ON_PROGRESS') {
+        // 진행중: ON_PROGRESS, WAITING 상태만 필터링
+        participatedData = participatedData.filter(item => 
+          item.funding.state === 'ON_PROGRESS' || item.funding.state === 'WAITING'
+        );
+      } else if (state === 'CLOSE') {
+        // 진행 완료: FAILED, SUCCESS 상태만 필터링
+        participatedData = participatedData.filter(item => 
+          item.funding.state === 'FAILED' || item.funding.state === 'SUCCESS'
+        );
+      }
+      // state === 'ALL' 또는 undefined인 경우 필터링하지 않음
+
+      setMyParticipated(participatedData);
+      setHasMoreParticipated(response.data.hasNextPage);
+    } catch (err) {
+      console.error('내가 참여한 상영회 조회 오류:', err);
+      setMyParticipated([]);
+      setHasMoreParticipated(false);
+    } finally {
+      setIsParticipatedLoading(false);
+    }
+  };
+
+  // 내가 참여한 상영회 조회 (초기 로드)
+  useEffect(() => {
+    fetchMyParticipated();
+  }, []);
+
+  // 상태 필터 변경 시 재조회
+  useEffect(() => {
+    if (participatedState !== undefined) {
+      fetchMyParticipated(participatedState);
+    } else {
+      // participatedState가 undefined일 때는 전체 데이터 조회
+      fetchMyParticipated('ALL');
+    }
+  }, [participatedState]);
+
+  // 내가 보고싶어요 한 상영회 조회
+  const fetchMyLiked = async (type?: 'funding' | 'vote') => {
+    try {
+      setIsLikedLoading(true);
+      const { user, isLoggedIn } = useAuthStore.getState();
+
+      // 로그인하지 않은 경우 빈 배열 설정
+      if (!isLoggedIn() || !user?.userId) {
+        setMyLiked([]);
+        setHasMoreLiked(false);
+        return;
+      }
+
+      // API에서 데이터 가져오기 (type 파라미터 전달)
+      const response = await getLikedFunding(user.userId, type, undefined, 15);
+      let likedData = response.data?.content || [];
+
+      // 클라이언트에서 추가 필터링 (price 기준으로 한 번 더 확인)
+      if (type === 'funding') {
+        likedData = likedData.filter(item => item.funding.price > 0);
+      } else if (type === 'vote') {
+        likedData = likedData.filter(item => item.funding.price <= 0);
+      }
+
+      setMyLiked(likedData);
+      setHasMoreLiked(response.data?.hasNextPage || false);
+    } catch (err) {
+      console.error('내가 보고싶어요 한 상영회 조회 오류:', err);
+      setMyLiked([]);
+      setHasMoreLiked(false);
+    } finally {
+      setIsLikedLoading(false);
+    }
+  };
+
+  // 내가 보고싶어요 한 상영회 조회 (초기 로드)
+  useEffect(() => {
+    fetchMyLiked();
+  }, []);
+
+  // 타입 필터 변경 시 API 재요청
+  useEffect(() => {
+    if (likedType !== undefined) {
+      fetchMyLiked(likedType);
+    } else {
+      // likedType이 undefined일 때는 전체 데이터 조회
+      fetchMyLiked();
+    }
+  }, [likedType]);
+
+  // CardItem을 ApiSearchItem으로 변환하는 함수
+  const convertCardItemToApiSearchItem = (cardItem: CardItem): ApiSearchItem => {
     return {
       funding: {
-        fundingId: proposal.funding.fundingId,
-        title: proposal.funding.title,
-        bannerUrl: proposal.funding.bannerUrl,
-        state: proposal.funding.state,
-        progressRate: proposal.funding.progressRate,
-        fundingEndsOn: proposal.funding.fundingEndsOn,
-        screenDate: proposal.funding.screenDate,
-        price: proposal.funding.price,
-        maxPeople: proposal.funding.maxPeople,
-        participantCount: proposal.funding.participantCount,
-        favoriteCount: proposal.funding.favoriteCount,
-        isLiked: proposal.funding.isLiked,
-        fundingType: proposal.funding.fundingType,
+        ...cardItem.funding,
+        state: cardItem.funding.state as any,
+        screenDate: cardItem.funding.screenDate || '',
+      },
+      cinema: cardItem.cinema,
+    };
+  };
+
+  // API 데이터를 CardItem 형식으로 변환
+  // 내가 제안한 상영회 데이터를 CardItem 형식으로 변환
+  const convertToCardData = (proposal: FundingProposal): CardItem => {
+    return {
+      funding: {
+        ...proposal.funding,
+        state: proposal.funding.state as any,
+        screenDate: proposal.funding.screenDate || '',
       },
       cinema: {
         cinemaId: proposal.cinema.cinemaId,
@@ -172,13 +327,52 @@ export default function MyPage() {
     };
   };
 
+  // 참여한 상영회 데이터를 CardItem 형식으로 변환
+  const convertParticipatedToCardData = (participated: ParticipatedFunding): CardItem => {
+    return {
+      funding: {
+        ...participated.funding,
+        state: participated.funding.state as any,
+        screenDate: participated.funding.screenDate || '',
+      },
+      cinema: {
+        cinemaId: participated.cinema.cinemaId,
+        cinemaName: participated.cinema.cinemaName,
+        city: participated.cinema.city,
+        district: participated.cinema.district,
+      },
+    };
+  };
+
+  // 보고싶어요 한 상영회 데이터를 CardItem 형식으로 변환
+  const convertLikedToCardData = (liked: LikedFunding): CardItem => {
+    // price가 0보다 크면 FUNDING, 아니면 VOTE로 구분
+    const fundingType = liked.funding.price > 0 ? 'FUNDING' : 'VOTE';
+
+    return {
+      funding: {
+        ...liked.funding,
+        fundingType: fundingType,
+        state: liked.funding.state as any,
+        screenDate: liked.funding.screenDate || '',
+      },
+      cinema: {
+        cinemaId: liked.cinema.cinemaId,
+        cinemaName: liked.cinema.cinemaName,
+        city: liked.cinema.city,
+        district: liked.cinema.district,
+      },
+    };
+  };
+
   // 샘플 데이터
-  const sampleCardData: ListCardData = {
+  const sampleCardData: CardItem = {
     funding: {
       fundingId: 1,
       title: '샘플 영화를 봅시다',
+      videoName: '샘플 영화',
       bannerUrl: '/images/image.png',
-      state: 'ACTIVE',
+      state: 'ON_PROGRESS',
       progressRate: 75,
       fundingEndsOn: '2024-12-31T23:59:59',
       screenDate: '2025-01-15T19:00:00',
@@ -197,12 +391,13 @@ export default function MyPage() {
     },
   };
 
-  const sampleVoteData: ListCardData = {
+  const sampleVoteData: CardItem = {
     funding: {
       fundingId: 2,
       title: '투표 영화 제목',
+      videoName: '투표 영화',
       bannerUrl: '/images/image.png',
-      state: 'ACTIVE',
+      state: 'ON_PROGRESS',
       progressRate: 0,
       fundingEndsOn: '2024-12-31T23:59:59',
       screenDate: '2025-01-15T19:00:00',
@@ -221,9 +416,6 @@ export default function MyPage() {
     },
   };
 
-  const myScreenings = Array(7).fill(sampleCardData);
-  const myVotes = Array(7).fill(sampleVoteData);
-  const myWishlist = Array(7).fill(sampleCardData);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto">
@@ -237,13 +429,14 @@ export default function MyPage() {
                 <Avatar src={userInfo?.profileImgUrl} size={72} />
                 <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
                   <div className="text-slate-50 text-2xl font-bold leading-loose">
-                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}, 안녕하세요`}
+                    {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
                   </div>
                   <div className="h-8 flex justify-start items-center gap-[14px]">
                     <Button
                       variant="secondary"
                       size="sm"
                       className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                      onClick={() => setIsRefundAccountModalOpen(true)}
                     >
                       환불 계좌 수정
                     </Button>
@@ -251,6 +444,7 @@ export default function MyPage() {
                       variant="secondary"
                       size="sm"
                       className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                      onClick={() => setIsCardModalOpen(true)}
                     >
                       결제 카드 등록
                     </Button>
@@ -262,8 +456,9 @@ export default function MyPage() {
               variant="secondary"
               size="sm"
               className="w-28 px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+              onClick={() => setIsEditProfileModalOpen(true)}
             >
-              프로필 관리
+              프로필 수정
             </Button>
           </div>
 
@@ -273,7 +468,7 @@ export default function MyPage() {
             <div className="flex flex-col flex-1 justify-start items-start gap-2">
               <div className="w-full flex justify-between items-center">
                 <div className="text-slate-50 text-2xl font-bold leading-loose">
-                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}
+                  {isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}
                 </div>
                 {/* <Button
                   variant="secondary"
@@ -298,6 +493,7 @@ export default function MyPage() {
                   variant="secondary"
                   size="sm"
                   className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                  onClick={() => setIsRefundAccountModalOpen(true)}
                 >
                   환불 계좌 수정
                 </Button>
@@ -305,6 +501,7 @@ export default function MyPage() {
                   variant="secondary"
                   size="sm"
                   className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
+                  onClick={() => setIsCardModalOpen(true)}
                 >
                   결제 카드 등록
                 </Button>
@@ -327,7 +524,7 @@ export default function MyPage() {
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 제안한 상영회</h2>
               {hasMoreProposals && (
-                <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                <button onClick={() => router.push('/mypage/detail/proposals')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
                   더보기 →
                 </button>
               )}
@@ -337,11 +534,10 @@ export default function MyPage() {
               <Button
                 variant={proposalType === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  proposalType === undefined 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${proposalType === undefined
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setProposalType(undefined)}
               >
                 전체
@@ -349,11 +545,10 @@ export default function MyPage() {
               <Button
                 variant={proposalType === 'funding' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  proposalType === 'funding' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${proposalType === 'funding'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setProposalType('funding')}
               >
                 펀딩
@@ -361,11 +556,10 @@ export default function MyPage() {
               <Button
                 variant={proposalType === 'vote' ? "brand1" : "secondary"}
                 size="sm"
-                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${
-                  proposalType === 'vote' 
-                    ? "bg-red-500 text-slate-300" 
-                    : "bg-slate-800 text-slate-400"
-                }`}
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${proposalType === 'vote'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
                 onClick={() => setProposalType('vote')}
               >
                 투표
@@ -393,8 +587,8 @@ export default function MyPage() {
                   {myProposals.map((proposal, index) => (
                     <div key={proposal.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
                       <CineCardVertical
-                        data={convertToCardData(proposal)}
-                        onCardClick={(id) => console.log('카드 클릭:', id)}
+                        data={convertCardItemToApiSearchItem(convertToCardData(proposal))}
+                        onCardClick={handleCardClick}
                         onVoteClick={(id) => console.log('투표 클릭:', id)}
                         showStateTag={true}
                         stateTagClassName="state state-active"
@@ -412,49 +606,81 @@ export default function MyPage() {
             {/* 섹션 헤더 */}
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 참여한 상영회</h2>
-              <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
-                더보기 →
-              </button>
+              {hasMoreParticipated && (
+                <button onClick={() => router.push('/mypage/detail/participated')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                  더보기 →
+                </button>
+              )}
             </div>
             {/* 필터 버튼 그룹 */}
             <div className="w-96 inline-flex justify-start items-center gap-2">
               <Button
-                variant="brand1"
+                variant={participatedState === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-red-500 text-slate-300 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${participatedState === undefined
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
+                onClick={() => setParticipatedState(undefined)}
               >
                 전체
               </Button>
               <Button
-                variant="secondary"
+                variant={participatedState === 'ON_PROGRESS' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${participatedState === 'ON_PROGRESS'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
+                onClick={() => setParticipatedState('ON_PROGRESS')}
               >
-                펀딩
+                진행중
               </Button>
               <Button
-                variant="secondary"
+                variant={participatedState === 'CLOSE' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${participatedState === 'CLOSE'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
+                onClick={() => setParticipatedState('CLOSE')}
               >
-                투표
+                진행 완료
               </Button>
             </div>
             {/* 상영회 카드 */}
             <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
-              <HorizontalScroller className="w-full">
-                {myVotes.map((item, index) => (
-                  <div key={index} className="w-[172px] h-80 flex-shrink-0">
-                    <CineCardVertical
-                      data={item}
-                      onCardClick={(id) => console.log('카드 클릭:', id)}
-                      onVoteClick={(id) => console.log('투표 클릭:', id)}
-                      showStateTag={true}
-                      stateTagClassName="state state-active"
-                    />
+              {myParticipated.length === 0 ? (
+                <div className="w-full flex justify-center items-center h-80">
+                  <div className="flex flex-col justify-center items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-slate-400 text-lg font-medium mb-2">참여한 상영회가 없습니다</div>
+                      <div className="text-slate-500 text-sm">상영회에 참여해보세요</div>
+                    </div>
+                    <Button
+                      onClick={() => router.push('/')}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      상영회 둘러보기
+                    </Button>
                   </div>
-                ))}
-              </HorizontalScroller>
+                </div>
+              ) : (
+                <HorizontalScroller className="w-full">
+                  {myParticipated.map((participated, index) => (
+                    <div key={participated.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                      <CineCardVertical
+                        data={convertCardItemToApiSearchItem(convertParticipatedToCardData(participated))}
+                        onCardClick={handleCardClick}
+                        onVoteClick={(id) => console.log('투표 클릭:', id)}
+                        showStateTag={true}
+                        stateTagClassName="state state-active"
+                        getStateBadgeInfo={getStateBadgeInfo}
+                      />
+                    </div>
+                  ))}
+                </HorizontalScroller>
+              )}
             </div>
           </div>
 
@@ -463,53 +689,104 @@ export default function MyPage() {
             {/* 섹션 헤더 */}
             <div className="w-full flex items-center justify-between">
               <h2 className="text-h5-b">내가 보고 싶은 상영회</h2>
-              <button onClick={() => console.log('더보기')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
-                더보기 →
-              </button>
+              {hasMoreLiked && (
+                <button onClick={() => router.push('/mypage/detail/liked')} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
+                  더보기 →
+                </button>
+              )}
             </div>
             {/* 필터 버튼 그룹 */}
             <div className="w-96 inline-flex justify-start items-center gap-2">
               <Button
-                variant="brand1"
+                variant={likedType === undefined ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-red-500 text-slate-300 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${likedType === undefined
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
+                onClick={() => setLikedType(undefined)}
               >
                 전체
               </Button>
               <Button
-                variant="secondary"
+                variant={likedType === 'funding' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${likedType === 'funding'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
+                onClick={() => setLikedType('funding')}
               >
                 펀딩
               </Button>
               <Button
-                variant="secondary"
+                variant={likedType === 'vote' ? "brand1" : "secondary"}
                 size="sm"
-                className="h-6 px-3.5 py-1 bg-slate-800 text-slate-400 text-xs font-semibold rounded-2xl"
+                className={`h-6 px-3.5 py-1 text-xs font-semibold rounded-2xl ${likedType === 'vote'
+                  ? "bg-red-500 text-slate-300"
+                  : "bg-slate-800 text-slate-400"
+                  }`}
+                onClick={() => setLikedType('vote')}
               >
                 투표
               </Button>
             </div>
             {/* 상영회 카드 */}
             <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
-              <HorizontalScroller className="w-full">
-                {myWishlist.map((item, index) => (
-                  <div key={index} className="w-[172px] h-80 flex-shrink-0">
-                    <CineCardVertical
-                      data={item}
-                      onCardClick={(id) => console.log('카드 클릭:', id)}
-                      onVoteClick={(id) => console.log('투표 클릭:', id)}
-                      showStateTag={true}
-                      stateTagClassName="state state-active"
-                    />
+              {!myLiked || myLiked.length === 0 ? (
+                <div className="w-full flex justify-center items-center h-80">
+                  <div className="flex flex-col justify-center items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-slate-400 text-lg font-medium mb-2">보고 싶은 상영회가 없습니다</div>
+                      <div className="text-slate-500 text-sm">보고 싶은 상영회를 저장해보세요</div>
+                    </div>
+                    <Button
+                      onClick={() => router.push('/category')}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    >
+                      둘러보기
+                    </Button>
                   </div>
-                ))}
-              </HorizontalScroller>
+                </div>
+              ) : (
+                <HorizontalScroller className="w-full">
+                  {myLiked && myLiked.map((liked, index) => (
+                    <div key={liked.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                      <CineCardVertical
+                        data={convertCardItemToApiSearchItem(convertLikedToCardData(liked))}
+                        onCardClick={handleCardClick}
+                        onVoteClick={(id) => console.log('투표 클릭:', id)}
+                        showStateTag={true}
+                        stateTagClassName="state state-active"
+                        getStateBadgeInfo={getStateBadgeInfo}
+                      />
+                    </div>
+                  ))}
+                </HorizontalScroller>
+              )}
             </div>
           </div>
         </div>
       </main>
+      
+      {/* 카드 관리 모달 */}
+      <CardManagement 
+        isOpen={isCardModalOpen} 
+        onClose={() => setIsCardModalOpen(false)} 
+      />
+
+      {/* 환불 계좌 수정 모달 */}
+      <RefundAccountModal
+        isOpen={isRefundAccountModalOpen}
+        onClose={() => setIsRefundAccountModalOpen(false)}
+      />
+
+      {/* 프로필 수정 모달 */}
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => setIsEditProfileModalOpen(false)}
+        currentNickname={userInfo?.nickname}
+      />
     </div>
   );
 }

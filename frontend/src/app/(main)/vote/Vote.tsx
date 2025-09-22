@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
@@ -20,6 +21,7 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
  */
 export default function Vote() {
   console.log('🎯 [Vote] 컴포넌트 렌더링');
+  const router = useRouter();
 
   // 필터 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
@@ -131,8 +133,8 @@ export default function Vote() {
   // 🖱️ 카드 클릭 핸들러
   const handleCardClick = useCallback((id: number) => {
     console.log('🎯 [Vote] 투표 카드 클릭:', id);
-    // TODO: 투표 상세 페이지 이동 로직 구현
-  }, []);
+    router.push(`/detail/${id}`);
+  }, [router]);
 
   // ❤️ 투표 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {

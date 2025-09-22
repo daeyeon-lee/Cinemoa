@@ -1,4 +1,4 @@
-import { UserInfoResponse, UserInfoErrorResponse, FundingProposalsResponse, FundingProposalsErrorResponse } from '@/types/mypage';
+import { UserInfoResponse, UserInfoErrorResponse, FundingProposalsResponse, FundingProposalsErrorResponse, ParticipatedFundingResponse, ParticipatedFundingErrorResponse, LikedFundingResponse, LikedFundingErrorResponse } from '@/types/mypage';
 import { apiGet } from '@/utils/apiClient';
 
 const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -24,9 +24,8 @@ export const getUserInfo = async (userId: number): Promise<UserInfoResponse> => 
 // 내가 제안한 상영회 목록 조회 API
 export const getFundingProposals = async (
   userId: number = 2,
-  // type?: 'funding' | 'vote',
-  type?: string,
-  cursor?: number,
+  type?: 'funding' | 'vote',
+  cursor?: string,
   limit: number = 7,
 ): Promise<FundingProposalsResponse> => {
   try {
@@ -34,7 +33,7 @@ export const getFundingProposals = async (
     const queryParams = new URLSearchParams();
     console.log('type:', type, 'cursor:', cursor, 'limit:', limit);
     if (type) queryParams.append('type', type);
-    if (cursor) queryParams.append('cursor', cursor.toString());
+    if (cursor) queryParams.append('cursor', cursor);
     queryParams.append('limit', limit.toString());
 
     const response = await apiGet(`${BaseUrl}user/${userId}/funding-proposals?${queryParams}`);
@@ -49,6 +48,68 @@ export const getFundingProposals = async (
     return data;
   } catch (error) {
     console.error('내가 제안한 상영회 조회 오류:', error);
+    throw error;
+  }
+};
+
+// 내가 참여한 상영회 목록 조회 API
+export const getParticipatedFunding = async (
+  userId: number,
+  state?: 'ALL' | 'ON_PROGRESS' | 'CLOSE',
+  cursor?: string,
+  limit: number = 7
+): Promise<ParticipatedFundingResponse> => {
+  try {
+    // 쿼리 파라미터 구성
+    const queryParams = new URLSearchParams();
+    console.log('state:', state, 'cursor:', cursor, 'limit:', limit);
+    if (state && state !== 'ALL') queryParams.append('state', state);
+    if (cursor) queryParams.append('cursor', cursor);
+    queryParams.append('limit', limit.toString());
+
+    const response = await apiGet(`${BaseUrl}user/${userId}/participated-funding?${queryParams}`);
+
+    if (!response.ok) {
+      const errorData: ParticipatedFundingErrorResponse = await response.json();
+      throw new Error(errorData.message || '내가 참여한 상영회 조회에 실패했습니다.');
+    }
+
+    const data: ParticipatedFundingResponse = await response.json();
+    console.log('내가 참여한 상영회 목록:', data);
+    return data;
+  } catch (error) {
+    console.error('내가 참여한 상영회 조회 오류:', error);
+    throw error;
+  }
+};
+
+// 내가 보고싶어요 한 상영회 목록 조회 API
+export const getLikedFunding = async (
+  userId: number,
+  type?: 'funding' | 'vote',
+  cursor?: string,
+  limit: number = 7
+): Promise<LikedFundingResponse> => {
+  try {
+    // 쿼리 파라미터 구성
+    const queryParams = new URLSearchParams();
+    console.log('type:', type, 'cursor:', cursor, 'limit:', limit);
+    if (type) queryParams.append('type', type);
+    if (cursor) queryParams.append('cursor', cursor);
+    queryParams.append('limit', limit.toString());
+
+    const response = await apiGet(`${BaseUrl}user/${userId}/like?${queryParams}`);
+
+    if (!response.ok) {
+      const errorData: LikedFundingErrorResponse = await response.json();
+      throw new Error(errorData.message || '내가 보고싶어요 한 상영회 조회에 실패했습니다.');
+    }
+
+    const data: LikedFundingResponse = await response.json();
+    console.log('내가 보고싶어요 한 상영회 목록:', data);
+    return data;
+  } catch (error) {
+    console.error('내가 보고싶어요 한 상영회 조회 오류:', error);
     throw error;
   }
 };
