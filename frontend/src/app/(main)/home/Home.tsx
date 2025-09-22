@@ -57,9 +57,6 @@ export default function Home() {
   const { data: recentlyViewedData, isLoading: isLoadingRecentlyViewed } = useHomeRecentlyViewed();
   const recentlyViewedItems = recentlyViewedData?.data || [];
 
-  // 디버깅용 로그
-  console.log('[Home] 최근 본 상영회 데이터:', recentlyViewedData?.data);
-
   // TODO: 실제 투표 카테고리 데이터로 교체 필요
   const categories = HOME_CATEGORIES;
 
@@ -94,7 +91,7 @@ export default function Home() {
         {/* Desktop: 로고+검색+카테고리 - Full Width */}
         <div className="hidden sm:block py-8">
           <div className="flex flex-col items-center gap-8 w-full">
-            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} />
+            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} priority />
 
             <div className="flex flex-col items-center gap-3 w-full">
               {/* 검색어 입력 */}
@@ -152,16 +149,23 @@ export default function Home() {
         {/* Desktop Layout - 웹 버전 */}
         <div className="hidden sm:block">
           <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8">
-            {/* Left Column - Recommended + Closing Soon */}
-            <div className="flex-1 lg:w-2/3 space-y-12">
+            {/* Left Column - Recommended (2/3) */}
+            <div className="flex-1 lg:w-2/3">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
-              <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
             </div>
 
-            {/* Right Column - Popular */}
+            {/* Right Column - Popular (1/3) */}
             <aside className="lg:w-1/3 h-fit">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
             </aside>
+          </div>
+
+          {/* Closing Soon - Full Width */}
+          <div className="mt-12">
+            <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
+          </div>
+          <div className="mt-12">
+            <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} />
           </div>
         </div>
 
@@ -170,12 +174,8 @@ export default function Home() {
           <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
           <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
           <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
-        </div>
-
-        {/* Recently Viewed - Full Width (Desktop Only) */}
-        <section className="hidden sm:block mt-4">
           <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} />
-        </section>
+        </div>
       </main>
     </div>
   );

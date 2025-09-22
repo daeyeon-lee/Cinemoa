@@ -38,7 +38,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
       {/* Desktop: 카드를 절반씩 나누어 세로로 쌓기 - 동시 스크롤 */}
       <div className="hidden md:block">
         <HorizontalScroller>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-8">
             {/* 첫 번째 그룹 (절반) */}
             <div className="flex gap-2">
               {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
