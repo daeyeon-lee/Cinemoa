@@ -9,8 +9,10 @@ import LogoutIcon from '@/component/icon/logoutIcon';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/api/auth';
+import Ticket from './ticket';
 
 export default function Navbar() {
   // navbar 페이지 활성화 여부 확인 함수
@@ -164,6 +166,19 @@ export default function Navbar() {
             )}
             {isClient && isLoggedIn() ? (
               <>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" size="sm" textSize="sm" className="flex-none cursor-pointer">
+                      스마트 티켓
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md max-h-[100vh] overflow-y-auto">
+                    <DialogHeader className="self-stretch">
+                      <DialogTitle>스마트 티켓</DialogTitle>
+                    </DialogHeader>
+                    <Ticket />
+                  </DialogContent>
+                </Dialog>
                 <Link href="/mypage" className="flex-none cursor-pointer">
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">
                     마이페이지
