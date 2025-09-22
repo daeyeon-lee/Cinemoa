@@ -21,9 +21,7 @@ export interface GetPopularFundingParams {
  * 인기 상영회 조회 응답
  */
 export interface GetPopularFundingResponse {
-  data: {
-    content: ApiSearchItem[];
-  };
+  data: ApiSearchItem[];
   code: number;
   message: string;
   state: 'SUCCESS' | 'FAIL' | 'ERROR';

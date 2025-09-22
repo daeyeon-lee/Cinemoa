@@ -34,7 +34,7 @@ export function useHomePopular() {
       return await getPopularFunding(userId);
     },
     select: (data: GetPopularFundingResponse) => {
-      return data.data?.content?.slice(0, 8) || [] as ApiSearchItem[];
+      return data.data?.slice(0, 8) || [] as ApiSearchItem[];
     },
     staleTime: 60_000,
     gcTime: 300_000,
