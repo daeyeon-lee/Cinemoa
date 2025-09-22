@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Media } from './primitives/Media';
 import { BarcodeDecor } from './primitives/BarcodeDecor';
 import { PerforationLine } from './primitives/PerforationLine';
@@ -6,6 +6,8 @@ import { VoteInfo } from './blocks/VoteInfo';
 import { FundingInfo } from './blocks/FundingInfo';
 import { HeartIcon } from '@/component/icon/heartIcon';
 import { ApiSearchItem, FundingType, FundingState } from '@/types/searchApi';
+import { addFundingLike, deleteFundingLike } from '@/api/fundingActions';
+import { useAuthStore } from '@/stores/authStore';
 
 type CineCardProps = {
   data: ApiSearchItem;
@@ -19,9 +21,22 @@ type CineCardProps = {
 
 const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
   // API 데이터 확인용 로그 - TODO: 개발 완료 후 제거
-  console.log('CineCardVertical - API data:', JSON.stringify(data, null, 2));
+  // console.log('CineCardVertical - API data:', JSON.stringify(data, null, 2));
 
   const isFunding = data.funding.fundingType === 'FUNDING';
+  
+  // 좋아요 토글을 위한 상태 관리
+  const { user } = useAuthStore();
+  const userId = user?.userId?.toString();
+  
+  // 로컬 상태로 좋아요 상태 관리
+  const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
+  const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 현재 좋아요 상태와 좋아요 수
+  const currentIsLiked = localIsLiked;
+  const currentLikeCount = localLikeCount;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -38,8 +53,41 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
     }
   };
 
-  const handleVoteClick = (e: React.MouseEvent) => {
+  const handleVoteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // 로그인 체크
+    if (!userId) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+    
+    // 중복 클릭 방지
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    // 낙관적 업데이트 - 즉시 로컬 상태 변경
+    setLocalIsLiked(!currentIsLiked);
+    setLocalLikeCount(currentIsLiked ? currentLikeCount - 1 : currentLikeCount + 1);
+    
+    try {
+      // API 호출
+      if (currentIsLiked) {
+        await deleteFundingLike(data.funding.fundingId, userId);
+      } else {
+        await addFundingLike(data.funding.fundingId, userId);
+      }
+    } catch (error) {
+      // 에러 시 롤백
+      setLocalIsLiked(currentIsLiked);
+      setLocalLikeCount(currentLikeCount);
+      console.error('좋아요 토글 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+    
+    // 기존 onVoteClick 콜백도 호출 (필요시)
     if (onVoteClick) {
       onVoteClick(data.funding.fundingId);
     }
@@ -89,8 +137,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
             {isFunding ? (
               <>
                 {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
-                <button onClick={handleVoteClick} className="p-0 rounded-full transition-transform hover:scale-110">
-                  <HeartIcon filled={data.funding.isLiked} size={14} />
+                <button 
+                  onClick={handleVoteClick} 
+                  className="p-0 rounded-full transition-transform hover:scale-110"
+                  disabled={isLoading}
+                >
+                  <HeartIcon filled={currentIsLiked} size={14} />
                 </button>
                 {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
                 <div className="flex-1 min-h-0">
@@ -110,7 +162,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
           {/* 배지 영역(지역+상영날짜) */}
           <div className="flex gap-1 flex-wrap ">
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{data.cinema.district}</span>
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{formatDate(data.funding.screenDate)}</span>
+            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
+              {isFunding 
+                ? formatDate(data.funding.screenDate)
+                : formatDate(data.funding.fundingEndsOn)
+              }
+            </span>
           </div>
           {/* 프로젝트 제목 */}
           <h4 className="text-p3 line-clamp-1 truncate">{data.funding.title}</h4>
@@ -129,7 +186,13 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
             loadingState={loadingState}
           />
         ) : (
-          <VoteInfo likeCount={data.funding.favoriteCount} isLiked={data.funding.isLiked} loadingState={loadingState} onClick={() => handleVoteClick({} as React.MouseEvent)} />
+          <VoteInfo 
+            likeCount={currentLikeCount} 
+            isLiked={currentIsLiked} 
+            loadingState={loadingState} 
+            disabled={isLoading}
+            onClick={handleVoteClick}
+          />
         )}
       </div>
     </div>
