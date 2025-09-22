@@ -196,7 +196,7 @@ public class FundingService {
                 String.valueOf(availableSeats),
                 "180");
 
-        Integer success = (Integer) result.get(0);
+        Long success = (Long) result.get(0);
         String message = (String) result.get(1);
 
         if (success == 0) {
