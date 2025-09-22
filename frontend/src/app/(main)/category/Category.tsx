@@ -13,6 +13,7 @@ import { STANDARD_CATEGORIES, findCategoryValueById, type CategoryValue } from '
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
+import { useAuthStore } from '@/stores/authStore';
 /**
  * 둘러보기 페이지 컴포넌트
  *
@@ -22,6 +23,7 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
 export default function Category() {
   console.log('🎯 [Category] 컴포넌트 렌더링');
   const router = useRouter();
+  const { user } = useAuthStore();
 
   // 필터 상태 관리 (categoryId 기반)
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null); // 1차 카테고리 ID
@@ -69,6 +71,7 @@ export default function Category() {
   const searchParams = useMemo(() => {
     const params: SearchParams = {
       fundingType: 'FUNDING' as const, // 둘러보기는 펀딩만
+      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
     };
 
     // 사용자가 정렬을 변경했을 때만 전달 (기본값: LATEST)
@@ -112,7 +115,7 @@ export default function Category() {
 
     console.log('📤 [Category] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes]);
+  }, [sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
