@@ -16,7 +16,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { ApiSearchItem, ApiSearchResponse } from '@/types/searchApi';
+import type { ApiSearchItem } from '@/types/searchApi';
 import { getExpiringSoonFunding } from '@/api/user';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -37,8 +37,8 @@ export function useHomeClosingSoon() {
     queryFn: async () => {
       return await getExpiringSoonFunding(userId);
     },
-    select: (data: ApiSearchResponse) => {
-      return data.data?.content?.slice(0, 5) || [] as ApiSearchItem[];
+    select: (data) => {
+      return data.data?.slice(0, 5) || [] as ApiSearchItem[];
     },
     staleTime: 60_000,
     gcTime: 300_000,

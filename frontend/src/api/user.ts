@@ -1,7 +1,7 @@
 import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
 import type { ApiSearchResponse, ApiRecommendationResponse } from '@/types/searchApi';
-import type { GetPopularFundingResponse } from '@/types/home';
+import type { GetPopularFundingResponse, GetClosingSoonFundingResponse } from '@/types/home';
 
 // 사용자 추가 정보 입력 API
 export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserInfoRequest): Promise<UpdateUserInfoResponse> => {
@@ -10,7 +10,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
     // console.log('사용자 ID:', userId);
     // console.log('요청 데이터:', data);
 
-    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/${userId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
 // 환불계좌 변경 API
 export const updateRefundAccount = async (userId: number, data: UpdateRefundAccountRequest): Promise<UpdateRefundAccountResponse> => {
   try {
-    const response = await fetch(`https://j13a110.p.ssafy.io:8443/api/user/${userId}/refund-account`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}user/${userId}/refund-account`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
 // 인기 상영회 조회 API
 export const getPopularFunding = async (userId?: number): Promise<GetPopularFundingResponse> => {
   try {
-    const url = `https://j13a110.p.ssafy.io/api/funding/popular`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
     
     console.log('[인기api] 요청 URL:', url);
     
@@ -152,17 +152,32 @@ export const getPopularFunding = async (userId?: number): Promise<GetPopularFund
   }
 };
 
-// 종료 임박 상영회 조회 API (임시: search로 대체)
-export const getExpiringSoonFunding = async (userId?: number): Promise<ApiSearchResponse> => {
+// 종료 임박 상영회 조회 API
+export const getExpiringSoonFunding = async (userId?: number): Promise<GetClosingSoonFundingResponse> => {
   try {
-    // TODO: 백엔드 개발 완료 후 실제 API 사용
-    // const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/expiring${userId ? `?userId=${userId}` : ''}`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/expiring${userId ? `?userId=${userId}` : ''}`;
+    
+    console.log('[종료임박api] 요청 URL:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
 
-    console.log('[종료임박api] 개발 중, search로 대체');
-    return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 5 });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: GetClosingSoonFundingResponse = await response.json();
+    console.log('[종료임박api] 응답 데이터:', data);
+    
+    return data;
   } catch (error) {
     console.error('[종료임박api] 오류:', error);
-    return await getSearchFunding({ sortBy: 'RECOMMENDED', size: 5 });
+    throw error;
   }
 };
 
