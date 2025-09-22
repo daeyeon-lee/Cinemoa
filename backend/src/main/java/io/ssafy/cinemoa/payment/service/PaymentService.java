@@ -55,7 +55,6 @@ public class PaymentService {
      * @param currentUserId 현재 사용자 ID
      * @param request       펀딩 참여 요청 데이터
      * @return FundingPaymentResponse 펀딩 참여 처리 결과
-     *
      * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
      * @throws RuntimeException          카드 결제 실패 OR 계좌 입금 실패 시
      * @author HG
@@ -133,6 +132,7 @@ public class PaymentService {
 
             // 6. 펀딩 상태 업데이트(참여자 수 +1)
             fundingStatRepository.incrementParticipantCount(fundingId);
+            redisService.removeKey(seatKey);
 
         } // 결제 실패 시 로깅
         else {
@@ -150,7 +150,6 @@ public class PaymentService {
      * @param currentUserId 현재 사용자 ID (권한 검증용)
      * @param request       펀딩 환불 요청 데이터 (펀딩 ID, 대상 사용자 ID 포함)
      * @return FundingRefundResponse 환불 처리 결과
-     *
      * @throws NoAuthorityException      현재 사용자가 대상 사용자와 다른 경우
      * @throws ResourceNotFoundException 펀딩 또는 사용자를 찾을 수 없는 경우
      * @throws BadRequestException       참여하지 않은 펀딩에 대한 환불 요청 시
@@ -355,9 +354,8 @@ public class PaymentService {
 
     /**
      * 펀딩 종료 시간 검증
-     *
-     * 현재 시간이 펀딩 종료 시간(endsOn) 이후인지 확인하고,
-     * 종료된 펀딩에 대한 요청을 차단합니다.
+     * <p>
+     * 현재 시간이 펀딩 종료 시간(endsOn) 이후인지 확인하고, 종료된 펀딩에 대한 요청을 차단합니다.
      *
      * @param funding 검증할 펀딩 객체
      * @param context 호출 컨텍스트 (PAYMENT 또는 REFUND)
@@ -379,9 +377,8 @@ public class PaymentService {
 
     /**
      * 펀딩 참여 인원 검증
-     *
-     * 현재 참여자 수가 최대 인원에 도달했는지 확인하고,
-     * 초과된 경우 참여를 차단합니다.
+     * <p>
+     * 현재 참여자 수가 최대 인원에 도달했는지 확인하고, 초과된 경우 참여를 차단합니다.
      *
      * @param fundingId 펀딩 ID
      * @param maxPeople 최대 참여 인원
@@ -406,9 +403,8 @@ public class PaymentService {
 
     /**
      * 중복 참여 검증
-     *
-     * 현재 사용자가 해당 펀딩에 이미 참여했는지 확인하고,
-     * 이미 참여한 경우 중복 참여를 차단합니다.
+     * <p>
+     * 현재 사용자가 해당 펀딩에 이미 참여했는지 확인하고, 이미 참여한 경우 중복 참여를 차단합니다.
      *
      * @param user    현재 사용자
      * @param funding 펀딩 객체
