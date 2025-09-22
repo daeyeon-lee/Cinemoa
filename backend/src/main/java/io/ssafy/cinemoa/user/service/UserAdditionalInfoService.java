@@ -4,6 +4,7 @@ import io.ssafy.cinemoa.category.repository.CategoryRepository;
 import io.ssafy.cinemoa.category.repository.entity.Category;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
+import io.ssafy.cinemoa.security.enums.Role;
 import io.ssafy.cinemoa.user.dto.UserAdditionalInfoRequest;
 import io.ssafy.cinemoa.user.repository.UserCategoryRepository;
 import io.ssafy.cinemoa.user.repository.UserRepository;
@@ -50,6 +51,7 @@ public class UserAdditionalInfoService {
 
         // 5. 사용자 정보 업데이트
         user.updateAdditionalInfo(normalizedAccountNo, request.getBankCode());
+        user.setRole(Role.USER);
         userRepository.save(user); // 명시적으로 저장 (Dirty Checking은 트랜잭션 커밋 시 작동)
 
         // 6. 기존 사용자-카테고리 관계 삭제 (중복 방지)

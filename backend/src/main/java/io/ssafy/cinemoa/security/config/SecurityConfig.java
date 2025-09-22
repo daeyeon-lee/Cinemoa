@@ -41,6 +41,10 @@ public class SecurityConfig {
             "/api/search"
     };
 
+    private static final String[] PERMIT_ANONYMOUS = {
+            "/api/wonauth/**"
+    };
+
     private final OAuthTokenFilter oAuthTokenFilter;
     private final CustomUserDetailsService userDetailsService;
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
@@ -60,7 +64,7 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy((SessionCreationPolicy.IF_REQUIRED))
-                        .maximumSessions(1)
+                        .maximumSessions(10)
                         .maxSessionsPreventsLogin(false))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -77,6 +81,9 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                         .requestMatchers(matcher).permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/user/**")
+                        .hasAnyRole(Role.USER.getRole(), Role.ANONYMOUS.getRole())
+                        .requestMatchers(PERMIT_ANONYMOUS).hasAnyRole(Role.USER.getRole(), Role.ANONYMOUS.getRole())
                         .requestMatchers("/api/**").hasRole(Role.USER.getRole())
                         .anyRequest().authenticated()
                 )
