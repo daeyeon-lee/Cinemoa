@@ -6,7 +6,7 @@ type MediaProps = {
   src: string;
   alt?: string;
   height?: number;
-  aspect?: '16/9' | '4/3' | '1/1' | 'auto';
+  aspect?: '16/9' | '4/3' | '1/1' | '7/10' | 'auto';
   rounded?: boolean;
   loadingState?: 'ready' | 'loading' | 'error';
 };
@@ -23,6 +23,7 @@ const Media: React.FC<MediaProps> = ({
     '16/9': 'aspect-video',
     '4/3': 'aspect-[4/3]',
     '1/1': 'aspect-square',
+    '7/10': 'aspect-[7/10]',
     auto: '',
   };
 

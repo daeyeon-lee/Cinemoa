@@ -11,14 +11,7 @@ type VoteInfoProps = {
   onClick?: () => void;
 };
 
-const VoteInfo: React.FC<VoteInfoProps> = ({
-  likeCount,
-  isLiked = false,
-  ctaLabel = '보고싶어요',
-  disabled = false,
-  loadingState = 'ready',
-  onClick,
-}) => {
+const VoteInfo: React.FC<VoteInfoProps> = ({ likeCount, isLiked = false, ctaLabel = '보고싶어요', disabled = false, loadingState = 'ready', onClick }) => {
   if (loadingState === 'loading') {
     return (
       <div className="flex flex-col items-center gap-1.5">
@@ -30,18 +23,10 @@ const VoteInfo: React.FC<VoteInfoProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <p className="text-xs text-slate-50 font-semibold text-center leading-none">
+      <p className="text-caption1-b text-center leading-none">
         {likeCount.toLocaleString()} 명이 {ctaLabel}
       </p>
-      <Button
-        variant="outline"
-        size="md"
-        disabled={disabled}
-        onClick={onClick}
-        className={`w-full gap-1 ${
-          isLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'
-        }`}
-      >
+      <Button variant="outline" size="sm" disabled={disabled} onClick={onClick} className={`w-full gap-1 ${isLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}>
         <span className="text-lg">{isLiked ? '♥' : '♡'}</span>
         {ctaLabel}
       </Button>

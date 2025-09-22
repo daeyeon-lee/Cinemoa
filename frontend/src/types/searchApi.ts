@@ -48,6 +48,7 @@ export interface SearchParams {
 export interface ApiFunding {
   fundingId: number;
   title: string;
+  videoName: string;
   bannerUrl: string;
   state: FundingState;
   progressRate: number;
