@@ -1,6 +1,7 @@
 import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
 import type { ApiSearchResponse, ApiRecommendationResponse } from '@/types/searchApi';
+import type { GetPopularFundingResponse } from '@/types/home';
 
 // 사용자 추가 정보 입력 API
 export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserInfoRequest): Promise<UpdateUserInfoResponse> => {
@@ -107,17 +108,49 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
   }
 };
 
-// 인기 상영회 조회 API (임시: search로 대체)
-export const getPopularFunding = async (userId?: number): Promise<ApiSearchResponse> => {
+// 인기 상영회 조회 API
+export const getPopularFunding = async (userId?: number): Promise<GetPopularFundingResponse> => {
   try {
-    // TODO: 백엔드 개발 완료 후 실제 API 사용
-    // const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular${userId ? `?userId=${userId}` : ''}`;
+    const url = `https://j13a110.p.ssafy.io/api/funding/popular`;
+    
+    console.log('[인기api] 요청 URL:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 쿠키 포함
+    });
 
-    console.log('[인기api] 개발 중, search로 대체');
-    return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[인기api] 응답 오류:', response.status, errorData);
+      
+      // 404 에러 처리 (존재하지 않는 사용자)
+      if (response.status === 404) {
+        throw new Error(`존재하지 않는 사용자입니다. (code: ${errorData.code || 40401})`);
+      }
+      
+      throw new Error(`인기 상영회 조회 실패: ${response.status}`);
+    }
+
+    const data: GetPopularFundingResponse = await response.json();
+    console.log('[인기api] 응답 성공:', data);
+    
+    return data;
   } catch (error) {
     console.error('[인기api] 오류:', error);
-    return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+    
+    // 에러 발생 시 빈 응답 반환
+    return {
+      data: {
+        content: []
+      },
+      code: 500,
+      message: '인기 상영회 조회 중 오류가 발생했습니다.',
+      state: 'FAIL'
+    };
   }
 };
 
