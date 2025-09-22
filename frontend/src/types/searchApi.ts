@@ -164,3 +164,13 @@ export const mapApiItemToUiCard = (item: ApiSearchItem): UiCardItem => ({
     district: item.cinema.district,
   },
 });
+
+// 최근 본 상영회 목록
+
+// 최근 본 상영회 목록 응답
+export interface ApiRecentlyViewedResponse {
+  data: ApiSearchItem[];
+  code: number;
+  message: string;
+  state: ApiState;
+}

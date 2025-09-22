@@ -22,13 +22,15 @@ interface RecentlyViewedSectionProps {
   loading?: boolean;
   /** 더보기 버튼 클릭 핸들러 */
   onMoreClick?: () => void;
+  /** 카드 클릭 핸들러 */
+  onCardClick?: (fundingId: number) => void;
 }
 
 /**
  * 최근 본 상영회 섹션
  * 6개의 세로 카드를 그리드로 배치
  */
-export function RecentlyViewedSection({ title, items, loading = false, onMoreClick }: RecentlyViewedSectionProps) {
+export function RecentlyViewedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecentlyViewedSectionProps) {
   return (
     <div>
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
@@ -45,7 +47,7 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
       <HorizontalScroller className="w-full">
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
           </div>
         ))}
       </HorizontalScroller>

@@ -24,17 +24,17 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
   // console.log('CineCardVertical - API data:', JSON.stringify(data, null, 2));
 
   const isFunding = data.funding.fundingType === 'FUNDING';
-  
+
   // 좋아요 토글을 위한 상태 관리
   const { user } = useAuthStore();
   const userId = user?.userId?.toString();
-  
+
   // 로컬 상태로 좋아요 상태 관리
   const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
   const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
   const [isLoading, setIsLoading] = useState(false);
   // const [lastRequestTime, setLastRequestTime] = useState<number>(0);
-  
+
   // 현재 좋아요 상태와 좋아요 수
   const currentIsLiked = localIsLiked;
   const currentLikeCount = localLikeCount;
@@ -56,27 +56,27 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
 
   const handleVoteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // 로그인 체크
     if (!userId) {
       alert('로그인 후 이용해주세요.');
       return;
     }
-    
+
     // 중복 클릭 방지 (로딩 중이거나 최근 1초 내 요청)
     // const now = Date.now();
     // if (isLoading || (now - lastRequestTime < 1000)) {
     //   console.log('[CineCardVertical] 중복 요청 방지:', { isLoading, timeSinceLastRequest: now - lastRequestTime });
     //   return;
     // }
-    
+
     setIsLoading(true);
     // setLastRequestTime(now);
-    
+
     // 낙관적 업데이트 - 즉시 로컬 상태 변경
     setLocalIsLiked(!currentIsLiked);
     setLocalLikeCount(currentIsLiked ? currentLikeCount - 1 : currentLikeCount + 1);
-    
+
     try {
       // API 호출
       if (currentIsLiked) {
@@ -93,7 +93,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
     } finally {
       setIsLoading(false);
     }
-    
+
     // 기존 onVoteClick 콜백도 호출 (필요시)
     if (onVoteClick) {
       onVoteClick(data.funding.fundingId);
@@ -103,7 +103,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
   if (loadingState === 'loading') {
     return (
       <div className="w-full aspect-[420/600] bg-slate-700 animate-pulse rounded-xl">
-        <div className="p-4 space-y-2">
+        <div className="p-3 space-y-2">
           <div className="h-4 bg-slate-600 rounded w-3/4"></div>
           <div className="h-3 bg-slate-600 rounded w-1/2"></div>
           <div className="h-20 bg-slate-600 rounded"></div>
@@ -144,11 +144,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
             {isFunding ? (
               <>
                 {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
-                <button
-                  onClick={handleVoteClick}
-                  className="p-0 rounded-full transition-transform hover:scale-110"
-                  disabled={isLoading}
-                >
+                <button onClick={handleVoteClick} className="p-0 rounded-full transition-transform hover:scale-110" disabled={isLoading}>
                   <HeartIcon filled={currentIsLiked} size={14} />
                 </button>
                 {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
@@ -170,10 +166,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
           <div className="flex gap-1 flex-wrap ">
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{data.cinema.district}</span>
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {isFunding 
-                ? formatDate(data.funding.screenDate)
-                : formatDate(data.funding.fundingEndsOn)
-              }
+              {isFunding ? formatDate(data.funding.screenDate) : formatDate(data.funding.fundingEndsOn)}
             </span>
           </div>
           {/* 프로젝트 제목 */}
@@ -193,13 +186,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
             loadingState={loadingState}
           />
         ) : (
-          <VoteInfo 
-            likeCount={currentLikeCount} 
-            isLiked={currentIsLiked} 
-            loadingState={loadingState} 
-            disabled={isLoading}
-            onClick={handleVoteClick}
-          />
+          <VoteInfo likeCount={currentLikeCount} isLiked={currentIsLiked} loadingState={loadingState} disabled={isLoading} onClick={handleVoteClick} />
         )}
       </div>
     </div>
