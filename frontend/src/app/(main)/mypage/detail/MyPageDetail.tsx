@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFunding } from '@/api/mypage';
 import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
-import type { ListCardData } from '@/components/cards/CineCardVertical';
+import type { CardItem } from '@/types/mypage';
+import type { ApiSearchItem } from '@/types/searchApi';
 import DetailHeader from './components/DetailHeader';
 import FilterButtons, { type FilterOption } from './components/FilterButtons';
 import EmptyState from './components/EmptyState';
@@ -206,26 +207,24 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     router.push(`/detail/${fundingId}`);
   };
 
-  // 데이터를 ListCardData 형식으로 변환
-  const convertToCardData = (item: any): ListCardData => {
+  // CardItem을 ApiSearchItem으로 변환하는 함수
+  const convertCardItemToApiSearchItem = (cardItem: CardItem): ApiSearchItem => {
+    return {
+      funding: {
+        ...cardItem.funding,
+        state: cardItem.funding.state as any,
+        screenDate: cardItem.funding.screenDate || '',
+      },
+      cinema: cardItem.cinema,
+    };
+  };
+
+  // 데이터를 CardItem 형식으로 변환
+  const convertToCardData = (item: any): CardItem => {
     if (section === 'proposals') {
       return {
         funding: {
-          fundingId: item.funding.fundingId,
-          title: item.funding.title,
-          bannerUrl: item.funding.bannerUrl,
-          state: item.funding.state,
-          progressRate: item.funding.progressRate,
-          fundingEndsOn: item.funding.fundingEndsOn,
-          screenDate: item.funding.screenDate,
-          screenMinDate: item.funding.screenMinDate,
-          screenMaxDate: item.funding.screenMaxDate,
-          price: item.funding.price,
-          maxPeople: item.funding.maxPeople,
-          participantCount: item.funding.participantCount,
-          favoriteCount: item.funding.favoriteCount,
-          isLiked: item.funding.isLiked,
-          fundingType: item.funding.fundingType,
+          ...item.funding,
         },
         cinema: {
           cinemaId: item.cinema.cinemaId,
@@ -237,21 +236,7 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     } else if (section === 'participated') {
       return {
         funding: {
-          fundingId: item.funding.fundingId,
-          title: item.funding.title,
-          bannerUrl: item.funding.bannerUrl,
-          state: item.funding.state,
-          progressRate: item.funding.progressRate,
-          fundingEndsOn: item.funding.fundingEndsOn,
-          screenDate: item.funding.screenDate,
-          screenMinDate: item.funding.screenMinDate,
-          screenMaxDate: item.funding.screenMaxDate,
-          price: item.funding.price,
-          maxPeople: item.funding.maxPeople,
-          participantCount: item.funding.participantCount,
-          favoriteCount: item.funding.favoriteCount,
-          isLiked: item.funding.isLiked,
-          fundingType: item.funding.fundingType,
+          ...item.funding,
         },
         cinema: {
           cinemaId: item.cinema.cinemaId,
@@ -264,22 +249,11 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
       const fundingType = item.funding.price > 0 ? 'FUNDING' : 'VOTE';
       return {
         funding: {
-          fundingId: item.funding.fundingId,
-          title: item.funding.title,
-          bannerUrl: item.funding.bannerUrl,
-          state: item.funding.state,
-          progressRate: item.funding.progressRate,
-          fundingEndsOn: item.funding.fundingEndsOn,
-          screenDate: item.funding.screenDate,
-          screenMinDate: item.funding.screenMinDate,
-          screenMaxDate: item.funding.screenMaxDate,
-          price: item.funding.price,
-          maxPeople: item.funding.maxPeople,
-          participantCount: item.funding.participantCount,
-          favoriteCount: item.funding.favoriteCount,
-          isLiked: item.funding.isLiked,
+          ...item.funding,
           fundingType: fundingType,
-        },
+          screenMinDate: (item.funding as any).screenMinDate,
+          screenMaxDate: (item.funding as any).screenMaxDate,
+        } as any,
         cinema: {
           cinemaId: item.cinema.cinemaId,
           cinemaName: item.cinema.cinemaName,
@@ -349,6 +323,7 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
         <CardGrid 
           data={data}
           convertToCardData={convertToCardData}
+          convertCardItemToApiSearchItem={convertCardItemToApiSearchItem}
           onCardClick={handleCardClick}
           onVoteClick={(id) => console.log('투표 클릭:', id)}
         />
