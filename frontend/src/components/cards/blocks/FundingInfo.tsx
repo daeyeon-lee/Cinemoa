@@ -11,14 +11,7 @@ type FundingInfoProps = {
   loadingState?: 'ready' | 'loading' | 'error';
 };
 
-const FundingInfo: React.FC<FundingInfoProps> = ({
-  price,
-  progressRate,
-  participantCount,
-  maxPeople,
-  fundingEndsOn,
-  loadingState = 'ready',
-}) => {
+const FundingInfo: React.FC<FundingInfoProps> = ({ price, progressRate, participantCount, maxPeople, fundingEndsOn, loadingState = 'ready' }) => {
   const formatNumber = (num: number) => {
     return num.toLocaleString('ko-KR');
   };
@@ -51,15 +44,15 @@ const FundingInfo: React.FC<FundingInfoProps> = ({
       {/* 가격 */}
       <div className="text-base text-slate-50 font-semibold leading-normal">{formatNumber(price)} 원</div>
 
-      {/* 메타 정보 */}
+      {/* 메타 정보 현재인원/최대인원 */}
       <div className="flex justify-between items-center text-xs font-semibold">
-        <div>
-          <span className="text-red-400 leading-none">{Math.round(progressRate)}%</span>
-          <span className="text-slate-400 text-[10px] font-normal leading-3">
+        <div className="flex gap-1">
+          <span className="text-red-400 text-P3-b leading-none">{Math.round(progressRate)}%</span>
+          <span className="text-slate-400 text-caption2 font-normal leading-3">
             {formatNumber(participantCount)}/{formatNumber(maxPeople)}
           </span>
         </div>
-        <div className="text-slate-50 leading-none">{daysLeft}일 남음</div>
+        <div className="text-slate-50 text-caption1-b leading-none">{daysLeft}일 남음</div>
       </div>
 
       {/* 진행률 바 */}

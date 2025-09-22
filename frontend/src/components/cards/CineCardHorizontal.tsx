@@ -2,10 +2,10 @@ import React from 'react';
 import { HorizontalLeft } from './sections/HorizontalLeft';
 import { HorizontalRight } from './sections/HorizontalRight';
 import { PerforationLine } from './primitives/PerforationLine';
-import { FundingData, VoteData, ListCardData } from './CineCardVertical';
+import { ApiSearchItem } from '@/types/searchApi';
 
 type CineCardProps = {
-  data: FundingData | VoteData;
+  data: ApiSearchItem;
   loadingState?: 'ready' | 'loading' | 'error';
   onCardClick?: (id: number) => void;
   onVoteClick?: (id: number) => void;
@@ -42,4 +42,4 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
 };
 
 export { CineCardHorizontal };
-export type { CineCardProps, FundingData, VoteData };
+export type { CineCardProps };
