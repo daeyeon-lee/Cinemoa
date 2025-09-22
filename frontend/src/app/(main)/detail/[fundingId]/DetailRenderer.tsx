@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useFundingDetail } from "@/hooks/queries";
-import { FundingDetail } from "./FundingDetail";
-import { VoteDetail } from "./VoteDetail";
+import React, { useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
+import { useRecentViewStore } from '@/stores/recentViewStore';
+import { useFundingDetail } from '@/hooks/queries';
+import { FundingDetail } from './FundingDetail';
+import { VoteDetail } from './VoteDetail';
 
-import type { DetailData } from "@/types/fundingDetail";
+import type { DetailData } from '@/types/fundingDetail';
 
 interface DetailRendererProps {
   fundingId: string;
@@ -16,19 +17,25 @@ interface DetailRendererProps {
 /**
  * 데이터 조회 후 타입에 따라 펀딩/투표 컴포넌트를 분기 렌더링하는 래퍼
  */
-export const DetailRenderer: React.FC<DetailRendererProps> = ({ 
-  fundingId, 
-  userId: propUserId 
-}) => {
+export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userId: propUserId }) => {
   const { user } = useAuthStore();
+  const { addRecentView } = useRecentViewStore();
   const userId = propUserId || user?.userId?.toString();
+
+  // 페이지 방문 시 최근 본 상영회에 추가
+  useEffect(() => {
+    const fundingIdNum = parseInt(fundingId, 10);
+    if (!isNaN(fundingIdNum)) {
+      addRecentView(fundingIdNum);
+    }
+  }, [fundingId, addRecentView]);
 
   // React Query로 펀딩/투표 상세 데이터 조회
   const {
     data: detailData,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useFundingDetail({
     fundingId,
     userId,
@@ -52,10 +59,7 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <p className="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</p>
         <p className="text-sm text-gray-500">{error.message}</p>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
+        <button onClick={() => refetch()} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
           다시 시도
         </button>
       </div>
@@ -73,19 +77,9 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({
 
   // 🎯 타입에 따른 분기 처리
   if (detailData.type === 'FUNDING') {
-    return (
-      <FundingDetail 
-        fundingId={fundingId}
-        userId={userId}
-      />
-    );
+    return <FundingDetail fundingId={fundingId} userId={userId} />;
   } else if (detailData.type === 'VOTE') {
-    return (
-      <VoteDetail 
-        fundingId={fundingId}
-        userId={userId}
-      />
-    );
+    return <VoteDetail fundingId={fundingId} userId={userId} />;
   }
 
   // 알 수 없는 타입

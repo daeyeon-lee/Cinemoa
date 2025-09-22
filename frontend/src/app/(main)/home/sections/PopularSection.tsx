@@ -34,11 +34,11 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-h5-b">{title}</h2>
-        {onMoreClick && (
+        {/* {onMoreClick && (
           <button onClick={onMoreClick} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
             더보기 →
           </button>
-        )}
+        )} */}
       </div>
 
       {/* 반응형 카드 컨테이너 */}
