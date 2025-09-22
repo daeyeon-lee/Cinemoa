@@ -44,7 +44,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
       {/* 반응형 카드 컨테이너 */}
       <div className="h-full">
         {/* 데스크톱: 세로 스택 (md 이상) */}
-        <div className="hidden md:block h-full">
+        <div className="hidden lg:block h-full">
           <div className="space-y-5 h-full">
             {items.map((item, index) => (
               <div key={item.funding.fundingId || index} className="w-full flex items-start">

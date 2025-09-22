@@ -1,9 +1,10 @@
 import React from 'react';
-import { VoteInfo } from '../blocks/VoteInfo';
-import { FundingData, VoteData } from '../CineCardVertical';
+import { Button } from '@/components/ui/button';
+import { Progress } from '../primitives/Progress';
+import { ApiSearchItem } from '@/types/searchApi';
 
 type HorizontalRightProps = {
-  data: FundingData | VoteData;
+  data: ApiSearchItem;
   loadingState?: 'ready' | 'loading' | 'error';
   onVoteClick?: (fundingId: number) => void;
 };
@@ -22,42 +23,46 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
   const daysLeft = calculateDaysLeft(data.funding.fundingEndsOn);
 
   return (
-    <div className="w-28 self-stretch px-3 pt-3 pb-4 inline-flex flex-col justify-between items-start">
+    <div className="w-[114px] bg-BG-1 rounded-xl self-stretch p-3 inline-flex flex-col justify-between items-start">
+      {/* 펀딩 OR 투표 */}
       {isFunding ? (
         <div className="w-full flex flex-col justify-between h-full">
-          <div className="text-slate-50 text-base font-semibold font-['Pretendard'] leading-normal">
-            {data.funding.price.toLocaleString()} 원
-          </div>
-          <div className="self-stretch flex flex-col justify-start items-center gap-1">
-            <div className="self-stretch flex flex-col justify-start items-start gap-1">
-              <div className="inline-flex justify-start items-center gap-1">
-                <div className="text-Brand1-Primary text-xs font-semibold font-['Pretendard'] leading-none">
-                  {data.funding.progressRate}%
-                </div>
-                <div className="text-slate-400 text-[10px] font-normal font-['Pretendard'] leading-3">
-                  {data.funding.participantCount}/{data.funding.maxPeople}
-                </div>
-              </div>
-              <div className="text-slate-50 text-xs font-semibold font-['Pretendard'] leading-none">
-                {daysLeft}일 남음
+          {/* 오-상단 :가격 */}
+          <div className="text-slate-50 text-p1-b leading-normal">{data.funding.price.toLocaleString()} 원</div>
+          {/* 오-하단 */}
+          <div className="self-stretch flex flex-col justify-start items-start gap-1">
+            {/* 진행률, 현재인원/목표인원 */}
+            <div className="inline-flex justify-start items-center gap-1">
+              <div className="text-Brand1-Primary text-p3-b leading-none">{data.funding.progressRate} %</div>
+              <div className="text-slate-400 text-caption2 leading-3">
+                {data.funding.participantCount} / {data.funding.maxPeople}
               </div>
             </div>
-            <div className="self-stretch h-1 bg-slate-700 flex flex-col justify-start items-start gap-2">
-              <div
-                className="h-1 relative bg-Brand1-Primary"
-                style={{ width: `${Math.min(data.funding.progressRate, 100)}%` }}
-              />
-            </div>
+            <div className="text-slate-50 text-caption1-b leading-none">{daysLeft}일 남음</div>
+            <Progress value={data.funding.progressRate} height={4} />
+            <div className="self-stretch  gap-1">{/* 몇일 남았는지 */}</div>
+            {/* 진행바 */}
           </div>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <div onClick={() => onVoteClick && onVoteClick(data.funding.fundingId)}>
-            <VoteInfo
-              likeCount={data.funding.favoriteCount}
-              isLiked={data.funding.isLiked}
-              loadingState={loadingState}
-            />
+        <div className="w-full flex flex-col justify-between h-full">
+          {/* 오-상단 --명이 보고싶어요 */}
+          <div className="text-slate-50 text-p2-b leading-normal">
+            {data.funding.favoriteCount}명이
+            <br /> 보고싶어요
+          </div>
+          {/* 오-하단 */}
+          <div className="self-stretch flex flex-col justify-start items-start gap-1">
+            {/* 버튼 */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onVoteClick && onVoteClick(data.funding.fundingId)}
+              className={`w-full gap-1 ${data.funding.isLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}
+            >
+              <span className="text-lg">{data.funding.isLiked ? '♥' : '♡'}</span>
+              보고싶어요
+            </Button>
           </div>
         </div>
       )}
