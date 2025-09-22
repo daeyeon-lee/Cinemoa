@@ -254,7 +254,7 @@ public class FundingService {
                 .category(category)
                 .maxPeople(0)
                 .state(FundingState.ON_PROGRESS)
-                .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(14)))
+                .endsOn(LocalDate.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).plusDays(5)))
                 .build();
 
         FundingEstimatedDay estimatedDay = new FundingEstimatedDay(null, vote, request.getScreenMinDate(),
