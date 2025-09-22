@@ -17,6 +17,8 @@ export const addFundingLike = async (
   if (isNaN(numericUserId)) throw new Error('유효하지 않은 userId');
 
   try {
+    console.log('[좋아요 추가 요청]:', { fundingId, userId: numericUserId });
+    
     const response = await fetch(`${API_BASE_URL}funding/${fundingId}/like`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,7 +27,22 @@ export const addFundingLike = async (
     });
 
     if (!response.ok) {
-      throw new Error(`좋아요 추가 실패: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      // console.error('[좋아요 추가 실패]:', {
+      //   status: response.status,
+      //   statusText: response.statusText,
+      //   errorData,
+      //   fundingId,
+      //   userId: numericUserId
+      // });
+      
+      // 400 에러의 경우 더 구체적인 메시지 제공
+      if (response.status === 400) {
+        const message = errorData.message || '이미 좋아요를 누른 상영회이거나 잘못된 요청입니다.';
+        throw new Error(message);
+      }
+      
+      throw new Error(`좋아요 추가 실패: ${response.status} - ${errorData.message || response.statusText}`);
     }
 
     const result: ApiResponse<null> = await response.json();
@@ -46,6 +63,8 @@ export const deleteFundingLike = async (
   if (isNaN(numericUserId)) throw new Error('유효하지 않은 userId');
 
   try {
+    console.log('[좋아요 취소 요청]:', { fundingId, userId: numericUserId });
+    
     const response = await fetch(
       `${API_BASE_URL}funding/${fundingId}/like?userId=${numericUserId}`,
       {
@@ -55,7 +74,22 @@ export const deleteFundingLike = async (
     );
 
     if (!response.ok) {
-      throw new Error(`좋아요 취소 실패: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      // console.error('[좋아요 취소 실패]:', {
+      //   status: response.status,
+      //   statusText: response.statusText,
+      //   errorData,
+      //   fundingId,
+      //   userId: numericUserId
+      // });
+      
+      // 400 에러의 경우 더 구체적인 메시지 제공
+      if (response.status === 400) {
+        const message = errorData.message || '좋아요를 누르지 않은 상영회이거나 잘못된 요청입니다.';
+        throw new Error(message);
+      }
+      
+      throw new Error(`좋아요 취소 실패: ${response.status} - ${errorData.message || response.statusText}`);
     }
 
     const result: ApiResponse<null> = await response.json();

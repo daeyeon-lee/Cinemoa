@@ -9,10 +9,11 @@ import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPa
 import { SortBar } from '@/components/filters/SortBar';
 import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 import type { CardItem } from '@/components/lists/ResponsiveCardList';
-import { STANDARD_CATEGORIES } from '@/constants/categories';
+import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
+import { useAuthStore } from '@/stores/authStore';
 /**
  * 이거어때 페이지 컴포넌트
  *
@@ -22,9 +23,10 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
 export default function Vote() {
   console.log('🎯 [Vote] 컴포넌트 렌더링');
   const router = useRouter();
+  const { user } = useAuthStore();
 
   // 필터 상태 관리
-  const [selectedCategory, setSelectedCategory] = useState<string | null>('all');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryValue | null>('all');
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]);
@@ -39,6 +41,7 @@ export default function Vote() {
   const searchParams = useMemo(() => {
     const params: SearchParams = {
       fundingType: 'VOTE' as const, // 이거어때는 투표만
+      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
     };
 
     // 사용자가 정렬을 변경했을 때만 전달 (기본값: LATEST)
@@ -84,7 +87,7 @@ export default function Vote() {
 
     console.log('📤 [Vote] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes]);
+  }, [sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
   const {
     data,

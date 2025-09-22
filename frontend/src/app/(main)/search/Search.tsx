@@ -15,6 +15,7 @@ import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories'
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
+import { useAuthStore } from '@/stores/authStore';
 import SearchIcon from '@/component/icon/searchIcon';
 /**
  * 검색 페이지 컴포넌트
@@ -27,6 +28,7 @@ export default function Search() {
 
   const urlSearchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuthStore();
 
   // 필터 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<CategoryValue | null>('all');
@@ -53,7 +55,9 @@ export default function Search() {
 
   // 🔍 useSearch 훅으로 API 데이터 조회 - 검색용 (사용자가 선택한 것만 전달)
   const searchParams = useMemo(() => {
-    const params: SearchParams = {};
+    const params: SearchParams = {
+      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
+    };
 
     // 검색어가 있으면 q 파라미터 추가
     if (searchQuery.trim()) {
@@ -101,7 +105,7 @@ export default function Search() {
 
     console.log('📤 [Search] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [searchQuery, sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes]);
+  }, [searchQuery, sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
