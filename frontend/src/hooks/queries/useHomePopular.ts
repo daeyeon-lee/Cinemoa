@@ -11,7 +11,8 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { ApiSearchItem, ApiSearchResponse } from '@/types/searchApi';
+import type { ApiSearchItem } from '@/types/searchApi';
+import type { GetPopularFundingResponse } from '@/types/home';
 import { getPopularFunding } from '@/api/user';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -32,7 +33,7 @@ export function useHomePopular() {
     queryFn: async () => {
       return await getPopularFunding(userId);
     },
-    select: (data: ApiSearchResponse) => {
+    select: (data: GetPopularFundingResponse) => {
       return data.data?.content?.slice(0, 8) || [] as ApiSearchItem[];
     },
     staleTime: 60_000,
