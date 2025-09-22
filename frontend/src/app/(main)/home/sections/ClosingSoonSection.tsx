@@ -33,21 +33,36 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-h5-b">{title}</h2>
-        {onMoreClick && (
+        {/* {onMoreClick && (
           <button onClick={onMoreClick} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
             더보기 →
           </button>
-        )}
+        )} */}
       </div>
 
-      {/* 가로 스크롤 가능한 카드 컨테이너 */}
-      <HorizontalScroller className="w-full">
-        {items.map((item, index) => (
-          <div key={item.funding.fundingId || index} className="flex-shrink-0">
-            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+      {/* 데스크탑: 4개만 보여주고 나머지는 스크롤 */}
+      <div className="hidden md:block w-max overflow-x-auto">
+        <HorizontalScroller>
+          <div className="flex gap-2">
+            {items.map((item, index) => (
+              <div key={item.funding.fundingId || index} className="w-[172px]">
+                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+              </div>
+            ))}
           </div>
-        ))}
-      </HorizontalScroller>
+        </HorizontalScroller>
+      </div>
+
+      {/* 모바일: 전체 스크롤 */}
+      <div className="md:hidden w-full overflow-x-auto">
+        <HorizontalScroller>
+          {items.map((item, index) => (
+            <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
+              <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+            </div>
+          ))}
+        </HorizontalScroller>
+      </div>
     </div>
   );
 }
