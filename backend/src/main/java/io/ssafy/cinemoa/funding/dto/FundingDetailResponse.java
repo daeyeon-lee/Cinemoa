@@ -37,6 +37,8 @@ public class FundingDetailResponse {
         private FundingState state;
         private Integer progressRate;
         private LocalDate fundingEndsOn;
+        private LocalDate screenMinDate;
+        private LocalDate screenMaxDate;
         private Integer price;
     }
 

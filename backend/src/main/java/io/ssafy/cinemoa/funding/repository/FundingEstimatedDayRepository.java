@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FundingEstimatedDayRepository extends JpaRepository<FundingEstimatedDay, Long> {
+    FundingEstimatedDay findByFunding_FundingId(Long fundingId);
 }

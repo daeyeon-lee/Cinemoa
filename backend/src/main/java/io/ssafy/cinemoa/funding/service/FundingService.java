@@ -293,6 +293,8 @@ public class FundingService {
             progressRate = stat.getParticipantCount() * 100 / funding.getMaxPeople();
         }
 
+        FundingEstimatedDay estimatedDay = fundingEstimatedDayRepository.findByFunding_FundingId(fundingId);
+
         FundingInfo fundingInfo = FundingInfo.builder()
                 .fundingId(funding.getFundingId())
                 .progressRate(progressRate)
@@ -303,6 +305,11 @@ public class FundingService {
                 .fundingEndsOn(funding.getEndsOn())
                 .price(price)
                 .build();
+
+        if (estimatedDay != null) {
+            fundingInfo.setScreenMaxDate(estimatedDay.getMinDate());
+            fundingInfo.setScreenMaxDate(estimatedDay.getMaxDate());
+        }
 
         CategoryInfo categoryInfo = CategoryInfo.builder()
                 .categoryId(category.getCategoryId())
