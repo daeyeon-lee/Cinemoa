@@ -10,8 +10,8 @@ import type { ApiSearchItem } from '@/types/searchApi';
 import DetailHeader from './components/DetailHeader';
 import FilterButtons, { type FilterOption } from './components/FilterButtons';
 import EmptyState from './components/EmptyState';
-import CardGrid from './components/CardGrid';
-import { LoadingIndicator, NoMoreData, InitialLoading } from './components/LoadingStates';
+import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
+import { InitialLoading } from './components/LoadingStates';
 
 type SectionType = 'proposals' | 'participated' | 'liked';
 type FilterType = 'funding' | 'vote' | 'ALL' | 'ON_PROGRESS' | 'CLOSE';
@@ -128,14 +128,17 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
 
       let response;
       if (section === 'proposals') {
+        // 제안한 상영회: cursor 파라미터로 전송
         const type = filter === 'ALL' ? undefined : filter as 'funding' | 'vote';
-        response = await getFundingProposals(user.userId, type, cursor, 24);
+        response = await getFundingProposals(user.userId, type, cursor, 24, 'cursor');
       } else if (section === 'participated') {
+        // 참여한 상영회: cursor 파라미터로 전송
         const state = filter === 'ALL' ? undefined : filter as 'ON_PROGRESS' | 'CLOSE';
-        response = await getParticipatedFunding(user.userId, state, cursor, 24);
+        response = await getParticipatedFunding(user.userId, state, cursor, 24, 'cursor');
       } else {
+        // 보고 싶은 상영회: cursor 파라미터로 전송
         const type = filter === 'ALL' ? undefined : filter as 'funding' | 'vote';
-        response = await getLikedFunding(user.userId, type, cursor, 24);
+        response = await getLikedFunding(user.userId, type, cursor, 24, 'cursor');
       }
 
       const newData = response.data.content || [];
@@ -145,14 +148,19 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
           // 중복 제거: fundingId 기준으로 중복 체크
           const existingIds = new Set(prev.map(item => item.funding?.fundingId));
           const uniqueNewData = newData.filter(item => !existingIds.has(item.funding?.fundingId));
+          
           return [...prev, ...uniqueNewData];
+          // 성능 개선을 위해 중복 제거 없이 바로 추가
+          // 중복 제거 했었으나, 오류 발생. react에서 2번 요청을 보낸 것이 원인인 듯함
+          // return [...prev, ...newData];
         });
       } else {
         setData(newData);
       }
 
       setHasNextPage(response.data.hasNextPage);
-      setNextCursor((response.data as any).nextCursor || null);
+      setNextCursor(response.data.nextCursor || null);
+      
     } catch (err) {
       console.error('데이터 조회 오류:', err);
       if (!isLoadMore) {
@@ -184,11 +192,12 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     const documentHeight = document.documentElement.scrollHeight;
 
     if (scrollTop + windowHeight >= documentHeight - 100) {
+      
       if (nextCursor) {
         fetchData(nextCursor, true);
       }
     }
-  }, [isLoadingMore, hasNextPage, nextCursor, fetchData]);
+  }, [isLoadingMore, hasNextPage, nextCursor, fetchData, section]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -320,17 +329,23 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
       )}
 
       {!isLoading && data.length > 0 && (
-        <CardGrid 
-          data={data}
-          convertToCardData={convertToCardData}
-          convertCardItemToApiSearchItem={convertCardItemToApiSearchItem}
+        <ResponsiveCardList
+          items={data.map(convertToCardData).map(convertCardItemToApiSearchItem)}
+          mode="funding"
+          loading={false}
+          empty={false}
+          error={false}
           onCardClick={handleCardClick}
           onVoteClick={(id) => console.log('투표 클릭:', id)}
+          onLoadMore={() => {
+            if (nextCursor) {
+              fetchData(nextCursor, true);
+            }
+          }}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isLoadingMore}
         />
       )}
-
-      <LoadingIndicator isLoadingMore={isLoadingMore} />
-      <NoMoreData hasNextPage={hasNextPage} dataLength={data.length} />
     </div>
   );
 };

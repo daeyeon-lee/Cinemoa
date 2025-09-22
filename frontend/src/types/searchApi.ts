@@ -87,7 +87,7 @@ export interface ApiSearchResponse {
   data: {
     content: ApiSearchItem[];
     nextCursor: string | null;
-    hasNext: boolean;
+    hasNextPage: boolean;
   };
   code: number;
   message: string;
