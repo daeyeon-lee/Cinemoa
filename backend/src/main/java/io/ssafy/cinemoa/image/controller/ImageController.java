@@ -1,5 +1,7 @@
 package io.ssafy.cinemoa.image.controller;
 
+import io.ssafy.cinemoa.global.response.ApiResponse;
+import io.ssafy.cinemoa.image.dto.AnimatorResult;
 import io.ssafy.cinemoa.image.dto.ImageInfo;
 import io.ssafy.cinemoa.image.service.ImageService;
 import java.time.Duration;
@@ -9,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,5 +30,12 @@ public class ImageController {
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePrivate())
                 .contentType(MediaType.parseMediaType(imageResponse.getContentType()))
                 .body(imageResponse.getImageData());
+    }
+
+    @PostMapping("/animated")
+    public ResponseEntity<ApiResponse<?>> postResultImage(@RequestBody AnimatorResult result) {
+
+        imageService.saveAnimation(result);
+
     }
 }
