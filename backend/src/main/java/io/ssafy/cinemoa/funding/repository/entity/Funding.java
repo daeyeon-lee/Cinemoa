@@ -99,4 +99,7 @@ public class Funding extends BaseTimeEntity {
 
     @Column(name = "funding_account")
     private String fundingAccount;
+
+    @Column(name = "ticket_banner")
+    private String ticketBanner;
 }
