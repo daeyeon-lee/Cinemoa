@@ -25,6 +25,7 @@ import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 import { useAuthStore } from '@/stores/authStore';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
+import { useAuthStore } from '@/stores/authStore';
 /**
  * 둘러보기 페이지 컴포넌트
  *
@@ -41,6 +42,7 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
 export default function Category() {
   // console.log('🎯 [Category] 컴포넌트 렌더링');
   const router = useRouter();
+  const { user } = useAuthStore();
   const { user } = useAuthStore();
 
   // ========== 필터 상태 관리 ==========
@@ -185,6 +187,8 @@ export default function Category() {
   console.log('📊 [Category] 현재 데이터 상태:', {
     data,
     error: !!error,
+    searchParams,
+    dataPages: data?.pages?.length || 0,
     searchParams,
     dataPages: data?.pages?.length || 0,
   });

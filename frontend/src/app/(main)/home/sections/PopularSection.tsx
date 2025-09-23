@@ -45,7 +45,11 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
       <div className="h-full">
         {/* 데스크톱: 세로 스택 (lg 이상) */}
         <div className="hidden lg:block h-full">
+
           <div className="space-y-3.5 h-full">
+
+          <div className="space-y-6 h-full">
+
             {items.slice(0, 6).map((item, index) => (
               <div key={item.funding.fundingId || index} className="w-full flex items-start">
                 <div className="text-Brand2-Primary text-2xl font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0">{index + 1}</div>
@@ -59,8 +63,11 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
 
         {/* 모바일/태블릿: 세로로 3개씩 + 가로 스크롤 (lg 미만) */}
         <div className="block lg:hidden">
-          <div className="overflow-x-auto scrollbar-hide">
+
             <div className="flex gap-8">
+
+            <div className="flex gap-4">
+
               {/* 첫 번째 그룹 (1-3위) */}
               <div className="w-[300px] flex-shrink-0">
                 <div className="space-y-3">
@@ -95,5 +102,4 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
         </div>
       </div>
     </div>
-  );
-}
+

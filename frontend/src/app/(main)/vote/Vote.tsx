@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
 // ui
 import { Button } from '@/components/ui/button';
@@ -20,12 +21,13 @@ import { RegionBottomSheetContent } from '@/components/filters/sheets/RegionBott
 import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/TheaterTypeBottomSheetContent';
 //type, 상수
 import type { CardItem } from '@/components/lists/ResponsiveCardList';
-import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
+
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 //api 관련
 import { useAuthStore } from '@/stores/authStore';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
+
 /**
  * 이거어때 페이지 컴포넌트
  *
@@ -99,6 +101,7 @@ export default function Vote() {
     const params: SearchParams = {
       fundingType: 'VOTE' as const, // 이거어때는 투표만
       userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
+      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
     };
 
     // 사용자가 정렬을 변경했을 때만 전달 (기본값: LATEST)
@@ -126,9 +129,7 @@ export default function Vote() {
     // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
     // selectedTheaterType에는 한글 label이 들어있으므로 백엔드용 value로 변환
     if (selectedTheaterType.length > 0) {
-      const theaterValues = selectedTheaterType.map(label =>
-        theaterTypes.find(type => type.label === label)?.value
-      ).filter(Boolean);
+      const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean);
       if (theaterValues.length > 0) {
         params.theaterType = theaterValues as string[];
       }
@@ -143,15 +144,7 @@ export default function Vote() {
     return params;
   }, [sortBy, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-    refetch
-  } = useSearch(searchParams);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
   const items = data?.content || [];
 
@@ -160,7 +153,7 @@ export default function Vote() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    error: !!error
+    error: !!error,
   });
 
   // 필터 초기화 핸들러
@@ -196,15 +189,18 @@ export default function Vote() {
   }, [selectedTheaterType]);
 
   // 임시 카테고리 선택 핸들러 (바텀시트 내부용)
-  const handleTempCategorySelect = useCallback((categoryValue: CategoryValue) => {
-    const selectedCategory = categories.find((cat) => cat.value === categoryValue);
-    setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
-    if (categoryValue === 'all') {
-      setTempSelectedSubCategoryId(null);
-    } else {
-      setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
-    }
-  }, [categories]);
+  const handleTempCategorySelect = useCallback(
+    (categoryValue: CategoryValue) => {
+      const selectedCategory = categories.find((cat) => cat.value === categoryValue);
+      setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
+      if (categoryValue === 'all') {
+        setTempSelectedSubCategoryId(null);
+      } else {
+        setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
+      }
+    },
+    [categories],
+  );
 
   // 임시 서브카테고리 선택 핸들러 (바텀시트 내부용)
   const handleTempSubCategorySelect = useCallback((subCategoryId: number | null) => {
@@ -253,16 +249,38 @@ export default function Vote() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 🖱️ 카드 클릭 핸들러
-  const handleCardClick = useCallback((id: number) => {
-    console.log('🎯 [Vote] 투표 카드 클릭:', id);
-    router.push(`/detail/${id}`);
-  }, [router]);
+  const handleCardClick = useCallback(
+    (id: number) => {
+      console.log('🎯 [Vote] 투표 카드 클릭:', id);
+      router.push(`/detail/${id}`);
+    },
+    [router],
+  );
 
   // ❤️ 투표 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {
     console.log('❤️ [Vote] 투표 버튼 클릭:', id);
     // TODO: 투표 토글 로직 구현
   }, []);
+
+  // 무한 스크롤 처리
+  const handleScroll = useCallback(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    if (scrollTop + windowHeight >= documentHeight - 100) {
+      console.log('[Vote] 스크롤 감지 - 다음 페이지 로드');
+      fetchNextPage();
+    }
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   // 무한 스크롤 처리
   const handleScroll = useCallback(() => {
@@ -307,22 +325,10 @@ export default function Vote() {
       sidebar={
         <div className="space-y-10 hidden lg:block">
           {/* 지역 필터 */}
-          <RegionFilterPanel
-            regions={regions}
-            value={selectedRegions}
-            onChange={setSelectedRegions}
-            onReset={() => setSelectedRegions([])}
-            variant="brand2"
-          />
+          <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} variant="brand2" />
 
           {/* 상영관 타입 필터 */}
-          <TheaterTypeFilterPanel
-            types={theaterTypes}
-            value={selectedTheaterType}
-            onChange={setSelectedTheaterType}
-            onReset={() => setSelectedTheaterType([])}
-            variant="brand2"
-          />
+          <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} variant="brand2" />
         </div>
       }
       content={

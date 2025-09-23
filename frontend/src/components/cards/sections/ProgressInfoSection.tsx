@@ -3,12 +3,11 @@ import { StatItem } from '../primitives/StatItem';
 import { Progress } from '../primitives/Progress';
 import { useFundingDetail } from '@/contexts/FundingDetailContext';
 
-
 const ProgressInfoSection = () => {
   // Context에서 데이터 가져오기 (결제/환불 후 새로고침으로 항상 최신 상태)
   const { data } = useFundingDetail();
   const { funding, stat } = data;
-  
+
   const participantCount = stat.participantCount;
   const endDate = funding.fundingEndsOn;
   const progressRate = funding.progressRate;
@@ -23,15 +22,16 @@ const ProgressInfoSection = () => {
 
   const daysLeft = calculateDaysLeft(endDate);
 
-
   return (
     <div className="w-full min-w-0 flex flex-col gap-3.5">
       {/* 참여자수 + 남은시간 */}
       <div className="w-full min-w-0 flex items-center justify-between mt-1.5">
         <div className="min-w-0">
           <StatItem icon="people" fill="#F53B3B" text={`${participantCount.toLocaleString()}명 참여`} />
+          <StatItem icon="people" fill="#F53B3B" text={`${participantCount.toLocaleString()}명 참여`} />
         </div>
         <div className="min-w-0">
+          <StatItem icon="time" fill="#F53B3B" text={`${daysLeft}일 남음`} />
           <StatItem icon="time" fill="#F53B3B" text={`${daysLeft}일 남음`} />
         </div>
       </div>

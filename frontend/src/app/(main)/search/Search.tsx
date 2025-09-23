@@ -41,6 +41,7 @@ export default function Search() {
   const urlSearchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuthStore();
+  const { user } = useAuthStore();
 
   // ========== 필터 상태 관리 ==========
   // 카테고리 관련 상태들 (3개의 상태로 분리하여 정확한 추적)
@@ -112,6 +113,9 @@ export default function Search() {
 
   // 🔍 useSearch 훅으로 API 데이터 조회 - 검색용 (사용자가 선택한 것만 전달)
   const searchParams = useMemo(() => {
+    const params: SearchParams = {
+      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
+    };
     const params: SearchParams = {
       userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
     };
@@ -224,15 +228,18 @@ export default function Search() {
   }, [selectedTheaterType]);
 
   // 임시 카테고리 선택 핸들러 (바텀시트 내부용)
-  const handleTempCategorySelect = useCallback((categoryValue: CategoryValue) => {
-    const selectedCategory = categories.find((cat) => cat.value === categoryValue);
-    setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
-    if (categoryValue === 'all') {
-      setTempSelectedSubCategoryId(null);
-    } else {
-      setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
-    }
-  }, [categories]);
+  const handleTempCategorySelect = useCallback(
+    (categoryValue: CategoryValue) => {
+      const selectedCategory = categories.find((cat) => cat.value === categoryValue);
+      setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
+      if (categoryValue === 'all') {
+        setTempSelectedSubCategoryId(null);
+      } else {
+        setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
+      }
+    },
+    [categories],
+  );
 
   // 임시 서브카테고리 선택 핸들러 (바텀시트 내부용)
   const handleTempSubCategorySelect = useCallback((subCategoryId: number | null) => {
@@ -281,16 +288,38 @@ export default function Search() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 🖱️ 카드 클릭 핸들러
-  const handleCardClick = useCallback((id: number) => {
-    console.log('🔍 [Search] 카드 클릭:', id);
-    router.push(`/detail/${id}`);
-  }, [router]);
+  const handleCardClick = useCallback(
+    (id: number) => {
+      console.log('🔍 [Search] 카드 클릭:', id);
+      router.push(`/detail/${id}`);
+    },
+    [router],
+  );
 
   // ❤️ 좋아요 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {
     console.log('❤️ [Search] 좋아요 버튼 클릭:', id);
     // TODO: 좋아요 토글 로직 구현
   }, []);
+
+  // 무한 스크롤 처리
+  const handleScroll = useCallback(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    if (scrollTop + windowHeight >= documentHeight - 100) {
+      console.log('[Search] 스크롤 감지 - 다음 페이지 로드');
+      fetchNextPage();
+    }
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   // 무한 스크롤 처리
   const handleScroll = useCallback(() => {
