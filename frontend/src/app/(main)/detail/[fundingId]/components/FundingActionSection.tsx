@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';              // 로딩 스�
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';   // 모달 컴포넌트
 import Payment from '@/app/(main)/payment/Payment';               // 결제 모달 내용
 import { HeartIcon } from '@/component/icon/heartIcon';           // 하트 아이콘
+import { ShareButton } from '@/components/share/ShareButton';      // 공유 버튼 컴포넌트
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요 토글)
 import { useAuthStore } from '@/stores/authStore';                // 로그인 사용자 상태
 import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingDetailContext';
@@ -71,8 +72,11 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
         <span className="h4-b text-primary">{price.toLocaleString()}원</span>
       </div>
 
-      {/* 🔘 액션 버튼 영역: 좋아요 + 참여하기(결제) */}
+      {/* 🔘 액션 버튼 영역: 공유 + 좋아요 + 참여하기(결제) */}
       <div className="w-full inline-flex justify-start items-center gap-2">
+        {/* 링크 공유 */}
+        <ShareButton isActive={currentIsLiked} />
+
         {/* ❤️ 좋아요 버튼: 낙관적 업데이트로 즉시 반영 */}
         <Button
           variant="outline"                                        // 외곽선 스타일

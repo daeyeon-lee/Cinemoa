@@ -1,14 +1,13 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-import { Separator } from './separator';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-const cardVariants = cva('w-full bg-BG-0 px-4', {
+const cardVariants = cva('w-full bg-BG-0', {
   variants: {
     variant: {
       default: '',
-      detail: '',
+      detail: 'border-t border-BG-2 pt-6',
     },
   },
   defaultVariants: {
@@ -21,8 +20,6 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement>, Variant
 // 카드 기본값
 const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant, children, ...props }, ref) => (
   <div ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
-    {/* detail 옵션 주면 상단에 구분선 추가 */}
-    {variant === 'detail' && <Separator className="mb-6" />}
     {children}
   </div>
 ));
@@ -45,7 +42,7 @@ CardTitle.displayName = 'CardTitle';
 // 카드 내용
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('bg-BG-1 p-4 p2 text-secondary rounded-[8px] ', className)} {...props} />
+    <div ref={ref} className={cn('bg-BG-1 p-5 p2 text-secondary rounded-[12px] ', className)} {...props} />
   ),
 );
 CardContent.displayName = 'CardContent';
