@@ -89,7 +89,7 @@ public class ImageService {
         }
         String ext = original.substring(original.lastIndexOf('.') - 1);
 
-        String filename = generateFileName(ImageCategory.BANNER, ext);
+        String filename = generateFileName(category, ext);
 
         Path fullPath = Paths.get(baseDir, midPath, filename);
 
