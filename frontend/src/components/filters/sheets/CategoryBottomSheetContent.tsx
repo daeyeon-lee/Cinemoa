@@ -22,16 +22,18 @@ interface CategoryBottomSheetContentProps {
   onSubCategoryChange: (subCategoryId: number | null) => void;
   /** 카테고리 목록 */
   categories: Category[];
+  /** 색상 variant */
+  variant?: 'brand1' | 'brand2';
 }
 
-export const CategoryBottomSheetContent: React.FC<CategoryBottomSheetContentProps> = ({ selectedCategory, selectedSubCategory, onCategoryChange, onSubCategoryChange, categories }) => {
+export const CategoryBottomSheetContent: React.FC<CategoryBottomSheetContentProps> = ({ selectedCategory, selectedSubCategory, onCategoryChange, onSubCategoryChange, categories, variant = 'brand1' }) => {
   const selectedCat = categories.find((cat) => cat.value === selectedCategory);
 
   return (
     <div className="flex flex-col gap-8">
       {/* 1차 카테고리 선택 */}
       <div className="w-full">
-        <CategoryButtonGroup items={categories} value={selectedCategory} onChange={onCategoryChange} variant="brand1" uniformHeight={true} notchColor="bg-BG-1" allowWrap={true} />
+        <CategoryButtonGroup items={categories} value={selectedCategory} onChange={onCategoryChange} variant={variant} uniformHeight={true} notchColor="bg-BG-1" allowWrap={true} />
       </div>
 
       {/* 2차 카테고리 선택 - 1차 카테고리가 선택되었을 때만 표시 */}
@@ -47,7 +49,7 @@ export const CategoryBottomSheetContent: React.FC<CategoryBottomSheetContentProp
           })()}
           value={selectedSubCategory}
           onChange={onSubCategoryChange}
-          variant="brand1"
+          variant={variant}
         />
       )}
     </div>

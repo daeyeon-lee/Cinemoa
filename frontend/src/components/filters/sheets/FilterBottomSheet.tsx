@@ -29,9 +29,11 @@ interface FilterBottomSheetProps {
   resetDisabled?: boolean;
   /** 적용 버튼 텍스트 (기본값: "필터 적용하기") */
   applyButtonText?: string;
+  /** 색상 variant */
+  variant?: 'brand1' | 'brand2';
 }
 
-export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, onClose, title, children, onApplyFilter, onReset, resetDisabled = false, applyButtonText = '필터 적용하기' }) => {
+export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, onClose, title, children, onApplyFilter, onReset, resetDisabled = false, applyButtonText = '필터 적용하기', variant = 'brand1' }) => {
   return (
     <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Drawer.Portal>
@@ -70,7 +72,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, on
               }}
               className="w-full"
               size="lg"
-              variant="brand1"
+              variant={variant}
             >
               {applyButtonText}
             </Button>
