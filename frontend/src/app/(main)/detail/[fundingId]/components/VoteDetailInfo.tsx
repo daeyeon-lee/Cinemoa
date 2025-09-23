@@ -30,7 +30,7 @@ export default function VoteDetailInfo() {
 
   return (
     <section className="px-4">
-      <div className="flex flex-col gap-10 mt-10">
+      <div className="flex flex-col gap-12 mt-12">
         {/* ✅ 펀딩 소개 섹션 */}
         <Card id="funding-info" className="flex flex-col gap-4" variant="detail">
           <CardHeader>
@@ -46,12 +46,10 @@ export default function VoteDetailInfo() {
           </CardContent>
         </Card>
 
-        <Separator/>
-
         {/* ✅ 상영물 정보 + 영화관 정보 (2열 레이아웃, 모바일 1열) */}
-        <div id="movie-info" className="flex flex-col lg:flex-row w-full gap-8">
+        <div id="movie-info" className="flex flex-col md:flex-row w-full gap-8 md:items-stretch">
           {/* 상영물 정보 카드 */}
-          <Card className="flex flex-col gap-4 w-full lg:w-1/3 min-h-[400px]">
+          <Card className="flex flex-col gap-4 w-full md:w-1/3" variant="detail">
             <CardHeader>
               <CardTitle>상영물 정보</CardTitle>
             </CardHeader>
@@ -67,31 +65,31 @@ export default function VoteDetailInfo() {
               </div>
 
               {/* 제목/설명 */}
-              <div className="w-full flex flex-col gap-2 mt-3">
+              <div className="w-full flex flex-col gap-3 mt-6 flex-1">
                 <h6 className="h6-b text-primary">
                   {screening?.videoName || "상영물 제목 미정"}
                 </h6>
-                <p className="p2 text-tertiary">
-                  {/* 실제 설명 필드가 없다면 간단 안내 문구 */}
-                  {screening?.videoContent
-                    ? screening.videoContent
-                    : "상영물 상세 설명은 준비 중입니다."}
-                </p>
+                {/* 스크롤 가능한 설명 영역 */}
+                <div className="flex-1 overflow-y-auto max-h-[220px] scrollbar-hide">
+                  <p className="p2 text-tertiary">
+                    {/* 실제 설명 필드가 없다면 간단 안내 문구 */}
+                    {screening?.videoContent
+                      ? screening.videoContent
+                      : "상영물 상세 설명은 준비 중입니다."}
+                  </p>
+                </div>
               </div>
-
-              {/* 빈 공간 채우기 (카드 하단 붙이기용) */}
-              <div className="flex-1" />
             </CardContent>
           </Card>
 
-          {/* 영화관 정보 카드 */}
-          <Card id="theater-info" className="flex flex-col gap-4 w-full lg:w-2/3 min-h-[400px]">
+          {/* 영화관 정보 카드 - 높이 기준 */}
+          <Card id="theater-info" className="flex flex-col gap-4 w-full md:w-2/3 min-h-[400px]" variant="detail">
             <CardHeader>
               <CardTitle>영화관 정보</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* 상단: 영화관명 / 상영관 특성 */}
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0 mb-4">
+              {/* 상단: 영화관명 */}
+              <div className="flex items-center gap-4 mb-4">
                 <p className="p1-b text-primary">{cinemaName}</p>
               </div>
 

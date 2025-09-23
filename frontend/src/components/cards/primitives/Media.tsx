@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,11 +9,12 @@ type MediaProps = {
   height?: number;
   aspect?: '16/9' | '4/3' | '1/1' | '7/10' | 'auto';
   rounded?: boolean;
+  radius?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
   loadingState?: 'ready' | 'loading' | 'error';
   className?: string;
 };
 
-const Media: React.FC<MediaProps> = ({ src, alt = '', height = 570, aspect = '16/9', rounded = true, loadingState = 'ready', className }) => {
+const Media: React.FC<MediaProps> = ({ src, alt = '', height = 570, aspect = '16/9', rounded = true, radius = 'lg', loadingState = 'ready', className }) => {
   const aspectClasses = {
     '16/9': 'aspect-video',
     '4/3': 'aspect-[4/3]',
@@ -21,7 +23,16 @@ const Media: React.FC<MediaProps> = ({ src, alt = '', height = 570, aspect = '16
     auto: '',
   };
 
-  const baseClasses = cn('w-full overflow-hidden', rounded && 'rounded-xl', aspect !== 'auto' && aspectClasses[aspect], className);
+  const radiusClasses = {
+    sm: 'rounded-sm',
+    md: 'rounded-md', 
+    lg: 'rounded-lg',
+    xl: 'rounded-xl',
+    '2xl': 'rounded-2xl',
+    '3xl': 'rounded-3xl',
+  };
+
+  const baseClasses = cn('w-full overflow-hidden', rounded && radiusClasses[radius], aspect !== 'auto' && aspectClasses[aspect], className);
 
   if (loadingState === 'loading') {
     return <Skeleton className={cn(baseClasses)} style={{ height: aspect === 'auto' ? height : undefined }} />;
@@ -36,8 +47,20 @@ const Media: React.FC<MediaProps> = ({ src, alt = '', height = 570, aspect = '16
   }
 
   return (
-    <div className={baseClasses}>
-      <img src={src} alt={alt} className="w-full h-full object-cover bg-BG-2" style={{ height: aspect === 'auto' ? height : undefined }} />
+    <div className={cn(baseClasses, 'relative')} style={{ height: aspect === 'auto' ? height : undefined }}>
+      {/* 배경 이미지 (블러 처리) */}
+      <img 
+        src={src} 
+        alt="" 
+        className={cn("absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-60", rounded && radiusClasses[radius])} 
+        aria-hidden="true"
+      />
+      {/* 메인 이미지 (잘리지 않게) */}
+      <img
+        src={src} 
+        alt={alt} 
+        className={cn("relative w-full h-full object-contain bg-transparent", rounded && radiusClasses[radius])} 
+      />
     </div>
   );
 };

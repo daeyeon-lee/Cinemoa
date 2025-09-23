@@ -16,7 +16,7 @@ const ProjectInfoSection: React.FC<ProjectInfoSectionProps> = ({
 }) => {
 
   return (
-    <div className="flex flex-col gap-4 w-full min-w-0">
+    <div className="flex flex-col gap-4 w-full mb-4 min-w-0">
       <div className="flex flex-col justify-start items-start">
         <CategoryBreadcrumb categoryId={categoryId} />
       </div>
