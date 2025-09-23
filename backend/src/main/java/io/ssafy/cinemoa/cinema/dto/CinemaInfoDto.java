@@ -19,6 +19,7 @@ public class CinemaInfoDto {
     private String cinemaName;
     private String city;
     private String district;
+    private String address;
 
     @JsonProperty("imax")
     private Boolean isImax;
@@ -30,6 +31,7 @@ public class CinemaInfoDto {
     private Boolean isDolby;
     @JsonProperty("recliner")
     private Boolean isRecliner;
+
     private List<BriefScreenInfoDto> screens;
 
     public static CinemaInfoDto of(Cinema cinema, List<Screen> screens) {
@@ -44,6 +46,7 @@ public class CinemaInfoDto {
                 .cinemaName(cinema.getCinemaName())
                 .city(cinema.getCity())
                 .district(cinema.getDistrict())
+                .address(cinema.getAddress())
                 .isImax(cinema.getIsImax())
                 .isScreenx(cinema.getIsScreenX())
                 .is4dx(cinema.getIs4dx())

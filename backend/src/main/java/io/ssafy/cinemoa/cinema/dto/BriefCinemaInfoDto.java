@@ -16,6 +16,7 @@ public class BriefCinemaInfoDto {
     private String cinemaName;
     private String city;
     private String district;
+    private String address;
     private Boolean isImax;
     private Boolean isScreenx;
     @JsonProperty("4dx")
@@ -29,6 +30,7 @@ public class BriefCinemaInfoDto {
                 .cinemaName(cinema.getCinemaName())
                 .city(cinema.getCity())
                 .district(cinema.getDistrict())
+                .address(cinema.getAddress())
                 .isImax(cinema.getIsImax())
                 .isScreenx(cinema.getIsScreenX())
                 .is4dx(cinema.getIs4dx())

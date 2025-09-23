@@ -31,9 +31,8 @@ public class Cinema {
     @Column(nullable = false, name = "cinema_name")
     private String cinemaName;
 
-    private Double lat;
-
-    private Double lng;
+    @Column(nullable = false)
+    private String address;
 
     @Column(columnDefinition = "varchar(10)")
     private String city;
