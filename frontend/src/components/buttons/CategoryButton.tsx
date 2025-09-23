@@ -18,12 +18,10 @@ interface CategoryButtonProps {
 
   uniformHeight?: boolean;
 
-
   onClick?: () => void;
   className?: string;
   notchColor?: string;
 }
-
 
 export function CategoryButton({
   children,
@@ -39,9 +37,6 @@ export function CategoryButton({
   className,
   notchColor = 'bg-BG-0',
 }: CategoryButtonProps) {
-
-export function CategoryButton({ children, icon, selected = false, page = 'home', categoryValue, showNotches = true, uniformWidth = false, iconColor, onClick, className }: CategoryButtonProps) {
-
   const isVotePage = page === 'vote';
 
   const baseClasses = cn(

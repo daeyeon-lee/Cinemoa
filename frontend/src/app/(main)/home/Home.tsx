@@ -58,7 +58,6 @@ export default function Home() {
   const { data: recentlyViewedData, isLoading: isLoadingRecentlyViewed } = useHomeRecentlyViewed();
   const recentlyViewedItems = recentlyViewedData?.data || [];
 
-
   // TODO: 실제 투표 카테고리 데이터로 교체 필요
   const categories = HOME_CATEGORIES;
 
@@ -89,24 +88,20 @@ export default function Home() {
 
   return (
     <div className="w-full px-5">
-    <div className="w-full px-5">
       <main className="gap-5">
         {/* Desktop: 로고+검색+카테고리 - Full Width */}
         <div className="hidden sm:block py-8">
           <div className="flex flex-col items-center gap-8 w-full">
             <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} priority />
-            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} priority />
 
             <div className="flex flex-col items-center gap-3 w-full">
               {/* 검색어 입력 */}
-              <div className="w-[588px] relative">
               <div className="w-[588px] relative">
                 <Input
                   placeholder="보고싶은 상영물을 입력해주세요."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="w-full h-14 pl-8 pr-16 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle"
                   className="w-full h-14 pl-8 pr-16 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle"
                 />
                 <Button variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-BG-1" onClick={handleSearch}>
@@ -133,7 +128,6 @@ export default function Home() {
         </div>
 
         {/* Mobile: 카테고리 버튼 상단 배치 */}
-        <div className="sm:hidden py-4 flex justify-center">
         <div className="sm:hidden py-4 flex justify-center">
           <HorizontalScroller>
             <div className="flex gap-1">
@@ -184,7 +178,6 @@ export default function Home() {
           <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
           <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
           <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
-          <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
           <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
         </div>
       </main>
