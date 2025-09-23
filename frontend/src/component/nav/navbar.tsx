@@ -75,6 +75,22 @@ export default function Navbar() {
       alert('로그아웃에 실패했습니다.');
     }
   };
+
+  // 마이페이지 접근 핸들러
+  const handleMyPageClick = (e: React.MouseEvent) => {
+    if (!isClient || !user || !isLoggedIn()) {
+      e.preventDefault();
+      router.push('/auth');
+    }
+  };
+
+  // 만들기 페이지 접근 핸들러
+  const handleCreateClick = (e: React.MouseEvent) => {
+    if (!isClient || !user || !isLoggedIn()) {
+      e.preventDefault();
+      router.push('/auth');
+    }
+  };
   return (
     <header className="bg-slate-900 border-b border-slate-900 py-5 lg:pt-4">
       {/* 모바일 레이아웃 - 두 줄 */}
@@ -88,7 +104,7 @@ export default function Navbar() {
             <SearchIcon />
             {isClient && user && isLoggedIn() ? (
               <>
-                <Link href="/mypage" className="cursor-pointer">
+                <Link href="/mypage" className="cursor-pointer" onClick={handleMyPageClick}>
                   <UserIcon />
                 </Link>
                 <button onClick={handleLogout} className="cursor-pointer">
@@ -116,7 +132,7 @@ export default function Navbar() {
             이거어때
             {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
           </Link>
-          <Link href="/create" className={getLinkClasses('/create')}>
+          <Link href="/create" className={getLinkClasses('/create')} onClick={handleCreateClick}>
             만들기
             {isActive('/create') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
           </Link>
@@ -145,7 +161,7 @@ export default function Navbar() {
               {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
             {/* 임시로 결제창 붙여놓음 나중에 /create로 변경해야함함 */}
-            <Link href="/create" className={getLinkClasses('/create')}>
+            <Link href="/create" className={getLinkClasses('/create')} onClick={handleCreateClick}>
               만들기
               {isActive('/create') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
@@ -186,12 +202,12 @@ export default function Navbar() {
                     <Ticket />
                   </DialogContent>
                 </Dialog>
-                <Link href="/mypage" className="flex-none cursor-pointer">
+                <Link href="/mypage" className="flex-none cursor-pointer" onClick={handleMyPageClick}>
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">
                     마이페이지
                   </Button>
                 </Link>
-                <Button onClick={handleLogout} className="rounded-[99px] text-inverse font-semibold text-xs flex-none cursor-pointer" variant="primary" size="sm" textSize="sm">
+                <Button onClick={handleLogout} className="rounded-[99px]" variant="primary" size="sm" textSize="sm">
                   로그아웃
                 </Button>
               </>
