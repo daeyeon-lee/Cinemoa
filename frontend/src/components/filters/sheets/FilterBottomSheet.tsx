@@ -33,10 +33,22 @@ interface FilterBottomSheetProps {
   variant?: 'brand1' | 'brand2';
 }
 
-export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, onClose, title, children, onApplyFilter, onReset, resetDisabled = false, applyButtonText = '필터 적용하기', variant = 'brand1' }) => {
+export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  onApplyFilter,
+  onReset,
+  resetDisabled = false,
+  applyButtonText = '필터 적용하기',
+  variant = 'brand1',
+}) => {
   return (
     <Drawer.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Drawer.Portal>
+        <Drawer.Title>{title}</Drawer.Title>
+        <Drawer.Description className="sr-only">{title} 필터 옵션을 선택하고 적용할 수 있습니다.</Drawer.Description>
         <Drawer.Overlay className="fixed inset-0 bg-black/60" />
         <Drawer.Content className="bg-BG-1 flex flex-col rounded-t-2xl h-[400px] fixed bottom-0 left-0 right-0 px-6 pb-8">
           {/* 드래그 핸들 */}
@@ -44,7 +56,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, on
 
           {/* 헤더 영역 - 고정 */}
           <div className="flex-shrink-0 flex flex-row items-center justify-between mb-4">
-            <h2 className="text-h5-b text-primary">{title}</h2>
+            <Drawer.Title className="text-h5-b text-primary">{title}</Drawer.Title>
             <button onClick={onClose} className="rounded-full hover:bg-gray-100 transition-colors p-1">
               <X size={23} className="text-tertiary" />
             </button>
