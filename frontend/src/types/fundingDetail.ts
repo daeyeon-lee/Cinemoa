@@ -74,6 +74,7 @@ export type FundingDetailData = {
     cinemaName: string;
     city: string;
     district: string;
+    address: string;
   };
 };
 
