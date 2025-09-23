@@ -145,7 +145,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               <>
                 {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
                 <button onClick={handleVoteClick} className="p-0 rounded-full transition-transform hover:scale-110" disabled={isLoading}>
-                  <HeartIcon filled={currentIsLiked} size={14} />
+                  <HeartIcon filled={currentIsLiked} size={24} />
                 </button>
                 {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
                 <div className="flex-1 min-h-0">
