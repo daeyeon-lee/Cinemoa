@@ -120,6 +120,7 @@ public class RecommendedFundingRepository {
                         LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                         LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
                         WHERE f.leader_id != ?
+                          AND f.fundingType = 'FUNDING'
                           AND f.state = 'ON_PROGRESS'
                         ORDER BY fs.recommend_score DESC
                         LIMIT 10
@@ -139,6 +140,7 @@ public class RecommendedFundingRepository {
                         LEFT JOIN screens s ON f.screen_id = s.screen_id
                         LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                         WHERE f.state = 'ON_PROGRESS'
+                          AND f.fundingType = 'FUNDING'
                           AND f.funding_id NOT IN (SELECT funding_id FROM user_preferred)
                         ORDER BY fs.recommend_score DESC
                         LIMIT 10
@@ -170,7 +172,7 @@ public class RecommendedFundingRepository {
                         LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                         LEFT JOIN screens s ON f.screen_id = s.screen_id
                         LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
-                        WHERE f.state = 'ON_PROGRESS'
+                        WHERE f.state = 'ON_PROGRESS' AND f.fundingType = 'FUNDING'
                         ORDER BY COALESCE(fs.recommend_score, 0) DESC
                         LIMIT 10
                     """);
