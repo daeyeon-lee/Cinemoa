@@ -103,7 +103,7 @@ export default function Home() {
                   onKeyDown={handleKeyDown}
                   className="w-full h-14 pl-8 pr-16 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle"
                 />
-                <Button variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-BG-0" onClick={handleSearch}>
+                <Button variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-BG-1" onClick={handleSearch}>
                   <SearchIcon width={24} height={24} stroke="#cbd5e1" />
                 </Button>
               </div>

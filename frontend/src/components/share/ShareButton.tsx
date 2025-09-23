@@ -21,15 +21,10 @@ type ShareButtonProps = {
  * - 현재 페이지 링크를 복사할 수 있음
  * - 복사 완료 시 알림 표시
  */
-const ShareButton: React.FC<ShareButtonProps> = ({
-  isActive = false,
-  size = 'lg',
-  variant = 'outline',
-  className = '',
-}) => {
+const ShareButton: React.FC<ShareButtonProps> = ({ isActive = false, size = 'lg', variant = 'outline', className = '' }) => {
   // 공유 다이얼로그 열림 상태
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  
+
   // 알림 메시지 상태
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -49,13 +44,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   return (
     <>
       {/* 공유 버튼 */}
-      <Button 
-        variant={variant} 
-        size={size} 
-        textSize="lg" 
-        className={className}
-        onClick={() => setShareDialogOpen(true)}
-      >
+      <Button variant={variant} size={size} textSize="lg" className={className} onClick={() => setShareDialogOpen(true)}>
         <ShareIcon stroke="#94A3B8" />
       </Button>
 
@@ -63,10 +52,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent variant="share" className="space-y-6">
           <DialogHeader className="space-y-2">
-            <DialogTitle className="text-center">링크 공유</DialogTitle>
-            <DialogDescription className="text-center text-tertiary">
-              현재 페이지의 링크를 복사하여 공유할 수 있습니다.
-            </DialogDescription>
+            <DialogTitle className="text-center max-lg:h5 ">링크 공유</DialogTitle>
+            <DialogDescription className="text-center text-tertiary max-lg:hidden">현재 페이지의 링크를 복사하여 공유할 수 있습니다.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -79,12 +66,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
                   type="text"
                   readOnly
                 />
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="h-10 px-4 whitespace-nowrap"
-                  onClick={handleCopyLink}
-                >
+                <Button variant="primary" size="md" className="h-10 px-4 whitespace-nowrap" onClick={handleCopyLink}>
                   복사
                 </Button>
               </div>
