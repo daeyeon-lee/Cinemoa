@@ -30,24 +30,27 @@ interface TheaterTypeFilterPanelProps {
 /**
  * TheaterTypeFilterPanel 컴포넌트
  *
- * @description ListShell의 sidebar 영역에서 사용하는 상영관 타입 필터 패널입니다.
- * 단일 선택만 가능하며, 초기화 기능을 제공합니다.
+ * @description 데스크탑 ListShell의 sidebar 영역에서 사용하는 상영관 타입 필터 패널입니다.
+ * 다중 선택이 가능하며, 초기화 기능을 제공합니다.
  *
  * @example
  * ```tsx
- * // TODO: 실제 상영관 타입 데이터로 교체 필요
- * const theaterTypes = ['일반', 'IMAX', '4DX', 'VIP', 'DOLBY ATMOS'];
+ * const theaterTypes = [
+ *   { label: '일반', value: 'normal' },
+ *   { label: 'IMAX', value: 'imax' },
+ *   { label: '4DX', value: '4dx' }
+ * ];
  *
  * <TheaterTypeFilterPanel
  *   types={theaterTypes}
- *   value={selectedType}
- *   onChange={setSelectedType}
- *   onReset={() => setSelectedType(null)}
+ *   value={selectedTypes}
+ *   onChange={setSelectedTypes}
+ *   onReset={() => setSelectedTypes([])}
  * />
  * ```
  *
  * @param props.types - 표시할 상영관 타입 목록
- * @param props.value - 현재 선택된 상영관 타입
+ * @param props.value - 현재 선택된 상영관 타입들
  * @param props.onChange - 상영관 타입 선택 변경 핸들러
  * @param props.onReset - 필터 초기화 핸들러
  */
