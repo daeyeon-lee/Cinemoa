@@ -105,7 +105,9 @@ public class LikedFundingService {
         }
 
         try {
-            String[] parts = cursor.split("_");
+            // Base64 디코딩
+            String decoded = new String(java.util.Base64.getDecoder().decode(cursor));
+            String[] parts = decoded.split("_");
             if (parts.length != 2) {
                 return false;
             }

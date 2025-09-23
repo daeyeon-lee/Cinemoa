@@ -132,6 +132,7 @@ public class ParticipatedFundingRepository {
                 .state(FundingState.valueOf(rs.getString("state")))
                 .progressRate(progressRate)
                 .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
+                .videoName(rs.getString("video_name"))
                 .screenDate(LocalDate.parse(rs.getString("screen_day")))
                 .price(perPersonPrice)
                 .maxPeople(maxPeople)
@@ -165,7 +166,7 @@ public class ParticipatedFundingRepository {
         public void buildBaseQuery(Long userId, String state) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, s.price,
+                           f.funding_type, f.max_people, f.video_name, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
@@ -176,12 +177,11 @@ public class ParticipatedFundingRepository {
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    INNER JOIN user_transactions t ON t.funding_id = f.funding_id AND t.user_id = ? AND t.state = 'SUCCESS'
-                    WHERE f.leader_id != ? AND f.funding_type = 'FUNDING'
+                    INNER JOIN user_transactions t ON t.funding_id = f.funding_id AND t.user_id = ? AND t.state IN ('SUCCESS', 'REFUNDED')
+                    WHERE f.funding_type = 'FUNDING'
                     """);
 
-            // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용, 생성자 제외용)
-            params.add(userId);
+            // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용)
             params.add(userId);
             params.add(userId);
 

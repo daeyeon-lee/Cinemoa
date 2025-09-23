@@ -9,13 +9,21 @@ import io.ssafy.cinemoa.security.service.CustomUserDetailsService;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -45,11 +53,18 @@ public class SecurityConfig {
             "/api/wonauth/**"
     };
 
+    @Value("${uploader.user}")
+    private String uploaderUserName;
+
+    @Value("${uploader.pass}")
+    private String uploaderPassword;
+
     private final OAuthTokenFilter oAuthTokenFilter;
     private final CustomUserDetailsService userDetailsService;
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository repository)
@@ -90,6 +105,30 @@ public class SecurityConfig {
                 .addFilterBefore(oAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    @Order(0)
+    public SecurityFilterChain securityFilterChainForColab(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .securityMatcher("/api/image/animated")
+                .httpBasic(Customizer.withDefaults())
+                .authorizeHttpRequests(a ->
+                        a.requestMatchers("/api/image/animated")
+                                .hasRole(Role.UPLOADER.name()))
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .userDetailsService(uploaderAuthService())
+                .build();
+    }
+
+    private UserDetailsService uploaderAuthService() {
+        UserDetails uploader = User.withUsername(uploaderUserName)
+                .password(passwordEncoder.encode(uploaderPassword))
+                .roles(Role.UPLOADER.name())
+                .build();
+
+        return new InMemoryUserDetailsManager(uploader);
     }
 
     @Bean

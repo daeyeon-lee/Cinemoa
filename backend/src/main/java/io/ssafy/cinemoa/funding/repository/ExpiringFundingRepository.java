@@ -60,6 +60,7 @@ public class ExpiringFundingRepository {
                 .state(FundingState.valueOf(rs.getString("state")))
                 .progressRate(progressRate)
                 .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
+                .videoName(rs.getString("video_name"))
                 .screenDate(LocalDate.parse(rs.getString("screen_day")))
                 .price(perPersonPrice)
                 .maxPeople(maxPeople)
@@ -93,7 +94,7 @@ public class ExpiringFundingRepository {
         public void buildBaseQuery(Long userId) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, s.price,
+                           f.funding_type, f.max_people, f.video_name, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
