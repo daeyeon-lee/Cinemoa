@@ -1,6 +1,6 @@
 package io.ssafy.cinemoa.funding.controller;
 
-import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
+import io.ssafy.cinemoa.funding.dto.ParticipatedFundingInfoDto;
 import io.ssafy.cinemoa.funding.service.ParticipatedFundingService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
 import io.ssafy.cinemoa.global.response.CursorResponse;
@@ -30,7 +30,7 @@ public class ParticipatedFundingController {
      * 특정 사용자가 참여한 펀딩 목록을 조회합니다. 무한 스크롤 방식으로 동작하며, 커서 기반 페이지네이션을 사용합니다.
      *
      * @param userId 조회할 사용자의 ID (Path Variable)
-     * @param state  참여 상태 필터 (ALL, ON_PROGRESS, CLOSE) - 선택적 파라미터
+     * @param state  참여 상태 필터 (ALL, ON_PROGRESS, CLOSE, SUCCESS) - 선택적 파라미터
      * @param cursor 다음 페이지 조회를 위한 커서 - 선택적 파라미터
      * @param limit  한 번에 조회할 개수 - 선택적 파라미터 (기본값: 20)
      * @return 참여한 펀딩 목록과 페이지네이션 정보
@@ -43,7 +43,7 @@ public class ParticipatedFundingController {
             @RequestParam(value = "limit", required = false) Integer limit) {
 
         // Service를 통해 참여한 펀딩 목록 조회
-        CursorResponse<CardTypeFundingInfoDto> result = participatedFundingService.getParticipatedFundings(userId,
+        CursorResponse<ParticipatedFundingInfoDto> result = participatedFundingService.getParticipatedFundings(userId,
                 state, cursor, limit);
 
         // 성공 응답 반환

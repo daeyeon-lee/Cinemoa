@@ -1,6 +1,6 @@
 package io.ssafy.cinemoa.funding.repository;
 
-import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
+import io.ssafy.cinemoa.funding.dto.ParticipatedFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.CursorRequestDto;
 import io.ssafy.cinemoa.funding.dto.TimestampCursorInfo;
 import io.ssafy.cinemoa.funding.enums.FundingState;
@@ -39,7 +39,7 @@ public class ParticipatedFundingRepository {
      * @param request 참여한 목록 조회 요청
      * @return 참여한 펀딩 목록
      */
-    public CursorResponse<CardTypeFundingInfoDto> findParticipatedFundings(Long userId,
+    public CursorResponse<ParticipatedFundingInfoDto> findParticipatedFundings(Long userId,
                                                                            String state,
                                                                            CursorRequestDto request) {
         // 1. 기본 쿼리 구성 (state 필터 포함)
@@ -53,9 +53,9 @@ public class ParticipatedFundingRepository {
         queryBuilder.addOrderAndLimit(request.getLimit() + 1);
 
         // 4. 쿼리 실행
-        List<CardTypeFundingInfoDto> result = jdbcTemplate.query(
+        List<ParticipatedFundingInfoDto> result = jdbcTemplate.query(
                 queryBuilder.getSql(),
-                this::mapToCardTypeFundingInfoDto,
+                this::mapToParticipatedFundingInfoDto,
                 queryBuilder.getParams().toArray()
         );
 
@@ -68,11 +68,11 @@ public class ParticipatedFundingRepository {
         String nextCursor = null;
 
         if (hasNext && !result.isEmpty()) {
-            CardTypeFundingInfoDto last = result.get(result.size() - 1);
+            ParticipatedFundingInfoDto last = result.get(result.size() - 1);
             nextCursor = createCursor(last.getTimestamp(), last.getFunding().getFundingId());
         }
 
-        return CursorResponse.<CardTypeFundingInfoDto>builder()
+        return CursorResponse.<ParticipatedFundingInfoDto>builder()
                 .hasNextPage(hasNext)
                 .content(result)
                 .nextCursor(nextCursor)
@@ -113,7 +113,7 @@ public class ParticipatedFundingRepository {
     /**
      * 참여한 펀딩 아이템 DTO로 매핑합니다.
      */
-    private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
+    private ParticipatedFundingInfoDto mapToParticipatedFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
         int participantCount = rs.getInt("participant_count");
         int maxPeople = rs.getInt("max_people");
         int progressRate = maxPeople > 0 ? (participantCount * 100 / maxPeople) : 0;
@@ -124,12 +124,24 @@ public class ParticipatedFundingRepository {
 
         // 좋아요 여부
         boolean isLiked = rs.getBoolean("is_liked");
+        
+        // state 확인
+        String state = rs.getString("state");
+        FundingState fundingState = FundingState.valueOf(state);
+        
+        // SUCCESS 상태일 때만 ticketBanner 포함, 아니면 null
+        String ticketBanner = null;
+        if ("SUCCESS".equals(state)) {
+            String dbTicketBanner = rs.getString("ticket_banner");
+            ticketBanner = (dbTicketBanner != null && !dbTicketBanner.trim().isEmpty()) ? dbTicketBanner : null;
+        }
 
-        CardTypeFundingInfoDto.BriefFundingInfo funding = CardTypeFundingInfoDto.BriefFundingInfo.builder()
+        ParticipatedFundingInfoDto.BriefFundingInfo funding = ParticipatedFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
                 .title(rs.getString("title"))
                 .bannerUrl(rs.getString("banner_url"))
-                .state(FundingState.valueOf(rs.getString("state")))
+                .ticketBanner(ticketBanner)
+                .state(fundingState)
                 .progressRate(progressRate)
                 .fundingEndsOn(LocalDate.parse(rs.getString("ends_on")))
                 .videoName(rs.getString("video_name"))
@@ -142,14 +154,14 @@ public class ParticipatedFundingRepository {
                 .fundingType(fundingType)
                 .build();
 
-        CardTypeFundingInfoDto.BriefCinemaInfo cinema = CardTypeFundingInfoDto.BriefCinemaInfo.builder()
+        ParticipatedFundingInfoDto.BriefCinemaInfo cinema = ParticipatedFundingInfoDto.BriefCinemaInfo.builder()
                 .cinemaId(rs.getLong("cinema_id"))
                 .cinemaName(rs.getString("cinema_name"))
                 .city(rs.getString("city"))
                 .district(rs.getString("district"))
                 .build();
 
-        return CardTypeFundingInfoDto
+        return ParticipatedFundingInfoDto
                 .builder()
                 .timestamp(rs.getTimestamp("participated_at").toLocalDateTime())
                 .funding(funding)
@@ -165,7 +177,7 @@ public class ParticipatedFundingRepository {
 
         public void buildBaseQuery(Long userId, String state) {
             sql.append("""
-                    SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
+                    SELECT f.funding_id, f.title, f.summary, f.banner_url, f.ticket_banner, f.state, f.ends_on, f.screen_day,
                            f.funding_type, f.max_people, f.video_name, s.price,
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
@@ -200,6 +212,11 @@ public class ParticipatedFundingRepository {
                         params.add("FAILED");
                         params.add("SUCCESS");
                         break;
+                    case "SUCCESS":
+                        // 성공한 펀딩 (SUCCESS)
+                        sql.append(" AND f.state = ?");
+                        params.add("SUCCESS");
+                        break;
                     default:
                         // 잘못된 state 값인 경우 예외 발생
                         throw new BadRequestException("잘못된 상태 필터입니다. (ALL, ON_PROGRESS, CLOSE 중 하나를 선택하세요)", ResourceCode.INPUT);
@@ -218,7 +235,8 @@ public class ParticipatedFundingRepository {
         }
 
         public void addOrderAndLimit(Integer limit) {
-            sql.append(" ORDER BY t.created_at DESC, f.funding_id DESC LIMIT ?");
+            // sql.append(" ORDER BY t.created_at DESC, f.funding_id DESC LIMIT ?");
+            sql.append(" ORDER BY f.ends_on DESC, f.funding_id DESC LIMIT ?");
             params.add(limit);
         }
 

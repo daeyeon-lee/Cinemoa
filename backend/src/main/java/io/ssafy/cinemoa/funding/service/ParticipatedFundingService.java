@@ -1,6 +1,6 @@
 package io.ssafy.cinemoa.funding.service;
 
-import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
+import io.ssafy.cinemoa.funding.dto.ParticipatedFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.CursorRequestDto;
 import io.ssafy.cinemoa.funding.repository.ParticipatedFundingRepository;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
@@ -36,7 +36,7 @@ public class ParticipatedFundingService {
      * @return 참여한 펀딩 목록과 페이지네이션 정보
      */
     @Transactional(readOnly = true)
-    public CursorResponse<CardTypeFundingInfoDto> getParticipatedFundings(Long userId, String state, String cursor, Integer limit) {
+    public CursorResponse<ParticipatedFundingInfoDto> getParticipatedFundings(Long userId, String state, String cursor, Integer limit) {
         // 1. 사용자 존재 여부 확인
         if (!userRepository.existsById(userId)) {
             throw ResourceNotFoundException.ofUser();
