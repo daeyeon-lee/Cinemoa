@@ -31,6 +31,11 @@ interface RecentlyViewedSectionProps {
  * 6개의 세로 카드를 그리드로 배치
  */
 export function RecentlyViewedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecentlyViewedSectionProps) {
+  // 데이터가 없고 로딩 중이 아닐 때는 섹션을 렌더링하지 않음
+  if (!loading && (!items || items.length === 0)) {
+    return null;
+  }
+
   return (
     <div>
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
