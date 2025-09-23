@@ -34,19 +34,19 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-h5-b">{title}</h2>
-        {onMoreClick && (
+        {/* {onMoreClick && (
           <button onClick={onMoreClick} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
             더보기 →
           </button>
-        )}
+        )} */}
       </div>
 
       {/* 반응형 카드 컨테이너 */}
       <div className="h-full">
         {/* 데스크톱: 세로 스택 (md 이상) */}
         <div className="hidden lg:block h-full">
-          <div className="space-y-5 h-full">
-            {items.map((item, index) => (
+          <div className="space-y-3 h-full">
+            {items.slice(0, 6).map((item, index) => (
               <div key={item.funding.fundingId || index} className="w-full flex items-start">
                 <div className="text-Brand2-Primary text-2xl font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0">{index + 1}</div>
                 <div className="flex-1">
@@ -57,13 +57,13 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
           </div>
         </div>
 
-        {/* 모바일: 1-4위, 5-8위 그룹으로 가로 스크롤 (md 미만) */}
-        <div className="block md:hidden">
+        {/* 모바일: 1-3위, 4-6위 그룹으로 가로 스크롤 (md 미만) */}
+        <div className="block lg:hidden">
           <HorizontalScroller className="w-full">
-            {/* 1-4위 그룹 */}
+            {/* 1-3위 그룹 */}
             <div className="min-w-80 max-w-96 mr-4">
               <div className="space-y-3">
-                {items.slice(0, 4).map((item, index) => (
+                {items.slice(0, 3).map((item, index) => (
                   <div key={item.funding.fundingId || index} className="flex items-center gap-2">
                     <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 1}</div>
                     <div className="flex-1 min-w-0">
@@ -74,12 +74,12 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
               </div>
             </div>
 
-            {/* 5-8위 그룹 */}
+            {/* 4-6위 그룹 */}
             <div className="min-w-80 max-w-96">
               <div className="space-y-3">
-                {items.slice(4, 8).map((item, index) => (
+                {items.slice(3, 6).map((item, index) => (
                   <div key={item.funding.fundingId || index} className="flex items-center gap-2">
-                    <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 5}</div>
+                    <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 4}</div>
                     <div className="flex-1 min-w-0">
                       <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                     </div>

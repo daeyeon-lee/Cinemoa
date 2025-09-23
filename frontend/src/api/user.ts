@@ -1,6 +1,6 @@
 import { UpdateUserInfoRequest, UpdateUserInfoResponse, UpdateRefundAccountRequest, UpdateRefundAccountResponse } from '@/types/user';
 import { buildUrl } from './client';
-import type { ApiSearchResponse } from '@/types/searchApi';
+import type { ApiSearchResponse, ApiRecentlyViewedResponse } from '@/types/searchApi';
 import type { GetPopularFundingResponse, GetClosingSoonFundingResponse } from '@/types/home';
 
 // 사용자 추가 정보 입력 API
@@ -104,7 +104,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
       data: {
         content: rawResult.data,
         nextCursor: null,
-        hasNext: false,
+        hasNextPage: false,
       },
       code: rawResult.code,
       message: rawResult.message,
@@ -119,7 +119,8 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
 // 인기 상영회 조회 API
 export const getPopularFunding = async (userId?: number): Promise<GetPopularFundingResponse> => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
+    const url = userId ? `${baseUrl}?userId=${userId}` : baseUrl;
 
     console.log('[인기api] 요청 URL:', url);
 
@@ -204,4 +205,31 @@ const getSearchFunding = async (params: { sortBy: 'RECOMMENDED' | 'POPULAR'; siz
   }
 
   return await response.json();
+};
+
+export const getRecentlyViewed = async (ids: string[], userId?: number): Promise<ApiRecentlyViewedResponse> => {
+  try {
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/list?ids=${ids.join(',')}`;
+    const url = userId ? `${baseUrl}&userId=${userId}` : baseUrl;
+    console.log('[Search API] 요청:', url);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[Search API] HTTP 에러:', response.status, errorData);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
+    }
+    const result: ApiRecentlyViewedResponse = await response.json();
+    console.log('[최신api] 응답 성공:', result.data);
+    return result;
+  } catch (error) {
+    console.error('[Search API] 오류:', error);
+    throw error;
+  }
 };

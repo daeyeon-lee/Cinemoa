@@ -33,21 +33,16 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
       {/* 섹션 헤더: 제목 (더보기 버튼은 선택사항) */}
       <div className="mb-4">
         <h2 className="text-h5-b">{title}</h2>
-        {onMoreClick && (
-          <button onClick={onMoreClick} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
-            더보기 →
-          </button>
-        )}
       </div>
 
       {/* Desktop: 카드를 절반씩 나누어 세로로 쌓기 - 동시 스크롤 */}
       <div className="hidden md:block">
-        <HorizontalScroller className="">
-          <div className="flex flex-col gap-4">
+        <HorizontalScroller>
+          <div className="flex flex-col gap-8">
             {/* 첫 번째 그룹 (절반) */}
             <div className="flex gap-2">
               {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
-                <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
+                <div key={item.funding.fundingId || index} className="w-[172px]">
                   <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}
@@ -56,7 +51,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
             {/* 두 번째 그룹 (나머지 절반) */}
             <div className="flex gap-2">
               {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
-                <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
+                <div key={item.funding.fundingId || index} className="w-[172px]">
                   <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}
