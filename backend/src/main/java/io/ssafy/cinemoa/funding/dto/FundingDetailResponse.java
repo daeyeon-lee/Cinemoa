@@ -113,6 +113,7 @@ public class FundingDetailResponse {
     public static class CinemaInfo {
         private Long cinemaId;
         private String cinemaName;
+        private String address;
         private String city;
         private String district;
     }

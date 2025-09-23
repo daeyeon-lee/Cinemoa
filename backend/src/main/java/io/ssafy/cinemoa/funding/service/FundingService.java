@@ -179,7 +179,7 @@ public class FundingService {
                 .build();
         statRepository.save(fundingStat);
         eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
- 
+
         return new FundingCreationResult(funding.getFundingId());
     }
 
@@ -369,6 +369,7 @@ public class FundingService {
                 .cinemaId(cinema.getCinemaId())
                 .cinemaName(cinema.getCinemaName())
                 .district(cinema.getDistrict())
+                .address(cinema.getAddress())
                 .build();
 
         FundingDetailResponse response = FundingDetailResponse.builder()
