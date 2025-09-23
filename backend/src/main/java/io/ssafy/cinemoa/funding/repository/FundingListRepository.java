@@ -62,6 +62,10 @@ public class FundingListRepository {
 
     private CardTypeFundingInfoDto mapToCardTypeFundingInfoDto(ResultSet rs, int rowNum) throws SQLException {
         Date screenDay = rs.getDate("screen_day");
+        int progressRate = rs.getInt("max_people") != 0
+                ? rs.getInt("participant_count") * 100 / rs.getInt("max_people")
+                : 0;
+
         // Funding 정보 매핑
         CardTypeFundingInfoDto.BriefFundingInfo fundingInfo = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
@@ -75,6 +79,7 @@ public class FundingListRepository {
                 .maxPeople(rs.getInt("max_people"))
                 .viewCount(rs.getInt("view_count"))
                 .participantCount(rs.getInt("participant_count"))
+                .progressRate(progressRate)
                 .favoriteCount(rs.getInt("favorite_count"))
                 .isLiked(rs.getBoolean("is_liked"))
                 .fundingType(rs.getString("funding_type"))

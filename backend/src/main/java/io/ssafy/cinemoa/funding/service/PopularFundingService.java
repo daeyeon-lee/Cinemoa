@@ -65,7 +65,7 @@ public class PopularFundingService {
             log.info("■■■■■■■■ 인기 상영회 랭킹 배치 갱신 시작 ■■■■■■■■");
 
             // 현재 버킷의 모든 펀딩 ID 수집
-            var fundingIds = redisRankingService.getAllFundingIdsInCurrentBucket();
+            var fundingIds = redisRankingService.getAllFundingIdsInLast24Hours();
 
             if (fundingIds.isEmpty()) {
                 log.warn("현재 버킷에 활동이 있는 펀딩이 없습니다.");
@@ -86,8 +86,8 @@ public class PopularFundingService {
                     Long fundingId = Long.parseLong(fundingIdStr);
 
                     // 지난 30분 동안의 조회수와 좋아요 수 조회
-                    int views = redisRankingService.getViewsInLast30Minutes(fundingId);
-                    int likes = redisRankingService.getLikesInLast30Minutes(fundingId);
+                    int views = redisRankingService.getViewsInLast24Hours(fundingId);
+                    int likes = redisRankingService.getLikesInLast24Hours(fundingId);
 
                     // wilson-score 기반 점수 계산
                     double score = getWilsonScore(views, likes);
