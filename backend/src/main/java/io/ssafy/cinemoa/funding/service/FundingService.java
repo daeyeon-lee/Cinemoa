@@ -37,7 +37,9 @@ import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisRankingService;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
+import io.ssafy.cinemoa.image.dto.AnimateTask;
 import io.ssafy.cinemoa.image.enums.ImageCategory;
+import io.ssafy.cinemoa.image.event.AnimateDoneEvent;
 import io.ssafy.cinemoa.image.service.ImageService;
 import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
@@ -52,6 +54,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -451,5 +454,22 @@ public class FundingService {
 
         return (p + z * z / (2 * total) - z * Math.sqrt((p * (1 - p) + z * z / (4 * total)) / total))
                 / (1 + z * z / total);
+    }
+
+    public List<AnimateTask> getAnimatedRequired() {
+        return fundingRepository.findAnimateRequired();
+    }
+
+
+    @EventListener(AnimateDoneEvent.class)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveAnimateResult(AnimateDoneEvent event) {
+        Funding funding = fundingRepository.findById(event.getFundingId())
+                .orElse(null);
+        if (funding == null) {
+            return;
+        }
+        String url = imageService.translatePath(ImageCategory.BANNER.getPrefix() + "-" + event.getAnimationUrl());
+        funding.setTicketBanner(url);
     }
 }

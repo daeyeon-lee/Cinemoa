@@ -1,10 +1,13 @@
 package io.ssafy.cinemoa.image.controller;
 
+import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.global.response.ApiResponse;
+import io.ssafy.cinemoa.image.dto.AnimateTask;
 import io.ssafy.cinemoa.image.dto.AnimatorResult;
 import io.ssafy.cinemoa.image.dto.ImageInfo;
 import io.ssafy.cinemoa.image.service.ImageService;
 import java.time.Duration;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ImageController {
 
     private final ImageService imageService;
+    private final FundingService fundingService;
 
     @GetMapping("/{imageName}")
     public ResponseEntity<byte[]> getImage(@PathVariable String imageName) {
@@ -34,8 +38,13 @@ public class ImageController {
 
     @PostMapping("/animated")
     public ResponseEntity<ApiResponse<?>> postResultImage(@RequestBody AnimatorResult result) {
-
         imageService.saveAnimation(result);
+        return ResponseEntity.ok().build();
+    }
 
+    @GetMapping("/animated")
+    public ResponseEntity<?> getImageAnimateTask() {
+        List<AnimateTask> tasks = fundingService.getAnimatedRequired();
+        return ResponseEntity.ok(tasks);
     }
 }
