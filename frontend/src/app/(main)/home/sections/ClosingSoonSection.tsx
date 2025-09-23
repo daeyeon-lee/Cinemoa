@@ -40,15 +40,15 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
         )} */}
       </div>
 
-      {/* 모든 아이템을 가로 스크롤로 표시 */}
-      <div className="w-full overflow-x-auto">
-        <HorizontalScroller>
+      {/* 가로 스크롤 - 기본 4개까지 보여주고 그 이후는 스크롤 */}
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2">
           {items.map((item, index) => (
             <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
               <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
             </div>
           ))}
-        </HorizontalScroller>
+        </div>
       </div>
     </div>
   );
