@@ -42,7 +42,6 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
             더보기 →
           </button>
         )} */}
-        )} */}
       </div>
 
       {/* 가로 스크롤 - 화살표 버튼 포함 */}
