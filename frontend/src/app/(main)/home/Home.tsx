@@ -21,7 +21,6 @@ import { useHomeRecommended } from '@/hooks/queries/useHomeRecommended';
 import { useHomePopular } from '@/hooks/queries/useHomePopular';
 import { useHomeClosingSoon } from '@/hooks/queries/useHomeClosingSoon';
 import { useHomeRecentlyViewed } from '@/hooks/queries/useHomeRecentlyViewed';
-
 // 유저아이디
 import { useAuthStore } from '@/stores/authStore';
 import type { ApiSearchItem } from '@/types/searchApi';

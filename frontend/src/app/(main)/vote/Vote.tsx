@@ -23,6 +23,7 @@ import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/Theat
 import type { CardItem } from '@/components/lists/ResponsiveCardList';
 
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
+import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 //api 관련
 import { useAuthStore } from '@/stores/authStore';
 import { useSearch } from '@/hooks/queries/useSearch';
@@ -100,7 +101,6 @@ export default function Vote() {
   const searchParams = useMemo(() => {
     const params: SearchParams = {
       fundingType: 'VOTE' as const, // 이거어때는 투표만
-      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
       userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
     };
 
@@ -262,25 +262,6 @@ export default function Vote() {
     console.log('❤️ [Vote] 투표 버튼 클릭:', id);
     // TODO: 투표 토글 로직 구현
   }, []);
-
-  // 무한 스크롤 처리
-  const handleScroll = useCallback(() => {
-    if (isFetchingNextPage || !hasNextPage) return;
-
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-
-    if (scrollTop + windowHeight >= documentHeight - 100) {
-      console.log('[Vote] 스크롤 감지 - 다음 페이지 로드');
-      fetchNextPage();
-    }
-  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
 
   // 무한 스크롤 처리
   const handleScroll = useCallback(() => {

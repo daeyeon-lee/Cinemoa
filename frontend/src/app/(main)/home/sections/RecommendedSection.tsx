@@ -9,7 +9,6 @@ import type { ApiSearchItem } from '@/types/searchApi';
  *
  * 사용자 맞춤 추천 상영회들을 표시합니다.
  * 세로 카드를 가로 스크롤로 배치하며, 기본 4개까지 보여주고 그 이후는 가로 스크롤로 확인할 수 있습니다.
- * 세로 카드를 가로 스크롤로 배치하며, 기본 4개까지 보여주고 그 이후는 가로 스크롤로 확인할 수 있습니다.
  */
 interface RecommendedSectionProps {
   /** 섹션 제목 */
@@ -26,7 +25,6 @@ interface RecommendedSectionProps {
 
 /**
  * 추천 상영회 섹션
- * 세로 카드를 가로 스크롤로 배치하되, 기본 4개까지 보여주고 그 이후는 가로 스크롤 가능
  * 세로 카드를 가로 스크롤로 배치하되, 기본 4개까지 보여주고 그 이후는 가로 스크롤 가능
  */
 export function RecommendedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecommendedSectionProps) {
@@ -62,17 +60,6 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
         </HorizontalScroller>
       </div>
 
-      {/* Mobile/Tablet: 1줄 가로 스크롤 (lg 미만) */}
-      <div className="lg:hidden">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2" style={{ width: `${items.length * 180}px` }}>
-            {items.map((item, index) => (
-              <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
-              </div>
-            ))}
-          </div>
-        </div>
       {/* Mobile/Tablet: 1줄 가로 스크롤 (lg 미만) */}
       <div className="lg:hidden">
         <div className="overflow-x-auto scrollbar-hide">
