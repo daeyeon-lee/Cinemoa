@@ -40,16 +40,14 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
         )} */}
       </div>
 
-      {/* 모든 아이템을 가로 스크롤로 표시 */}
-      <div className="w-full overflow-x-auto">
-        <HorizontalScroller>
-          {items.map((item, index) => (
-            <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-              <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
-            </div>
-          ))}
-        </HorizontalScroller>
-      </div>
+      {/* 가로 스크롤 - 화살표 버튼 포함 */}
+      <HorizontalScroller>
+        {items.map((item, index) => (
+          <div key={item.funding.fundingId || index} className="w-[172px]">
+            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+          </div>
+        ))}
+      </HorizontalScroller>
     </div>
   );
 }

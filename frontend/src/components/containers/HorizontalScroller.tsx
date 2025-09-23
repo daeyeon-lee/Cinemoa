@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 
 interface HorizontalScrollerProps {
   children: React.ReactNode;

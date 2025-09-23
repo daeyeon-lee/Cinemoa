@@ -26,6 +26,13 @@ export default function Navbar() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // 인증 상태 디버깅
+  useEffect(() => {
+    if (isClient) {
+      console.log('[Navbar] 인증 상태:', { user, isLoggedIn: isLoggedIn(), isClient });
+    }
+  }, [isClient, user, isLoggedIn]);
   const isActive = (path: string) => {
     if (path === '/') {
       return pathname === '/';
@@ -79,7 +86,7 @@ export default function Navbar() {
           </Link>
           <div className="flex items-center space-x-4">
             <SearchIcon />
-            {isClient && isLoggedIn() ? (
+            {isClient && user && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer">
                   <UserIcon />
@@ -164,7 +171,7 @@ export default function Navbar() {
                 </div>
               </div>
             )}
-            {isClient && isLoggedIn() ? (
+            {isClient && user && isLoggedIn() ? (
               <>
                 <Dialog>
                   <DialogTrigger asChild>

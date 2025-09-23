@@ -13,5 +13,18 @@ export function useHomeRecentlyViewed() {
     queryKey: ['recentlyViewed', recentViewIds],
     queryFn: () => getRecentlyViewed(recentViewIds.map(String), userId),
     enabled: recentViewIds.length > 0,
+    select: (data) => {
+      // recentViewIds 순서대로 정렬
+      const sortedData = data.data.sort((a, b) => {
+        const indexA = recentViewIds.indexOf(a.funding.fundingId);
+        const indexB = recentViewIds.indexOf(b.funding.fundingId);
+        return indexA - indexB;
+      });
+
+      return {
+        ...data,
+        data: sortedData,
+      };
+    },
   });
 }
