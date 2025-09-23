@@ -8,12 +8,12 @@ import type { ApiSearchItem } from '@/types/searchApi';
  * 종료 임박 상영회 섹션 컴포넌트
  *
  * 펀딩 마감일이 임박한 상영회들을 표시합니다.
- * 8개의 세로 카드를 가로로 배치하며, 컨테이너를 넘어가는 카드는 가로 스크롤로 확인할 수 있습니다.
+ * 모든 세로 카드를 가로로 배치하며, 컨테이너를 넘어가는 카드는 가로 스크롤로 확인할 수 있습니다.
  */
 interface ClosingSoonSectionProps {
   /** 섹션 제목 */
   title: string;
-  /** 표시할 카드 아이템 목록 (최대 8개) */
+  /** 표시할 카드 아이템 목록 */
   items: ApiSearchItem[];
   /** 로딩 상태 여부 */
   loading?: boolean;
@@ -25,7 +25,7 @@ interface ClosingSoonSectionProps {
 
 /**
  * 종료 임박 상영회 섹션
- * 8개의 세로 카드를 가로 스크롤 가능한 형태로 배치
+ * 모든 세로 카드를 가로 스크롤 가능한 형태로 배치
  */
 export function ClosingSoonSection({ title, items, loading = false, onMoreClick, onCardClick }: ClosingSoonSectionProps) {
   return (
@@ -40,21 +40,8 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
         )} */}
       </div>
 
-      {/* 데스크탑: 4개만 보여주고 나머지는 스크롤 */}
-      <div className="hidden md:block w-max overflow-x-auto">
-        <HorizontalScroller>
-          <div className="flex gap-2">
-            {items.map((item, index) => (
-              <div key={item.funding.fundingId || index} className="w-[172px]">
-                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
-              </div>
-            ))}
-          </div>
-        </HorizontalScroller>
-      </div>
-
-      {/* 모바일: 전체 스크롤 */}
-      <div className="md:hidden w-full overflow-x-auto">
+      {/* 모든 아이템을 가로 스크롤로 표시 */}
+      <div className="w-full overflow-x-auto">
         <HorizontalScroller>
           {items.map((item, index) => (
             <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">

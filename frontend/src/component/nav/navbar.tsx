@@ -73,7 +73,7 @@ export default function Navbar() {
       {/* 모바일 레이아웃 - 두 줄 */}
       <div className="border-b border-1 border-[#1E293B] px-5 lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 ">
           <Link href="/" className="cursor-pointer">
             <img src="/cinemoa_logo_long.png" alt="씨네모아" className="h-8" />
           </Link>

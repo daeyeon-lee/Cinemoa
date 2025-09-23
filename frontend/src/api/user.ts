@@ -208,7 +208,8 @@ const getSearchFunding = async (params: { sortBy: 'RECOMMENDED' | 'POPULAR'; siz
 
 export const getRecentlyViewed = async (ids: string[], userId?: number): Promise<ApiRecentlyViewedResponse> => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/list?ids=${ids.join(',')}&userId=${userId}`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/list?ids=${ids.join(',')}`;
+    const url = userId ? `${baseUrl}&userId=${userId}` : baseUrl;
     console.log('[Search API] 요청:', url);
     const response = await fetch(url, {
       method: 'GET',

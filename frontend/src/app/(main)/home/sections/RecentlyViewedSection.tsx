@@ -43,7 +43,7 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
         )}
       </div>
 
-      {/* 카드 그리드: 6개 세로 카드를 가로 스크롤로 배치 */}
+      {/* 카드 그리드: 모든 세로 카드를 가로 스크롤로 배치 */}
       <HorizontalScroller className="w-full">
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">

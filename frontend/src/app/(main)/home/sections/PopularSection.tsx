@@ -58,7 +58,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
         </div>
 
         {/* 모바일: 1-3위, 4-6위 그룹으로 가로 스크롤 (md 미만) */}
-        <div className="block md:hidden">
+        <div className="block lg:hidden">
           <HorizontalScroller className="w-full">
             {/* 1-3위 그룹 */}
             <div className="min-w-80 max-w-96 mr-4">
