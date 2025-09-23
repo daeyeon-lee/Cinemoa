@@ -119,7 +119,8 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
 // 인기 상영회 조회 API
 export const getPopularFunding = async (userId?: number): Promise<GetPopularFundingResponse> => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
+    const url = userId ? `${baseUrl}?userId=${userId}` : baseUrl;
 
     console.log('[인기api] 요청 URL:', url);
 
