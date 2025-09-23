@@ -1,16 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useFundingRefund } from '@/hooks/queries/useFunding';
+import InfoIcon from '@/component/icon/infoIcon';
 
 interface RefundConfirmProps {
   fundingId?: number;
   userId?: string;
   amount?: number;
   title?: string;
-  onClose?: () => void; // Dialog를 닫기 위한 콜백 함수
+  onClose?: () => void;
 }
 
 export default function RefundConfirm({ 
@@ -44,63 +44,27 @@ export default function RefundConfirm({
     }
   };
 
-  // 취소
-  const handleCancel = () => {
-    onClose?.();
-  };
+  // 환불 정보 텍스트 생성
+  const contentText = `펀딩명 : ${title}
+    환불 금액 : ${amount?.toLocaleString()}원`;
+
+  // 환불 정보 주의사항 생성
+  const infoText =
+  ` • 참여를 취소하시면 참여금이 환불됩니다.
+    • 환불 처리는 즉시 진행되며, 취소할 수 없습니다.`;
 
   return (
-    <DialogContent className="max-w-md">
-      <DialogHeader className="space-y-3">
-        <DialogTitle className="text-center text-xl">참여 취소</DialogTitle>
-        <DialogDescription className="text-center text-secondary">
-          정말로 참여를 취소하시겠습니까?
-        </DialogDescription>
-      </DialogHeader>
-
-      <div className="space-y-4 pt-4">
-        {/* 환불 정보 */}
-        <div className="bg-BG-1 rounded-lg p-4 space-y-2">
-          <div className="flex justify-between">
-            <span className="text-tertiary">펀딩명</span>
-            <span className="text-primary font-medium">{title}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-tertiary">환불 금액</span>
-            <span className="text-primary font-medium">{amount?.toLocaleString()}원</span>
-          </div>
-        </div>
-
-        {/* 주의사항 */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-sm text-red-600">
-            • 참여를 취소하시면 참여금이 환불됩니다.<br/>
-            • 환불 처리는 즉시 진행되며, 취소할 수 없습니다.
-          </p>
-        </div>
-
-        {/* 버튼 */}
-        <div className="flex gap-3 pt-2">
-          <Button 
-            variant="secondary" 
-            size="lg" 
-            className="flex-1"
-            onClick={handleCancel}
-            disabled={isLoading}
-          >
-            아니오
-          </Button>
-          <Button 
-            variant="brand1" 
-            size="lg" 
-            className="flex-1"
-            onClick={handleRefund}
-            disabled={isLoading}
-          >
-            {isLoading ? '처리 중...' : '예, 환불하기'}
-          </Button>
-        </div>
-      </div>
-    </DialogContent>
+    <ConfirmDialog
+      title="참여 취소"
+      subTitle="정말로 참여를 취소하시겠습니까?"
+      content={contentText}
+      info={infoText}
+      icon={<InfoIcon stroke="#FF5768" size={48} />}
+      negLabel="아니오"
+      posLabel="참여 취소하기"
+      onNegative={() => onClose?.()}
+      onPositive={handleRefund}
+      isLoading={isLoading}
+    />
   );
 }

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';                  // 버튼 컴포넌트
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';   // 모달 컴포넌트
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';   // 결제 모달용
 import Payment from '@/app/(main)/payment/Payment';               // 결제 모달 내용
 import RefundConfirm from '@/app/(main)/refund/RefundConfirm';    // 환불 확인 모달
 import { HeartIcon } from '@/component/icon/heartIcon';           // 하트 아이콘
 import { ShareButton } from '@/components/share/ShareButton';      // 공유 버튼 컴포넌트
-import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요 토글)
+import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요)
 import { useAuthStore } from '@/stores/authStore';                // 로그인 사용자 상태
 import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingDetailContext';
 
@@ -135,25 +135,26 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
           </Dialog>
         ) : (
           // 이미 참여한 경우: 환불 확인 모달
-          <Dialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                size="lg"
-                textSize="lg"
-                className="w-full"
-              >
-                참여 취소하기
-              </Button>
-            </DialogTrigger>
-            <RefundConfirm
-              fundingId={fundingId}
-              userId={userId}
-              amount={price}
-              title={contextData.funding.title}
-              onClose={() => setRefundDialogOpen(false)}
-            />
-          </Dialog>
+          <>
+            <Button
+              variant="secondary"
+              size="lg"
+              textSize="lg"
+              className="w-full"
+              onClick={() => setRefundDialogOpen(true)}
+            >
+              참여 취소하기
+            </Button>
+            {refundDialogOpen && (
+              <RefundConfirm
+                fundingId={fundingId}
+                userId={userId}
+                amount={price}
+                title={contextData.funding.title}
+                onClose={() => setRefundDialogOpen(false)}
+              />
+            )}
+          </>
         )}
       </div>
     </div>
