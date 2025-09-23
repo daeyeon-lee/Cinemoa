@@ -1,5 +1,8 @@
 package io.ssafy.cinemoa.global.redis.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,22 +12,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisRankingService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     // Redis 키 prefix
     private static final String FUNDING_VIEWS_BUCKET_PREFIX = "funding:views:bucket:";
     private static final String FUNDING_LIKES_BUCKET_PREFIX = "funding:likes:bucket:";
-    private static final String FUNDING_RANK_KEY = "funding:rank:30m";
-    private static final String FUNDING_TOP10_CACHE_KEY = "funding:top10:30m";
+    private static final String FUNDING_RANK_KEY = "funding:rank:24h";
+    private static final String FUNDING_TOP10_CACHE_KEY = "funding:top10:24h";
 
-    // ===== 고정 30분 윈도우 버킷 시스템 =====
+    // ===== 24시간 윈도우 30분 단위 버킷 시스템 =====
 
     /**
      * 현재 시간을 30분 단위로 내림 처리하여 버킷 키 생성
@@ -42,7 +48,7 @@ public class RedisRankingService {
     public void incrementViewBucket(Long fundingId) {
         String bucketKey = getCurrentBucketKey(FUNDING_VIEWS_BUCKET_PREFIX);
         redisTemplate.opsForHash().increment(bucketKey, fundingId.toString(), 1);
-        redisTemplate.expire(bucketKey, Duration.ofMinutes(35)); // 여유분 포함
+        redisTemplate.expire(bucketKey, Duration.ofHours(25)); // 24시간 + 1시간 여유분
     }
 
     /**
@@ -51,7 +57,7 @@ public class RedisRankingService {
     public void incrementLikeBucket(Long fundingId) {
         String bucketKey = getCurrentBucketKey(FUNDING_LIKES_BUCKET_PREFIX);
         redisTemplate.opsForHash().increment(bucketKey, fundingId.toString(), 1);
-        redisTemplate.expire(bucketKey, Duration.ofMinutes(35)); // 여유분 포함
+        redisTemplate.expire(bucketKey, Duration.ofHours(25)); // 24시간 + 1시간 여유분
     }
 
     /**
@@ -60,50 +66,85 @@ public class RedisRankingService {
     public void decrementLikeBucket(Long fundingId) {
         String bucketKey = getCurrentBucketKey(FUNDING_LIKES_BUCKET_PREFIX);
         redisTemplate.opsForHash().increment(bucketKey, fundingId.toString(), -1);
-        redisTemplate.expire(bucketKey, Duration.ofMinutes(35)); // 여유분 포함
+        redisTemplate.expire(bucketKey, Duration.ofHours(25)); // 24시간 + 1시간 여유분
     }
 
     /**
-     * 지난 30분 동안의 조회수 합계 조회
+     * 지난 24시간 동안의 조회수 합계 조회
      */
-    public int getViewsInLast30Minutes(Long fundingId) {
-        String bucketKey = getCurrentBucketKey(FUNDING_VIEWS_BUCKET_PREFIX);
+    public int getViewsInLast24Hours(Long fundingId) {
+        int totalViews = 0;
+        LocalDateTime now = LocalDateTime.now();
 
-        Object count = redisTemplate.opsForHash().get(bucketKey, fundingId.toString());
-        return count != null ? Integer.parseInt(count.toString()) : 0;
-    }
+        // 지난 24시간 동안의 모든 30분 버킷들을 순회
+        for (int i = 0; i < 48; i++) { // 24시간 / 30분 = 48개 버킷
+            LocalDateTime bucketTime = now.minusMinutes(30L * i) // 현재 시간 ~ 23시간 30분 전
+                    .withMinute((now.minusMinutes(30L * i).getMinute() / 30) * 30) // 30분 단위로 정규화
+                    .withSecond(0).withNano(0);
 
-    /**
-     * 지난 30분 동안의 좋아요 수 합계 조회
-     */
-    public int getLikesInLast30Minutes(Long fundingId) {
-
-        String bucketKey = getCurrentBucketKey(FUNDING_VIEWS_BUCKET_PREFIX);
-
-        Object count = redisTemplate.opsForHash().get(bucketKey, fundingId.toString());
-        return count != null ? Integer.parseInt(count.toString()) : 0;
-    }
-
-    /**
-     * 현재 버킷의 모든 펀딩 ID 조회
-     */
-    public Set<String> getAllFundingIdsInCurrentBucket() {
-
-        String viewsBucketKey = getCurrentBucketKey(FUNDING_VIEWS_BUCKET_PREFIX);
-        Set<String> fundingIds = new HashSet<>();
-
-        // 조회수 버킷에서 펀딩 ID 수집
-        Set<Object> viewKeys = redisTemplate.opsForHash().keys(viewsBucketKey);
-        if (viewKeys != null) {
-            viewKeys.forEach(key -> fundingIds.add(key.toString()));
+            String bucketKey = FUNDING_VIEWS_BUCKET_PREFIX
+                    + bucketTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+            Object count = redisTemplate.opsForHash().get(bucketKey, fundingId.toString());
+            if (count != null) {
+                totalViews += Integer.parseInt(count.toString());
+            }
         }
 
-        // 좋아요 버킷에서 펀딩 ID 수집
-        String likesBucketKey = getCurrentBucketKey(FUNDING_LIKES_BUCKET_PREFIX);
+        return totalViews;
+    }
 
-        Set<Object> likeKeys = redisTemplate.opsForHash().keys(likesBucketKey);
-        if (likeKeys != null) {
-            likeKeys.forEach(key -> fundingIds.add(key.toString()));
+    /**
+     * 지난 24시간 동안의 좋아요 수 합계 조회
+     */
+    public int getLikesInLast24Hours(Long fundingId) {
+        int totalLikes = 0;
+        LocalDateTime now = LocalDateTime.now();
+
+        // 지난 24시간 동안의 모든 30분 버킷들을 순회
+        for (int i = 0; i < 48; i++) { // 24시간 / 30분 = 48개 버킷
+            LocalDateTime bucketTime = now.minusMinutes(30L * i)
+                    .withMinute((now.minusMinutes(30L * i).getMinute() / 30) * 30)
+                    .withSecond(0).withNano(0);
+
+            String bucketKey = FUNDING_LIKES_BUCKET_PREFIX
+                    + bucketTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+            Object count = redisTemplate.opsForHash().get(bucketKey, fundingId.toString());
+            if (count != null) {
+                totalLikes += Integer.parseInt(count.toString());
+            }
+        }
+
+        return totalLikes;
+    }
+
+    /**
+     * 지난 24시간 동안의 모든 버킷에서 펀딩 ID 조회
+     */
+    public Set<String> getAllFundingIdsInLast24Hours() {
+        Set<String> fundingIds = new HashSet<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 지난 24시간 동안의 모든 30분 버킷들을 순회
+        for (int i = 0; i < 48; i++) { // 24시간 / 30분 = 48개 버킷
+            LocalDateTime bucketTime = now.minusMinutes(30L * i)
+                    .withMinute((now.minusMinutes(30L * i).getMinute() / 30) * 30)
+                    .withSecond(0).withNano(0);
+
+            // 조회수 버킷에서 펀딩 ID 수집
+            String viewsBucketKey = FUNDING_VIEWS_BUCKET_PREFIX
+                    + bucketTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+            Set<Object> viewKeys = redisTemplate.opsForHash().keys(viewsBucketKey);
+            if (viewKeys != null) {
+                viewKeys.forEach(key -> fundingIds.add(key.toString()));
+            }
+
+            // 좋아요 버킷에서 펀딩 ID 수집
+            String likesBucketKey = FUNDING_LIKES_BUCKET_PREFIX
+                    + bucketTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+            Set<Object> likeKeys = redisTemplate.opsForHash().keys(likesBucketKey);
+            if (likeKeys != null) {
+                likeKeys.forEach(key -> fundingIds.add(key.toString()));
+            }
         }
 
         return fundingIds;
@@ -134,8 +175,12 @@ public class RedisRankingService {
      * 상위 10개 캐시 저장
      */
     public void cacheTop10FundingIds(List<Long> fundingIds) {
-        String jsonString = fundingIds.toString(); // [1, 2, 3] 형태 (JSON 문자열로 저장)
-        redisTemplate.opsForValue().set(FUNDING_TOP10_CACHE_KEY, jsonString, Duration.ofMinutes(10));
+        try {
+            String jsonString = objectMapper.writeValueAsString(fundingIds);
+            redisTemplate.opsForValue().set(FUNDING_TOP10_CACHE_KEY, jsonString, Duration.ofMinutes(35));
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize funding IDs to JSON: {}", fundingIds, e);
+        }
     }
 
     /**
@@ -143,28 +188,17 @@ public class RedisRankingService {
      */
     public List<Long> getCachedTop10FundingIds() {
         Object cached = redisTemplate.opsForValue().get(FUNDING_TOP10_CACHE_KEY);
-        List<Long> result = new ArrayList<>();
 
         if (cached == null) {
-            return result;
+            return new ArrayList<>();
         }
 
         try {
-            // JSON 문자열을 파싱하여 Long 리스트로 변환
             String jsonString = cached.toString();
-            // [1, 2, 3] 형태의 문자열을 파싱
-            jsonString = jsonString.replaceAll("[\\[\\]\\s]", ""); // [ ] 공백 제거
-            if (jsonString.isEmpty()) {
-                return result;
-            }
-
-            String[] parts = jsonString.split(",");
-            for (String part : parts) {
-                result.add(Long.parseLong(part.trim()));
-            }
-            return result;
-        } catch (Exception e) {
-            // 파싱 실패 시 빈 리스트 반환
+            return objectMapper.readValue(jsonString, new TypeReference<List<Long>>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize funding IDs from JSON: {}", cached, e);
             return new ArrayList<>();
         }
     }
