@@ -424,7 +424,7 @@ export default function Category() {
         }
         // {/* ========== 메인 컨텐츠 영역 ========== */}
         content={
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* ========== 모바일 전용 필터 헤더 ========== */}
             <div className="block lg:hidden">
               {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}

@@ -224,15 +224,18 @@ export default function Search() {
   }, [selectedTheaterType]);
 
   // 임시 카테고리 선택 핸들러 (바텀시트 내부용)
-  const handleTempCategorySelect = useCallback((categoryValue: CategoryValue) => {
-    const selectedCategory = categories.find((cat) => cat.value === categoryValue);
-    setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
-    if (categoryValue === 'all') {
-      setTempSelectedSubCategoryId(null);
-    } else {
-      setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
-    }
-  }, [categories]);
+  const handleTempCategorySelect = useCallback(
+    (categoryValue: CategoryValue) => {
+      const selectedCategory = categories.find((cat) => cat.value === categoryValue);
+      setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
+      if (categoryValue === 'all') {
+        setTempSelectedSubCategoryId(null);
+      } else {
+        setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
+      }
+    },
+    [categories],
+  );
 
   // 임시 서브카테고리 선택 핸들러 (바텀시트 내부용)
   const handleTempSubCategorySelect = useCallback((subCategoryId: number | null) => {
@@ -273,7 +276,7 @@ export default function Search() {
   const getCategoryDisplayText = () => {
     if (selectedMainCategoryId === null) return '카테고리';
 
-    const mainCategory = categories.find(cat => cat.categoryId === selectedMainCategoryId);
+    const mainCategory = categories.find((cat) => cat.categoryId === selectedMainCategoryId);
     if (!mainCategory) return '카테고리';
 
     // 1차 카테고리만 선택된 경우
@@ -282,7 +285,7 @@ export default function Search() {
     }
 
     // 2차 카테고리가 선택된 경우
-    const subCategory = mainCategory.items?.find(sub => sub.categoryId === selectedSubCategoryId);
+    const subCategory = mainCategory.items?.find((sub) => sub.categoryId === selectedSubCategoryId);
     if (subCategory) {
       return `${mainCategory.label}-${subCategory.categoryName}`;
     }
@@ -305,10 +308,13 @@ export default function Search() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 🖱️ 카드 클릭 핸들러
-  const handleCardClick = useCallback((id: number) => {
-    console.log('🔍 [Search] 카드 클릭:', id);
-    router.push(`/detail/${id}`);
-  }, [router]);
+  const handleCardClick = useCallback(
+    (id: number) => {
+      console.log('🔍 [Search] 카드 클릭:', id);
+      router.push(`/detail/${id}`);
+    },
+    [router],
+  );
 
   // ❤️ 좋아요 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {
@@ -386,11 +392,7 @@ export default function Search() {
                     variant="outline"
                     size="sm"
                     onClick={handleOpenCategoryBottomSheet}
-                    className={`${
-                      getCategoryDisplayText() === '카테고리'
-                        ? 'flex-1'
-                        : 'flex-shrink-0'
-                    } relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
+                    className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                   >
                     <span className="truncate">{getCategoryDisplayText()}</span>
                     <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -399,11 +401,7 @@ export default function Search() {
                     variant="outline"
                     size="sm"
                     onClick={handleOpenRegionBottomSheet}
-                    className={`${
-                      getRegionDisplayText() === '지역'
-                        ? 'flex-1'
-                        : 'flex-shrink-0'
-                    } relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
+                    className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                   >
                     <span className="truncate">{getRegionDisplayText()}</span>
                     <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -412,11 +410,7 @@ export default function Search() {
                     variant="outline"
                     size="sm"
                     onClick={handleOpenTheaterBottomSheet}
-                    className={`${
-                      getTheaterTypeDisplayText() === '상영관 종류'
-                        ? 'flex-1'
-                        : 'flex-shrink-0'
-                    } relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
+                    className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                   >
                     <span className="truncate">{getTheaterTypeDisplayText()}</span>
                     <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
