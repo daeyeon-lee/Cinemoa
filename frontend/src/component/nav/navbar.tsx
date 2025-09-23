@@ -191,7 +191,7 @@ export default function Navbar() {
               <>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="secondary" size="sm" textSize="sm" className="flex-none cursor-pointer">
+                    <Button variant="secondary" size="sm" textSize="sm" className="rounded-[99px] hover:bg-BG-3">
                       스마트 티켓
                     </Button>
                   </DialogTrigger>
@@ -203,7 +203,7 @@ export default function Navbar() {
                   </DialogContent>
                 </Dialog>
                 <Link href="/mypage" className="flex-none cursor-pointer" onClick={handleMyPageClick}>
-                  <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">
+                  <Button className="w-full rounded-[99px] hover:bg-BG-3" variant="secondary" size="sm" textSize="sm">
                     마이페이지
                   </Button>
                 </Link>
