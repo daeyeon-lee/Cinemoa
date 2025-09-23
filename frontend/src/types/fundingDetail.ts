@@ -34,6 +34,7 @@ export type FundingDetailData = {
   // 상영 정보 (펀딩은 '시각만 숫자'로 제공)
   screening: {
     videoName: string;
+    videoContent?: string;
     screenStartsOn: number; // 예: 19 (19시)
     screenEndsOn: number;   // 예: 21 (21시)
   };
@@ -83,51 +84,53 @@ export type VoteDetailData = {
   type: 'VOTE'; // 판별자(discriminant)
 
   // 기본 투표 정보
-  vote: {
+  funding: {
     fundingId: number;
     title: string;
     bannerUrl: string;
     content: string;
     state: string;
-    fundingStartsOn: string; // 시작일 (ISO string)
+    progressRate: number;   // 달성률
     fundingEndsOn: string;   // 종료일 (ISO string)
+    price: number;          // 티켓 가격
   };
 
   // 제안자 정보
   proposer: {
     proposerId: number;
-    creatorNickname: string;
+    nickname: string;
+    profileImgUrl: string;
   };
 
   // 상영 정보 (투표는 ISO string으로 제공)
   screening: {
     videoName: string;
-    screeningTitle: string;
-    screenStartsOn: string; // ISO date string
-    screenEndsOn: string;   // ISO date string
+    videoContent?: string;
   };
 
   // 참여 정보
-  participation: {
+  stat: {
+    maxPeople: number;
+    participantCount: number;
     viewCount: number;
     likeCount: number;
-    isLike: boolean;
+    isLiked: boolean;
   };
 
-  // 메타데이터
-  metadata: {
+  // 카테고리 정보
+  category: {
     categoryId: number;
-    recommendationScore: number;
-  };
+    categoryName: string;
+    parentCategoryId: number;
+    parentCategoryName: string;
+  },
 
-  // 영화관 정보 (투표에는 lat/lng 있음)
+  // 영화관 정보
   cinema: {
     cinemaId: number;
     cinemaName: string;
     city: string;
     district: string;
-    lat: number;
-    lng: number;
   };
 };
 

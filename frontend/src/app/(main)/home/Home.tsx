@@ -20,6 +20,7 @@ import { navigateToCategory } from '@/utils/categoryNavigation';
 import { useHomeRecommended } from '@/hooks/queries/useHomeRecommended';
 import { useHomePopular } from '@/hooks/queries/useHomePopular';
 import { useHomeClosingSoon } from '@/hooks/queries/useHomeClosingSoon';
+import { useHomeRecentlyViewed } from '@/hooks/queries/useHomeRecentlyViewed';
 // 유저아이디
 import { useAuthStore } from '@/stores/authStore';
 import type { ApiSearchItem } from '@/types/searchApi';
@@ -53,7 +54,8 @@ export default function Home() {
   const { data: recommendedItems = [], isLoading: isLoadingRecommended } = useHomeRecommended();
   const { data: popularItems = [], isLoading: isLoadingPopular } = useHomePopular();
   const { data: closingSoonItems = [], isLoading: isLoadingClosingSoon } = useHomeClosingSoon();
-  // const recentlyViewedItems = Array(10).fill(sampleCardData);
+  const { data: recentlyViewedData, isLoading: isLoadingRecentlyViewed } = useHomeRecentlyViewed();
+  const recentlyViewedItems = recentlyViewedData?.data || [];
 
   // TODO: 실제 투표 카테고리 데이터로 교체 필요
   const categories = HOME_CATEGORIES;
@@ -84,25 +86,25 @@ export default function Home() {
   );
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full px-5">
       <main className="gap-5">
         {/* Desktop: 로고+검색+카테고리 - Full Width */}
         <div className="hidden sm:block py-8">
           <div className="flex flex-col items-center gap-8 w-full">
-            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} />
+            <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} priority />
 
             <div className="flex flex-col items-center gap-3 w-full">
               {/* 검색어 입력 */}
-              <div className="w-full max-w-2xl flex items-center gap-2">
+              <div className="w-[588px] relative">
                 <Input
                   placeholder="보고싶은 상영물을 입력해주세요."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 h-14 px-8 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle"
+                  className="w-full h-14 pl-8 pr-16 !text-lg !text-primary placeholder:!text-lg placeholder:!text-subtle"
                 />
-                <Button variant="ghost" className="hover:bg-BG-0" onClick={handleSearch}>
-                  <SearchIcon width={34} height={34} stroke="#cbd5e1" />
+                <Button variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-BG-0" onClick={handleSearch}>
+                  <SearchIcon width={24} height={24} stroke="#cbd5e1" />
                 </Button>
               </div>
               {/* 카테고리 버튼들 */}
@@ -125,7 +127,7 @@ export default function Home() {
         </div>
 
         {/* Mobile: 카테고리 버튼 상단 배치 */}
-        <div className="sm:hidden py-4">
+        <div className="sm:hidden py-4 flex justify-center">
           <HorizontalScroller>
             <div className="flex gap-1">
               {categories.map((category) => (
@@ -144,31 +146,34 @@ export default function Home() {
           </HorizontalScroller>
         </div>
 
-        {/* Desktop Layout - 웹 버전 */}
-        <div className="hidden sm:block">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column - Recommended + Closing Soon */}
-            <div className="lg:col-span-8 space-y-12">
+        {/* Desktop Layout - 웹 버전 (lg 이상) */}
+        <div className="hidden lg:block">
+          <div className="w-full flex gap-8">
+            {/* Left Column - 추천 상영회 + 종료 임박 상영회 */}
+            <div className="flex-1 lg:w-2/3 space-y-8">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
               <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
             </div>
 
-            {/* Right Column - Popular */}
-            <aside className="lg:col-span-4 h-fit w-full">
+            {/* Right Column - 인기 상영회 (두 줄 차지) */}
+            <aside className="lg:w-1/3 h-fit">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
             </aside>
           </div>
+
+          {/* 최근 본 상영회 - Full Width */}
+          <div className="mt-8">
+            <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
+          </div>
         </div>
 
-        {/* Mobile Layout - 모바일 버전 세로 스택 */}
-        <div className="sm:hidden space-y-8">
+        {/* Mobile/Tablet Layout - 한 줄씩 세로 스택 (lg 미만) */}
+        <div className="lg:hidden space-y-8">
           <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
           <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
           <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
+          <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
         </div>
-
-        {/* Recently Viewed - Full Width (Desktop Only) */}
-        <section className="hidden sm:block mt-4">{/* <RecentlyViewedSection title="최근 본 상영회" loading={true} /> */}</section>
       </main>
     </div>
   );

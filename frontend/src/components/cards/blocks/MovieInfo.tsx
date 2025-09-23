@@ -15,7 +15,7 @@ const MovieInfo: React.FC<MovieInfoProps> = ({ title, videoName, screeningTitle,
   return (
     <div className="flex flex-col gap-2">
       <div className="text-slate-50 text-sm font-semibold font-['Pretendard'] leading-tight">{videoName}</div>
-      <TagGroup region={region} date={screenStartsOn.toString()} formatRegion={formatRegion} formatDate={formatDate} />
+      <TagGroup region={region} date={screenStartsOn.toString()} formatRegion={formatRegion} formatDate={formatDate ? (date: string) => formatDate(parseInt(date)) : undefined} />
       <div className="text-slate-300 text-xs font-normal font-['Pretendard'] leading-none">{screeningTitle}</div>
     </div>
   );

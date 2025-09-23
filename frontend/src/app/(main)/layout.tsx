@@ -4,7 +4,7 @@ import Footer from '@/component/footer/footer';
 // 메인 레이아웃 (navbar, footer 포함)
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div>
       {/* 네비게이션 바 */}
       <Navbar />
       {/* 메인 컨텐츠 */}
@@ -12,6 +12,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <main className="w-full lg:max-w-[1200px] mx-auto flex-1">{children}</main>
       {/* 푸터 */}
       <Footer />
-    </>
+    </div>
   );
 }

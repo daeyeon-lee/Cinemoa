@@ -9,8 +9,10 @@ import LogoutIcon from '@/component/icon/logoutIcon';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/api/auth';
+import Ticket from './ticket';
 
 export default function Navbar() {
   // navbar 페이지 활성화 여부 확인 함수
@@ -71,7 +73,7 @@ export default function Navbar() {
       {/* 모바일 레이아웃 - 두 줄 */}
       <div className="border-b border-1 border-[#1E293B] px-5 lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 ">
           <Link href="/" className="cursor-pointer">
             <img src="/cinemoa_logo_long.png" alt="씨네모아" className="h-8" />
           </Link>
@@ -164,6 +166,19 @@ export default function Navbar() {
             )}
             {isClient && isLoggedIn() ? (
               <>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" size="sm" textSize="sm" className="flex-none cursor-pointer">
+                      스마트 티켓
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md max-h-[100vh] overflow-y-auto">
+                    <DialogHeader className="self-stretch">
+                      <DialogTitle>스마트 티켓</DialogTitle>
+                    </DialogHeader>
+                    <Ticket />
+                  </DialogContent>
+                </Dialog>
                 <Link href="/mypage" className="flex-none cursor-pointer">
                   <Button className="rounded-[99px]" variant="secondary" size="sm" textSize="sm">
                     마이페이지

@@ -14,21 +14,12 @@ interface CategoryButtonProps {
   categoryValue?: CategoryValue;
   showNotches?: boolean;
   uniformWidth?: boolean;
+  iconColor?: string; // 아이콘 색상을 직접 지정할 수 있는 prop
   onClick?: () => void;
   className?: string;
 }
 
-export function CategoryButton({
-  children,
-  icon,
-  selected = false,
-  page = 'home',
-  categoryValue,
-  showNotches = true,
-  uniformWidth = false,
-  onClick,
-  className,
-}: CategoryButtonProps) {
+export function CategoryButton({ children, icon, selected = false, page = 'home', categoryValue, showNotches = true, uniformWidth = false, iconColor, onClick, className }: CategoryButtonProps) {
   const isVotePage = page === 'vote';
 
   const baseClasses = cn(
@@ -47,8 +38,8 @@ export function CategoryButton({
   );
 
   const iconClasses = cn(
-    // 아이콘 색상 - vote 페이지에서는 기본적으로 brand2 색상
-    isVotePage && !selected ? 'text-[#2cd8ce]' : 'text-[#e83045]',
+    // 아이콘 색상 - iconColor prop이 있으면 우선 적용, 없으면 기존 로직 사용
+    !iconColor && (isVotePage && !selected ? 'text-[#2cd8ce]' : 'text-[#e83045]'),
     selected && 'text-primary',
     // 그룹 호버 시 아이콘 색상 변경
     !selected && 'group-hover:text-primary',
@@ -70,7 +61,8 @@ export function CategoryButton({
               width: 20,
               height: 20,
               className: 'max-sm:w-7 max-sm:h-7',
-              stroke: 'currentColor',
+              stroke: iconColor || 'currentColor',
+              fill: iconColor || 'currentColor',
             })}
           </div>
         )}

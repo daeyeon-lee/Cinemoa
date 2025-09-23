@@ -29,7 +29,7 @@ export default function Create() {
   };
 
   return (
-    <div className="px-2 sm:flex sm:justify-center sm:items-start min-h-screen pt-4 sm:pt-12">
+    <div className="sm:flex sm:justify-center sm:items-start min-h-screen pt-4 sm:pt-12">
       <Card className="flex flex-col gap-4 px-4 sm:px-6 max-w-[1000px] w-full">
         {/* 펀딩 상세 소개 */}
         <CardHeader className="max-sm:text-center">

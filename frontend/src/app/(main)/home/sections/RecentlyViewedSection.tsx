@@ -22,13 +22,23 @@ interface RecentlyViewedSectionProps {
   loading?: boolean;
   /** 더보기 버튼 클릭 핸들러 */
   onMoreClick?: () => void;
+  /** 카드 클릭 핸들러 */
+  onCardClick?: (fundingId: number) => void;
 }
 
 /**
  * 최근 본 상영회 섹션
  * 6개의 세로 카드를 그리드로 배치
  */
-export function RecentlyViewedSection({ title, items, loading = false, onMoreClick }: RecentlyViewedSectionProps) {
+export function RecentlyViewedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecentlyViewedSectionProps) {
+  // 데이터가 없고 로딩 중이 아닐 때는 섹션을 렌더링하지 않음
+  if (!loading && (!items || items.length === 0)) {
+    return null;
+  }
+
+  // recentViewStore에서 이미 최근 방문 순서대로 정렬되어 있으므로 그대로 사용
+  // recentViewIds: [32, 29, 52, 19] → 리스트: 32 → 29 → 52 → 19 순으로 표시 (맨 앞이 최신)
+
   return (
     <div>
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
@@ -41,11 +51,11 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
         )}
       </div>
 
-      {/* 카드 그리드: 6개 세로 카드를 가로 스크롤로 배치 */}
+      {/* 카드 그리드: 모든 세로 카드를 가로 스크롤로 배치 (리스트에 들어온 순서대로) */}
       <HorizontalScroller className="w-full">
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} />
+            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
           </div>
         ))}
       </HorizontalScroller>

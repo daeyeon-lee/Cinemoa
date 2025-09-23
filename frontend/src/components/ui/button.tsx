@@ -11,6 +11,7 @@ const buttonVariants = cva('inline-flex items-center justify-center gap-2 whites
       primary: 'bg-BG-Inverse text-inverse',
       secondary: 'bg-BG-3 text-secondary hover:bg-BG-2',
       tertiary: 'bg-BG-2 text-secondary',
+      subtle: 'bg-BG-1 text-tertiary',
       brand1: 'bg-Brand1-Primary text-primary hover:bg-Brand1-Secondary',
       brand2: 'bg-Brand2-Primary text-inverse hover:bg-Brand2-Secondary',
       outline: 'text-tertiary hover:border-stroke-2 border-stroke-4 border-2',
