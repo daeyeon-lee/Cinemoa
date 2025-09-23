@@ -395,7 +395,7 @@ export default function MyPage() {
   return (
     <div className="w-full px-5">
       {/* 프로필 섹션 */}
-      <div className="col-span-12 px-3.5 sm:px-14 py-3.5 sm:py-7 my-14 bg-slate-800 rounded-2xl flex flex-col justify-start items-start gap-6">
+      <div className="col-span-12 px-5 py-7 my-10 bg-slate-800 rounded-2xl flex flex-col justify-start items-start gap-6">
         {/* PC: 한 줄 레이아웃 */}
         <div className="hidden sm:flex w-full justify-between items-center">
           <div className="w-full flex flex-col justify-start items-start gap-2.5">
@@ -493,17 +493,17 @@ export default function MyPage() {
       </div>
 
       {/* 상영회 섹션들 */}
-      <div className="w-full px-3.5 sm:px-14 inline-flex flex-col justify-start items-start gap-11">
+      <div className="w-full px-2 inline-flex flex-col justify-start items-start gap-11">
         {/* 내가 제안한 상영회 섹션 */}
         <div className="w-full flex flex-col justify-start items-start gap-2.5">
           {/* 섹션 헤더 */}
           <div className="w-full flex items-center justify-between">
             <h2 className="text-h5-b">내가 제안한 상영회</h2>
-            {hasMoreProposals && (
-              <button onClick={() => router.push('/mypage/detail/proposals')} className="text-h6-b text-secondary ">
-                더보기 →
-              </button>
-            )}
+            {/* {hasMoreProposals && ( */}
+            <button onClick={() => router.push('/mypage/detail/proposals')} className="text-h6-b text-secondary ">
+              더보기 →
+            </button>
+            {/* // )} */}
           </div>
           {/* 필터 버튼 그룹 */}
           <div className="flex gap-2">
@@ -533,9 +533,9 @@ export default function MyPage() {
             </Button>
           </div>
           {/* 상영회 카드 */}
-          <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
+          <div className="self-stretch inline-flex justify-start items-center gap-2">
             {myProposals.length === 0 ? (
-              <div className="w-full flex justify-center items-center h-80">
+              <div className="w-full flex justify-center items-center">
                 <div className="flex flex-col justify-center items-center gap-4">
                   <div className="text-center">
                     <div className="p1-b text-secondary mb-2">내가 제안한 상영회가 없습니다</div>
@@ -549,7 +549,7 @@ export default function MyPage() {
             ) : (
               <HorizontalScroller className="w-full">
                 {myProposals.map((proposal, index) => (
-                  <div key={proposal.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                  <div key={proposal.funding.fundingId} className="w-[172px] flex-shrink-0">
                     <CineCardVertical
                       data={convertCardItemToApiSearchItem(convertToCardData(proposal))}
                       onCardClick={handleCardClick}
@@ -570,11 +570,11 @@ export default function MyPage() {
           {/* 섹션 헤더 */}
           <div className="w-full flex items-center justify-between">
             <h2 className="text-h5-b">내가 참여한 상영회</h2>
-            {hasMoreParticipated && (
-              <button onClick={() => router.push('/mypage/detail/participated')} className="text-h5 text-secondary">
-                더보기 →
-              </button>
-            )}
+            {/* {hasMoreParticipated && ( */}
+            <button onClick={() => router.push('/mypage/detail/participated')} className="text-h6-b text-secondary">
+              더보기 →
+            </button>
+            {/* )} */}
           </div>
           {/* 필터 버튼 그룹 */}
           <div className="flex gap-2">
@@ -620,7 +620,7 @@ export default function MyPage() {
             ) : (
               <HorizontalScroller className="w-full">
                 {myParticipated.map((participated, index) => (
-                  <div key={participated.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                  <div key={participated.funding.fundingId} className="w-[172px] flex-shrink-0">
                     <CineCardVertical
                       data={convertCardItemToApiSearchItem(convertParticipatedToCardData(participated))}
                       onCardClick={handleCardClick}
@@ -641,11 +641,11 @@ export default function MyPage() {
           {/* 섹션 헤더 */}
           <div className="w-full flex items-center justify-between">
             <h2 className="text-h5-b">내가 보고 싶은 상영회</h2>
-            {hasMoreLiked && (
-              <button onClick={() => router.push('/mypage/detail/liked')} className="text-h5-b text-secondary hover:text-slate-400 transition-colors">
-                더보기 →
-              </button>
-            )}
+            {/* {hasMoreLiked && ( */}
+            <button onClick={() => router.push('/mypage/detail/liked')} className="text-h6-b text-secondary hover:text-slate-400 transition-colors">
+              더보기 →
+            </button>
+            {/* )} */}
           </div>
           {/* 필터 버튼 그룹 */}
           <div className="flex gap-2">
@@ -692,7 +692,7 @@ export default function MyPage() {
               <HorizontalScroller className="w-full">
                 {myLiked &&
                   myLiked.map((liked, index) => (
-                    <div key={liked.funding.fundingId} className="w-[172px] h-80 flex-shrink-0">
+                    <div key={liked.funding.fundingId} className="w-[172px] flex-shrink-0">
                       <CineCardVertical
                         data={convertCardItemToApiSearchItem(convertLikedToCardData(liked))}
                         onCardClick={handleCardClick}

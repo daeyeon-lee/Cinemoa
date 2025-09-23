@@ -162,10 +162,10 @@ export default function Home() {
 
           {/* Closing Soon - Full Width */}
           <div className="mt-12">
-            <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
+            <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
           </div>
           <div className="mt-12">
-            <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
+            <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
           </div>
         </div>
 
@@ -173,8 +173,8 @@ export default function Home() {
         <div className="sm:hidden space-y-8">
           <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
           <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
-          <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
           <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
+          <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
         </div>
       </main>
     </div>
