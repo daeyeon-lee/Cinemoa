@@ -14,6 +14,7 @@ interface CategoryButtonProps {
   categoryValue?: CategoryValue;
   showNotches?: boolean;
   uniformWidth?: boolean;
+  uniformHeight?: boolean;
   onClick?: () => void;
   className?: string;
   notchColor?: string;
@@ -27,6 +28,7 @@ export function CategoryButton({
   categoryValue,
   showNotches = true,
   uniformWidth = false,
+  uniformHeight = false,
   onClick,
   className,
   notchColor = 'bg-BG-0',
@@ -41,6 +43,8 @@ export function CategoryButton({
     'max-sm:flex max-sm:flex-col max-sm:px-4 max-sm:py-2.5 max-sm:gap-1',
     // 균일한 폭 설정 (스포츠중계 크기 기준)
     uniformWidth && 'w-36 max-sm:w-20',
+    // 균일한 높이 설정
+    uniformHeight && 'h-12 max-sm:h-16',
     // 기본 색상
     selected ? (isVotePage ? 'bg-[#2cd8ce] text-primary' : 'bg-[#e83045] text-primary') : 'bg-slate-700 text-primary',
     // 호버 색상

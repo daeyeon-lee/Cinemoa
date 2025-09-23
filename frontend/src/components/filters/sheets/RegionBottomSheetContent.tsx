@@ -31,7 +31,7 @@ export const RegionBottomSheetContent: React.FC<RegionBottomSheetContentProps> =
             variant={isSelected ? variant : 'outline'}
             size="sm"
             onClick={() => handleToggle(region)}
-            className={cn('justify-start text-left px-3 py-2 text-p3-b text-tertiary', isSelected && 'text-primary')}
+            className={cn('justify-start text-left px-2 py-1 p3-b text-tertiary', isSelected && 'text-primary')}
           >
             {region}
           </Button>

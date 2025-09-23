@@ -64,14 +64,14 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, on
       <div
         className={`
         fixed bottom-0 left-0 right-0 z-50
-        bg-BG-1 rounded-t-2xl px-6 py-8 gap-4
+        bg-BG-1 rounded-t-2xl
         transform transition-transform duration-300 ease-out
         ${isOpen ? 'translate-y-0' : 'translate-y-full'}
         h-[400px] flex flex-col
       `}
       >
-        {/* 헤더 영역 */}
-        <div className="flex items-center justify-between">
+        {/* 헤더 영역 - 고정 */}
+        <div className="flex items-center justify-between px-6 pt-8 pb-4 flex-shrink-0">
           <h3 className="text-h5-b">{title}</h3>
           <button onClick={onClose} className="rounded-full hover:bg-gray-100 transition-colors">
             <X size={20} className="text-gray-500" />
@@ -79,10 +79,10 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({ isOpen, on
         </div>
 
         {/* 컨텐츠 영역 - 스크롤 가능 */}
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6">{children}</div>
 
-        {/* 버튼 영역 */}
-        <div>
+        {/* 버튼 영역 - 고정 */}
+        <div className="px-6 pb-8 pt-4 flex-shrink-0">
           <Button
             onClick={() => {
               onApplyFilter();
