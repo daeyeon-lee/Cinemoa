@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '../primitives/Progress';
 import { ApiSearchItem } from '@/types/searchApi';
-import { addFundingLike, deleteFundingLike } from '@/api/fundingActions';
+import { addFundingLike, deleteFundingLike } from '@/api/likes';
 import { useAuthStore } from '@/stores/authStore';
 
 type HorizontalRightProps = {

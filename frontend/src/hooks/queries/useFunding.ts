@@ -12,9 +12,9 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// import { getFundingList } from '@/api/fundingList';  // 🚧 임시 주석: 리스트는 다른 팀원 작업 중
 import { getFundingDetail } from '@/api/fundingDetail';
-import { addFundingLike, deleteFundingLike } from '@/api/fundingActions'; // ✅ 분리된 API 불러오기
+import { addFundingLike, deleteFundingLike } from '@/api/likes'; // ✅ 분리된 API 불러오기
+import { refundPayment } from '@/api/refund'; // ✅ 환불 API 불러오기
 import type { ApiResponse, DetailData } from '@/types/fundingDetail';
 
 
@@ -108,6 +108,34 @@ export function useFundingLike() {
 
     onSuccess: (data, { fundingId }) => {
       console.log('🟢 onSuccess - 서버 응답 성공:', fundingId, data);
+    },
+  });
+}
+
+
+// 환불 전용 훅 (환불 API + 페이지 새로고침)
+export function useFundingRefund() {
+  return useMutation({
+    mutationFn: async ({ 
+      fundingId, 
+      userId
+    }: { 
+      fundingId: number; 
+      userId: string; 
+    }) => {
+      console.log('[환불 API 호출]', fundingId, userId);
+      return await refundPayment(fundingId, parseInt(userId));
+    },
+    
+    onError: (err) => {
+      console.error('🔴 환불 실패:', err);
+      alert('환불 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    },
+
+    onSuccess: (data, { fundingId }) => {
+      console.log('🟢 환불 성공:', fundingId);
+      // 환불 완료 후 페이지 새로고침으로 최신 상태 반영
+      window.location.href = `/detail/${fundingId}`;
     },
   });
 }

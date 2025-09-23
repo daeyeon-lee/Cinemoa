@@ -7,9 +7,8 @@ import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/c
 import SuccessCheckIcon from '@/component/icon/success_check_icon';
 import { validateAndFormatExpiryDate, validateBirthDate, validateAllPaymentFields } from '@/utils/validation';
 import { formatTime, formatKoreanDate } from '@/utils/dateUtils';
-import { createPayment } from '@/api/payment';
+import { createPayment, holdSeats } from '@/api/payment';
 import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'next/navigation';
 
 
 interface PaymentProps {
@@ -30,6 +29,7 @@ interface PaymentProps {
     is4dx?: boolean;
     isRecliner?: boolean;
   };
+  onClose?: () => void; // Dialog를 닫기 위한 콜백 함수
 }
 
 export default function Payment({ 
@@ -43,9 +43,9 @@ export default function Payment({
   screenEndsOn, 
   cinemaName, 
   screenName,
-  screenFeatures 
+  screenFeatures,
+  onClose 
 }: PaymentProps) {
-  const router = useRouter();
   const { user } = useAuthStore();
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
   const [isLoading, setIsLoading] = useState(false);
@@ -101,11 +101,12 @@ export default function Payment({
   const handleNextToStep3 = async () => {
     if (!isAllFieldsCompleted()) return;
     
-    console.log('=== Payment step2 제출 시작 ===');
-    console.log('현재 paymentData:', paymentData);
-    console.log('fundingId:', fundingId);
-    console.log('amount:', amount);
-    console.log('============================');
+    // console.log('=== Payment step2 제출 시작 ===');
+    // console.log('현재 paymentData:', paymentData);
+    // console.log('fundingId:', fundingId);
+    // console.log('amount:', amount);
+    // console.log('============================');
+    console.log('=== 참여하기 결제 시작 ===');
 
     setIsLoading(true);
     try {
@@ -120,9 +121,21 @@ export default function Payment({
         amount: amount || 0,
       };
 
+      console.log('=== HoldSeats API 요청 시작 ===');
+      
+      // 1. 먼저 자리 확보 요청
+      if (!fundingId || !userId) {
+        throw new Error('fundingId 또는 userId가 없습니다.');
+      }
+      
+      const holdResult = await holdSeats(fundingId, parseInt(userId));
+      console.log('=== HoldSeats API 요청 성공 ===');
+      console.log('자리 확보 응답:', holdResult);
+
       console.log('=== Payment API 요청 시작 ===');
       console.log('요청 데이터:', paymentParams);
 
+      // 2. 자리 확보 성공 후 결제 진행
       const result = await createPayment(paymentParams);
 
       console.log('=== Payment API 요청 성공 ===');
@@ -132,11 +145,19 @@ export default function Payment({
       setCurrentStep('step3');
       setPaymentCompleted(true);
     } catch (error) {
-      console.error('=== Payment API 요청 실패 ===');
+      console.error('=== Payment/HoldSeats API 요청 실패 ===');
       console.error('에러:', error);
       
       // 실패 시 실패 모달 표시
-      setPaymentError(error instanceof Error ? error.message : '결제에 실패했습니다.');
+      let errorMessage = "결제 처리 중 오류가 발생했습니다.";
+      if (error instanceof Error) {
+        if (error.message.includes('hold')) {
+          errorMessage = "자리 확보에 실패했습니다. 다시 시도해주세요.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      setPaymentError(errorMessage);
       setShowFailureModal(true);
     } finally {
       setIsLoading(false);
@@ -191,10 +212,11 @@ export default function Payment({
     // step2에 머물러서 다시 시도 가능
   };
 
-  // 성공 모달에서 확인
+  // 성공 모달에서 확인 - 새로고침으로 최신 상태 반영
   const handleSuccess = () => {
     resetAllStates();
-    router.push(`/detail/${fundingId}`);
+    onClose?.(); // Dialog 닫기
+    window.location.href = `/detail/${fundingId}`; // 강제 새로고침
   };
 
   // 모든 상태를 초기화하는 함수

@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';                  // 버튼 컴포넌트
-import { Skeleton } from '@/components/ui/skeleton';              // 로딩 스켈레톤
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';   // 모달 컴포넌트
 import Payment from '@/app/(main)/payment/Payment';               // 결제 모달 내용
 import { HeartIcon } from '@/component/icon/heartIcon';           // 하트 아이콘
@@ -24,6 +23,9 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
 
   // ✅ context → store 순으로 fallback
   const userId = contextUserId || storeUserId;
+
+  // Dialog 상태 관리
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
@@ -95,7 +97,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
         </Button>
 
         {/* 🎟️ 참여하기 버튼 → 결제 모달 오픈 */}
-        <Dialog>
+        <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
           <DialogTrigger asChild>
             <Button
               variant="brand1"                                     // 브랜드 강조 색
@@ -127,6 +129,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
               is4dx: contextData.screen?.is4dx,
               isRecliner: contextData.screen?.isRecliner,
             }}
+            onClose={() => setPaymentDialogOpen(false)}           // Dialog 닫기 콜백
           />
         </Dialog>
       </div>
