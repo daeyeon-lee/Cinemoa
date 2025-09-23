@@ -33,7 +33,7 @@ export function useHomeRecommended() {
       return await getRecommendedFunding(userId);
     },
     select: (data: ApiSearchResponse) => {
-      return data.data?.content?.slice(0, 10) || ([] as ApiSearchItem[]);
+      return data.data?.content?.slice(0, 8) || ([] as ApiSearchItem[]);
     },
     staleTime: 60_000,
     gcTime: 300_000,

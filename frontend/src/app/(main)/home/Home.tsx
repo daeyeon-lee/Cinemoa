@@ -148,29 +148,34 @@ export default function Home() {
 
         {/* Desktop Layout - 웹 버전 (lg 이상) */}
         <div className="hidden lg:block">
-          <div className="w-full flex gap-8">
-            {/* Left Column - 추천 상영회 + 종료 임박 상영회 */}
-            <div className="flex-1 lg:w-2/3 space-y-8">
+          {/* 첫 번째 행: 추천 상영회 | 인기 상영회 */}
+          <div className="w-full flex flex-col gap-4 lg:flex-row lg:gap-8 mb-12">
+            {/* Left Column - Recommended (2/3) */}
+            <div className="flex-1 lg:w-2/3">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
-              <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
             </div>
 
-            {/* Right Column - 인기 상영회 (두 줄 차지) */}
+            {/* Right Column - Popular (1/3) */}
             <aside className="lg:w-1/3 h-fit">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
             </aside>
           </div>
 
-          {/* 최근 본 상영회 - Full Width */}
-          <div className="mt-8">
+          {/* 두 번째 행: 종료 임박 상영회 - Full Width */}
+          <div className="w-full">
+            <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
+          </div>
+
+          {/* 세 번째 행: 최근 본 상영회 - Full Width */}
+          <div className="mt-12">
             <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
           </div>
         </div>
 
         {/* Mobile/Tablet Layout - 한 줄씩 세로 스택 (lg 미만) */}
         <div className="lg:hidden space-y-8">
-          <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
           <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} />
+          <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} />
           <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
           <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
         </div>
