@@ -2,7 +2,9 @@ import React from 'react';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import { CineCardHorizontal } from '@/components/cards/CineCardHorizontal';
 import { Button } from '@/components/ui/button';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { ApiSearchItem } from '@/types/searchApi';
+import { LoadingIndicator, NoMoreData } from '@/app/(main)/mypage/detail/components/LoadingStates';
 
 /**
  * 카드 아이템 타입
@@ -85,6 +87,29 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   hasNextPage = false,
   isFetchingNextPage = false,
 }) => {
+  // 자동 무한스크롤을 위한 Intersection Observer 훅
+  // 사용자가 페이지 하단 근처에 도달하면 자동으로 다음 페이지를 로드합니다
+  const observerRef = useInfiniteScroll(
+    () => {
+      // 디버깅용 로그
+      console.log('🔍 [ResponsiveCardList] 무한스크롤 트리거:', {
+        hasOnLoadMore: !!onLoadMore,
+        hasNextPage,
+        isFetchingNextPage,
+        itemsCount: items.length
+      });
+
+      // onLoadMore 함수가 있고, 다음 페이지가 있으며, 현재 로딩 중이 아닐 때만 실행
+      if (onLoadMore && hasNextPage && !isFetchingNextPage) {
+        console.log('✅ [ResponsiveCardList] onLoadMore 실행');
+        onLoadMore();
+      } else {
+        console.log('❌ [ResponsiveCardList] onLoadMore 실행 조건 불충족');
+      }
+    },
+    hasNextPage, // 다음 페이지가 있는지
+    isFetchingNextPage // 현재 다음 페이지를 로딩 중인지
+  );
   // 로딩 상태: 스켈레톤 카드 8개 표시 (개발 단계 UI 확인용)
   if (loading) {
     return (
@@ -206,14 +231,19 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
         ))}
       </div>
 
-      {/* 무한스크롤 로드 더보기 버튼 */}
-      {hasNextPage && (
-        <div className="flex justify-center mt-8">
-          <Button onClick={onLoadMore} disabled={isFetchingNextPage} variant="outline" className="min-w-32">
-            {isFetchingNextPage ? '로딩중...' : '더보기'}
+
+      {/* 수동 로드 더보기 버튼 (백업용 - 자동 스크롤이 작동하지 않을 때) */}
+      {hasNextPage && !isFetchingNextPage && (
+        <div className="flex justify-center mt-4">
+          <Button onClick={onLoadMore} variant="outline" size="sm" className="text-xs text-slate-500">
+            더보기
           </Button>
         </div>
       )}
+
+      {/* 무한스크롤 로딩 상태 */}
+      <LoadingIndicator isLoadingMore={isFetchingNextPage} />
+      <NoMoreData hasNextPage={hasNextPage} dataLength={items.length} />
     </div>
   );
 };

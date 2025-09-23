@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Media } from './primitives/Media';
 import { ProjectInfoSection } from './sections/ProjectInfoSection';
 import { ProgressInfoSection } from './sections/ProgressInfoSection';
-import { ActionSection } from './sections/ActionSection';
+import { ActionSection } from '../../app/(main)/detail/[fundingId]/components/FundingActionSection';
 import { MobileFixedActions } from './MobileFixedActions';
 
 type ProjectType = 'funding' | 'vote';

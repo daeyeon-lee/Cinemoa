@@ -35,16 +35,19 @@ export default function HorizontalScroller({ children, className = '' }: Horizon
   }, []);
 
   return (
-    <div className={`relative ${className}`}>
-      {/* 우측 gradient overlay */}
-      <div className="absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-slate-900 to-transparent pointer-events-none" />
+    <div className={`${className}`}>
+      {/* 좌측 gradient overlay */}
+      {/* <div className="absolute left-0 top-0 z-10 h-full w-8 bg-gradient-to-r from-slate-900 to-transparent pointer-events-none" /> */}
+
+      {/* 우측 gradient overlay
+      <div className="absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-slate-900 to-transparent pointer-events-none" /> */}
 
       {/* Scrollable container */}
       <div
         ref={scrollRef}
         role="listbox"
         tabIndex={0}
-        className="flex justify-center gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide focus:outline-none"
+        className="flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide focus:outline-none"
         onKeyDown={handleKeyDown}
         style={{
           scrollbarWidth: 'none',

@@ -180,11 +180,11 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
       {/* 안내 메시지 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <InformationIcon />
+          <InformationIcon fill="#6B7280" />
           <p className="p2-b text-tertiary">프로젝트 만들기 버튼을 클릭하면 입력한 결제 정보에 따라 주최자의 티켓값이 결제됩니다.</p>
         </div>
         <div className="flex items-center gap-2">
-          <InformationIcon />
+          <InformationIcon fill="#6B7280" />
           <p className="p2-b text-tertiary">펀딩은 승인 후 즉시 개설되며, 대관 신청일 7일 전까지 활성화됩니다.</p>
         </div>
       </div>

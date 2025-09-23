@@ -1,18 +1,15 @@
 import React from 'react';
 import { StatItem } from '../primitives/StatItem';
 import { Progress } from '../primitives/Progress';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useFundingDetail } from '@/contexts/FundingDetailContext';
 
-type ProgressInfoSectionProps = {};
 
-const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = () => {
+const ProgressInfoSection = () => {
   // Context에서 데이터 가져오기
   const { data } = useFundingDetail();
   const { funding, stat } = data;
   
   const participantCount = stat.participantCount;
-  const likeCount = stat.likeCount;
   const endDate = funding.fundingEndsOn;
   const progressRate = funding.progressRate;
   const maxPeople = stat.maxPeople;
@@ -32,10 +29,10 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = () => {
       {/* 참여자수 + 남은시간 */}
       <div className="w-full min-w-0 flex items-center justify-between mt-1.5">
         <div className="min-w-0">
-          <StatItem icon="people" text={`${participantCount.toLocaleString()}명 참여`} />
+          <StatItem icon="people" fill="#F53B3B" text={`${participantCount.toLocaleString()}명 참여`} />
         </div>
         <div className="min-w-0">
-          <StatItem icon="time" text={`${daysLeft}일 남음`} />
+          <StatItem icon="time" fill="#F53B3B" text={`${daysLeft}일 남음`} />
         </div>
       </div>
 
@@ -58,4 +55,3 @@ const ProgressInfoSection: React.FC<ProgressInfoSectionProps> = () => {
 };
 
 export { ProgressInfoSection };
-export type { ProgressInfoSectionProps };

@@ -113,7 +113,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
   // 1인당 결제 금액 계산
   useEffect(() => {
     if (screenPrice > 0 && participantCount > 0) {
-      const calculatedAmount = Math.round(screenPrice / participantCount / 10) * 10;
+      const calculatedAmount = Math.ceil(screenPrice / participantCount / 10) * 10;
       setPerPersonAmount(calculatedAmount);
     } else {
       setPerPersonAmount(0);

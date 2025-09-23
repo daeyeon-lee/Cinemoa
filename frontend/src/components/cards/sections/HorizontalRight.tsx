@@ -17,12 +17,13 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
   // 좋아요 토글을 위한 상태 관리
   const { user } = useAuthStore();
   const userId = user?.userId?.toString();
-  
+
   // 로컬 상태로 좋아요 상태 관리
   const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
   const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
   const [isLoading, setIsLoading] = useState(false);
-  
+  // const [lastRequestTime, setLastRequestTime] = useState<number>(0);
+
   // 현재 좋아요 상태와 좋아요 수
   const currentIsLiked = localIsLiked;
   const currentLikeCount = localLikeCount;
@@ -39,22 +40,27 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
 
   const handleVoteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     // 로그인 체크
     if (!userId) {
       alert('로그인 후 이용해주세요.');
       return;
     }
-    
-    // 중복 클릭 방지
-    if (isLoading) return;
-    
+
+    // 중복 클릭 방지 (로딩 중이거나 최근 1초 내 요청)
+    // const now = Date.now();
+    // if (isLoading || (now - lastRequestTime < 1000)) {
+    //   console.log('[HorizontalRight] 중복 요청 방지:', { isLoading, timeSinceLastRequest: now - lastRequestTime });
+    //   return;
+    // }
+
     setIsLoading(true);
-    
+    // setLastRequestTime(now);
+
     // 낙관적 업데이트 - 즉시 로컬 상태 변경
     setLocalIsLiked(!currentIsLiked);
     setLocalLikeCount(currentIsLiked ? currentLikeCount - 1 : currentLikeCount + 1);
-    
+
     try {
       // API 호출
       if (currentIsLiked) {
@@ -67,10 +73,11 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
       setLocalIsLiked(currentIsLiked);
       setLocalLikeCount(currentLikeCount);
       console.error('좋아요 토글 실패:', error);
+      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
-    
+
     // 기존 onVoteClick 콜백도 호출
     if (onVoteClick) {
       onVoteClick(data.funding.fundingId);
@@ -88,8 +95,8 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
             {/* 진행률, 현재인원/목표인원 */}
             <div className="inline-flex justify-start items-center gap-1">
-              <div className="text-Brand1-Primary text-p3-b leading-none">{data.funding.progressRate} %</div>
-              <div className="text-slate-400 text-caption2 leading-3">
+              <div className="text-Brand1-Strong text-p3-b leading-none">{data.funding.progressRate} %</div>
+              <div className="text-secondary text-caption2 leading-3">
                 {data.funding.participantCount} / {data.funding.maxPeople}
               </div>
             </div>

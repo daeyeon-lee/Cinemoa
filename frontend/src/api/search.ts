@@ -3,7 +3,11 @@ import type { SearchParams, ApiSearchResponse } from '@/types/searchApi';
 
 export const searchItems = async (params: SearchParams = {}): Promise<ApiSearchResponse> => {
   try {
-    const url = buildUrl('search', params);
+    // cursor 파라미터를 nextCursor로 변환
+    const { cursor, ...otherParams } = params;
+    const searchParams = cursor ? { ...otherParams, nextCursor: cursor } : otherParams;
+
+    const url = buildUrl('search', searchParams);
     console.log('[Search API] 요청:', url);
 
     const response = await fetch(url, {
@@ -28,6 +32,7 @@ export const searchItems = async (params: SearchParams = {}): Promise<ApiSearchR
     }
 
     console.log('[Search API] 성공:', `${result.data?.content?.length || 0}개 항목 조회`);
+    console.log('[Search API] 응답:', result);
     return result;
   } catch (error) {
     console.error('[Search API] 오류:', error);

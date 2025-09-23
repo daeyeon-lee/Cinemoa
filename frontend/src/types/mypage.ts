@@ -52,6 +52,7 @@ export interface FundingProposalsResponse {
   data: {
     content: FundingProposal[];
     hasNextPage: boolean;
+    nextCursor?: string;
   };
 }
 
@@ -96,6 +97,7 @@ export interface ParticipatedFundingResponse {
   data: {
     content: ParticipatedFunding[];
     hasNextPage: boolean;
+    nextCursor?: string;
   };
 }
 
@@ -140,6 +142,7 @@ export interface LikedFundingResponse {
   data: {
     content: LikedFunding[];
     hasNextPage: boolean;
+    nextCursor?: string;
   };
 }
 

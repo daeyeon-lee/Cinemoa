@@ -1,11 +1,14 @@
 /**
- * 펀딩 상태관리 통합 훅
+ * 펀딩/투표 상태관리 통합 훅
  * 
  * 3개 API (리스트조회, 상세조회, 좋아요추가/취소)를 사용해서
- * userId, isLiked, likeCount, isParticipated 상태를 관리합니다.
+ * 타입별 상태를 관리합니다.
+ * 
+ * FUNDING: userId, isLiked, likeCount, isParticipated 관리
+ * VOTE: userId, isLiked, likeCount 관리 (isParticipated 없음)
  * 
  * 공통 상태 (userId, isLiked, likeCount): 리스트 ↔ 상세 동기화
- * 상세 전용 (isParticipated): 상세에서만 사용, 동기화 시 보존
+ * 펀딩 전용 (isParticipated): 펀딩에서만 사용, 동기화 시 보존
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +21,7 @@ import type { ApiResponse, DetailData } from '@/types/fundingDetail';
 // 상세 조회 훅 (API 2번: 상세조회 → userId, isLiked, likeCount, isParticipated 추출)
 export function useFundingDetail({ fundingId, userId }: { fundingId: string; userId?: string }) {
   return useQuery({
-    queryKey: ['FUNDING', fundingId, userId],
+    queryKey: ['DETAIL', fundingId, userId],
     queryFn: () => getFundingDetail(fundingId, userId), // 2️⃣ 상세 조회 API 호출
     enabled: !!fundingId, // fundingId가 있을 때만 실행
     staleTime: 30_000, // 30초
@@ -56,16 +59,19 @@ export function useFundingLike() {
     // Optimistic Update - 즉시 UI 반영
     onMutate: async ({ fundingId, userId, isLiked }) => {
       console.log('🟡 onMutate 실행 - 낙관적 업데이트 시작');
-      await queryClient.cancelQueries({ queryKey: ['FUNDING', fundingId.toString(), userId] });
+      await queryClient.cancelQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
 
-      const previousDetailData = queryClient.getQueryData(['FUNDING', fundingId.toString(), userId]);
+      const previousDetailData = queryClient.getQueryData(['DETAIL', fundingId.toString(), userId]);
       console.log('👉 기존 캐시:', previousDetailData);
       
       queryClient.setQueryData(
-        ['FUNDING', fundingId.toString(), userId],
+        ['DETAIL', fundingId.toString(), userId],
         (old: ApiResponse<DetailData> | undefined) => {
-          if (!old || old.data?.type !== 'FUNDING') return old;
+          if (!old || !old.data || (old.data.type !== 'FUNDING' && old.data.type !== 'VOTE')) {
+            return old;
+          }
 
+          // FUNDING/VOTE 공통 처리
           return {
             ...old,
             data: {
@@ -76,7 +82,8 @@ export function useFundingLike() {
                 likeCount: isLiked
                   ? old.data.stat.likeCount - 1
                   : old.data.stat.likeCount + 1,
-                isParticipated: old.data.stat.isParticipated,
+                // isParticipated는 FUNDING 타입에만 있으므로 기존 값 보존 (VOTE에서는 undefined)
+                ...(old.data.type === 'FUNDING' && { isParticipated: old.data.stat.isParticipated }),
               }
             }
           };
@@ -89,14 +96,14 @@ export function useFundingLike() {
     onError: (err, { fundingId, userId }, context) => {
       console.error('🔴 좋아요 토글 실패:', err);
       if (context?.previousDetailData) {
-        queryClient.setQueryData(['FUNDING', fundingId.toString(), userId], context.previousDetailData);
+        queryClient.setQueryData(['DETAIL', fundingId.toString(), userId], context.previousDetailData);
         console.log('🔄 캐시 롤백 완료:', context.previousDetailData);
       }
     },
 
     onSettled: (data, error, { fundingId, userId }) => {
       console.log('⚪ onSettled 실행 - 서버 데이터 동기화');
-      queryClient.invalidateQueries({ queryKey: ['FUNDING', fundingId.toString(), userId] });
+      queryClient.invalidateQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
     },
 
     onSuccess: (data, { fundingId }) => {
