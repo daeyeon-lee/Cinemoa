@@ -2,42 +2,74 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-// 필터 ui
+// ui
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
+import { SortBar } from '@/components/filters/SortBar';
+import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
+// 웹
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
+import { CategoryButtonGroup } from '@/components/filters/CategoryButtonGroup';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
-import { SortBar } from '@/components/filters/SortBar';
-// 반응형 카드 리스트
-import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
-// 카테고리
-import { STANDARD_CATEGORIES, findCategoryValueById, type CategoryValue } from '@/constants/categories';
+// 모바일
+import { FilterBottomSheet } from '@/components/filters/sheets/FilterBottomSheet';
+import { CategoryBottomSheetContent } from '@/components/filters/sheets/CategoryBottomSheetContent';
+import { RegionBottomSheetContent } from '@/components/filters/sheets/RegionBottomSheetContent';
+import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/TheaterTypeBottomSheetContent';
+//type, 상수
+import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
-// 목록조회 hook
+//api 관련
+import { useAuthStore } from '@/stores/authStore';
 import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
-import { useAuthStore } from '@/stores/authStore';
 /**
  * 둘러보기 페이지 컴포넌트
  *
  * @description 카테고리별 펀딩 프로젝트를 둘러볼 수 있는 페이지입니다.
- * ListShell을 기반으로 필터링과 정렬 기능을 제공합니다.
+ * ListShell을 기반으로 필터링과 정렬 기능을 제공하며, 모바일에서는 바텀시트 UI를 제공합니다.
+ *
+ * @features
+ * - 반응형 레이아웃: 데스크톱(사이드바 필터) vs 모바일(바텀시트 필터)
+ * - 무한스크롤: 사용자가 스크롤하면 자동으로 다음 페이지 로드(웹, 모바일 공통)
+ * - 실시간 필터링: 카테고리, 지역, 상영관 종류별 필터링
+ * - 정렬 기능: 최신순, 인기순, 조회수순
+ * - localStorage 연동: 다른 페이지에서 선택된 카테고리 자동 적용
  */
 export default function Category() {
-  console.log('🎯 [Category] 컴포넌트 렌더링');
+  // console.log('🎯 [Category] 컴포넌트 렌더링');
   const router = useRouter();
   const { user } = useAuthStore();
 
-  // 필터 상태 관리 (categoryId 기반)
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null); // 1차 카테고리 ID
-  const [selectedCategory, setSelectedCategory] = useState<CategoryValue | null>('all'); // UI용 categoryValue
-  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null); // 세부카테고리 ID (단일)
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
-  const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortBy>('LATEST');
-  const [showClosed, setShowClosed] = useState<boolean>(false);
+  // ========== 필터 상태 관리 ==========
+  // 카테고리 관련 상태들 (3개의 상태로 분리하여 정확한 추적)
+  const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number | null>(null); // 선택된 1차 카테고리 ID (1=영화, 2=시리즈, 3=공연, 4=스포츠중계)
+  const [selectedUiCategoryId, setSelectedUiCategoryId] = useState<number | null>(null); // UI 표시용 카테고리 ID (null=전체, 1=영화, 2=시리즈, etc.)
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number | null>(null); // 선택된 세부카테고리 ID (2차 카테고리)
 
-  // localStorage에서 categoryId 읽어서 설정
+  // 지역 및 상영관 필터 상태들
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]); // 선택된 지역 배열 (현재는 단일 선택)
+  const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]); // 선택된 상영관 종류 배열
+
+  // 정렬 및 옵션 상태들
+  const [sortBy, setSortBy] = useState<SortBy>('LATEST'); // 정렬 기준 (LATEST, POPULAR, DEADLINE, etc.)
+  const [showClosed, setShowClosed] = useState<boolean>(false); // 마감된 펀딩 포함 여부
+
+  // ========== 모바일 바텀시트 상태 관리 ==========
+  // 현재 활성화된 바텀시트 종류를 추적 (null이면 모든 바텀시트 닫힘)
+  const [activeBottomSheet, setActiveBottomSheet] = useState<'category' | 'region' | 'theater' | null>(null);
+
+  // ========== 모바일 바텀시트 임시 상태들 ==========
+  // 바텀시트에서 선택 중인 임시 값들 (적용하기 버튼 누르기 전까지는 실제 상태에 반영 안됨)
+  const [tempSelectedMainCategoryId, setTempSelectedMainCategoryId] = useState<number | null>(null);
+  const [tempSelectedSubCategoryId, setTempSelectedSubCategoryId] = useState<number | null>(null);
+  const [tempSelectedRegions, setTempSelectedRegions] = useState<string[]>([]);
+  const [tempSelectedTheaterType, setTempSelectedTheaterType] = useState<string[]>([]);
+
+  // ========== 초기화: localStorage에서 카테고리 정보 복원 ==========
+  // 다른 페이지(홈, 검색 등)에서 카테고리를 선택하고 이 페이지로 왔을 때 해당 카테고리를 자동 선택
   useEffect(() => {
     const savedCategoryId = localStorage.getItem('selectedCategoryId');
 
@@ -46,112 +78,146 @@ export default function Category() {
       console.log('🎯 [Category] localStorage에서 categoryId 감지:', categoryId);
 
       // 1차 카테고리 선택 (ex: categoryId=1이면 영화 전체 선택)
-      setSelectedCategoryId(categoryId);
-      setSelectedSubCategory(categoryId);
-
-      // UI용 categoryValue 설정
-      const categoryValue = findCategoryValueById(categoryId);
-      if (categoryValue) {
-        setSelectedCategory(categoryValue);
-      }
+      // ID 1=영화, 2=시리즈, 3=공연, 4=스포츠중계
+      setSelectedMainCategoryId(categoryId);
+      setSelectedUiCategoryId(categoryId);
+      setSelectedSubCategoryId(categoryId);
 
       console.log('✅ [Category] 카테고리 초기화 완료:', {
-        selectedCategoryId: categoryId,
-        selectedCategory: categoryValue,
-        selectedSubCategory: categoryId,
+        selectedMainCategoryId: categoryId,
+        selectedUiCategoryId: categoryId,
+        selectedSubCategoryId: categoryId,
       });
 
-      // 사용 후 localStorage 정리
+      // 사용 후 localStorage 정리 (일회성 사용)
       localStorage.removeItem('selectedCategoryId');
     }
   }, []);
 
-  const categories = STANDARD_CATEGORIES;
-  const regions = REGIONS;
-  const theaterTypes = THEATER_TYPES;
-
-  // 🔍 useSearch 훅으로 API 데이터 조회 - 사용자가 선택한 것만 전달
-  const searchParams = useMemo(() => {
-    const params: SearchParams = {
-      fundingType: 'FUNDING' as const, // 둘러보기는 펀딩만
-      userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
+  // ========== 반응형 화면 크기 감지 및 바텀시트 자동 닫기 ==========
+  // 모바일에서 웹으로 화면 크기가 변경될 때 바텀시트를 자동으로 닫기
+  useEffect(() => {
+    const handleResize = () => {
+      // lg 브레이크포인트 (1024px) 이상에서는 바텀시트 닫기
+      if (window.innerWidth >= 1024 && activeBottomSheet) {
+        // 임시 상태를 원래 상태로 되돌림
+        setTempSelectedMainCategoryId(selectedMainCategoryId);
+        setTempSelectedSubCategoryId(selectedSubCategoryId);
+        setTempSelectedRegions(selectedRegions);
+        setTempSelectedTheaterType(selectedTheaterType);
+        setActiveBottomSheet(null);
+      }
     };
 
-    // 사용자가 정렬을 변경했을 때만 전달 (기본값: LATEST)
+    // 초기 실행
+    handleResize();
+
+    // resize 이벤트 리스너 추가
+    window.addEventListener('resize', handleResize);
+
+    // cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [activeBottomSheet, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType]);
+
+  // ========== 상수 데이터 정의 ==========
+  const categories = STANDARD_CATEGORIES; // 전체, 영화, 시리즈, 공연, 스포츠중계 등의 카테고리 목록
+  const regions = REGIONS; // 서울, 부산, 대구 등의 지역 목록
+  const theaterTypes = THEATER_TYPES; // 일반, IMAX, 4DX 등의 상영관 종류 목록
+
+  // ========== API 요청 파라미터 생성 ==========
+  // 사용자가 선택한 필터 조건들을 API 요청용 파라미터로 변환
+  // useMemo를 사용하여 불필요한 재계산 방지 및 성능 최적화
+  const searchParams = useMemo(() => {
+    const params: SearchParams = {
+      fundingType: 'FUNDING' as const, // 둘러보기 페이지는 FUNDING 타입만 조회 (VOTE와 구분)
+      userId: user?.userId ? Number(user.userId) : undefined, // 로그인한 사용자의 좋아요 정보 포함
+    };
+
+    // 정렬 조건: 기본값(LATEST)이 아닐 때만 API에 전달
     if (sortBy !== 'LATEST') {
       params.sortBy = sortBy;
     }
 
-    // 카테고리 선택 로직 (단일 값만 전달)
-    if (selectedCategory === 'all') {
-      // 1차 "전체" 선택: category 파라미터 없음 (모든 카테고리)
-      // params.category는 추가하지 않음
-    } else if (selectedSubCategory !== null) {
-      // 세부 카테고리 선택: 선택된 카테고리 전달
-      params.category = selectedSubCategory;
-    } else if (selectedCategory) {
-      // 1차 카테고리 선택했지만 서브카테고리 선택 안함 (예: "영화-전체")
-      const categoryInfo = categories.find((cat) => cat.value === selectedCategory);
-      if (categoryInfo?.categoryId) {
-        params.category = categoryInfo.categoryId;
-      }
+    // ========== 카테고리 필터링 로직 ==========
+    if (selectedUiCategoryId === null) {
+      // "전체" 선택: category 파라미터를 전달하지 않음 → 모든 카테고리 조회
+    } else if (selectedSubCategoryId !== null) {
+      // 2차 카테고리가 선택된 경우: 해당 세부 카테고리만 조회
+      params.category = selectedSubCategoryId;
+    } else if (selectedMainCategoryId !== null) {
+      // 1차 카테고리만 선택된 경우: 해당 카테고리 전체 조회
+      params.category = selectedMainCategoryId;
     }
 
-    // 사용자가 지역을 선택했을 때만 전달 (기본값: 전체)
+    // ========== 지역 필터링 ==========
+    // 현재는 단일 선택만 지원 (배열의 첫 번째 요소만 사용)
     if (selectedRegions.length > 0) {
       params.region = selectedRegions[0];
     }
 
-    // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
-    // selectedTheaterType에는 한글 label이 들어있으므로 백엔드용 value로 변환
+    // ========== 상영관 종류 필터링 ==========
+    // UI에서는 한글 라벨을 사용하지만 API에는 영문 value를 전달
     if (selectedTheaterType.length > 0) {
-      const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean);
+      const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean); // undefined 제거
       if (theaterValues.length > 0) {
         params.theaterType = theaterValues as string[];
       }
     }
 
-    // 사용자가 종료된 상영회 포함을 체크했을 때만 전달 (기본값: false)
+    // ========== 마감된 펀딩 포함 여부 ==========
+    // 기본값(false)이 아닐 때만 API에 전달
     if (showClosed) {
       params.isClosed = showClosed;
     }
-
-    console.log('📤 [Category] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [sortBy, selectedCategory, selectedSubCategory, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
+  }, [sortBy, selectedUiCategoryId, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
+  // ========== 데이터 조회 및 무한스크롤 ==========
+  // useSearch 훅을 통한 API 데이터 조회 (React Query 기반 무한스크롤)
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
+  // API에서 받아온 모든 페이지의 아이템들을 평탄화한 배열
   const items = data?.content || [];
 
+  // 디버깅용 현재 상태 로깅
   console.log('📊 [Category] 현재 데이터 상태:', {
-    itemsCount: items.length,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
+    data,
     error: !!error,
     searchParams,
     dataPages: data?.pages?.length || 0,
   });
 
-  // 필터 초기화 핸들러
+  // ========== 이벤트 핸들러들 ==========
+
+  /**
+   * 필터 초기화 핸들러
+   * 모든 필터 조건을 기본값으로 되돌림
+   */
   const handleResetFilters = () => {
-    setSelectedCategory('all');
-    setSelectedCategoryId(null);
-    setSelectedSubCategory(null);
+    setSelectedMainCategoryId(null);
+    setSelectedUiCategoryId(null);
+    setSelectedSubCategoryId(null);
     setSelectedRegions([]);
     setSelectedTheaterType([]);
     setSortBy('LATEST');
     setShowClosed(false);
   };
 
-  // 🔄 재시도 핸들러
+  /**
+   * API 재시도 핸들러
+   * 네트워크 오류나 서버 오류 시 데이터 다시 불러오기
+   */
   const handleRetry = useCallback(() => {
     console.log('🔄 [Category] 재시도 버튼 클릭');
     refetch();
   }, [refetch]);
 
-  // 🔄 무한 스크롤 핸들러
+  /**
+   * 무한스크롤 로드 더보기 핸들러
+   * 사용자가 "더보기" 버튼을 클릭하거나 자동 트리거 시 다음 페이지 로드
+   */
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       console.log('📋 [Category] 다음 페이지 로드');
@@ -159,16 +225,21 @@ export default function Category() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // 🖱️ 카드 클릭 핸들러
+  /**
+   * 펀딩 카드 클릭 핸들러
+   * 해당 펀딩의 상세 페이지로 이동
+   */
   const handleCardClick = useCallback(
     (id: number) => {
-      console.log('🎯 [Category] 펀딩 카드 클릭:', id);
       router.push(`/detail/${id}`);
     },
     [router],
   );
 
-  // ❤️ 좋아요 클릭 핸들러
+  /**
+   * 좋아요(하트) 버튼 클릭 핸들러
+   * TODO: 실제 좋아요 API 연동 필요
+   */
   const handleVoteClick = useCallback((id: number) => {
     console.log('❤️ [Category] 좋아요 버튼 클릭:', id);
     // TODO: 좋아요 토글 로직 구현
@@ -193,49 +264,266 @@ export default function Category() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  /**
+   * 바텀시트 열기 핸들러들
+   */
+  const handleOpenCategoryBottomSheet = useCallback(() => {
+    // 현재 실제 상태를 임시 상태에 복사
+    setTempSelectedMainCategoryId(selectedMainCategoryId);
+    setTempSelectedSubCategoryId(selectedSubCategoryId);
+    setActiveBottomSheet('category');
+  }, [selectedMainCategoryId, selectedSubCategoryId]);
+
+  const handleOpenRegionBottomSheet = useCallback(() => {
+    // 현재 실제 상태를 임시 상태에 복사
+    setTempSelectedRegions([...selectedRegions]);
+    setActiveBottomSheet('region');
+  }, [selectedRegions]);
+
+  const handleOpenTheaterBottomSheet = useCallback(() => {
+    // 현재 실제 상태를 임시 상태에 복사
+    setTempSelectedTheaterType([...selectedTheaterType]);
+    setActiveBottomSheet('theater');
+  }, [selectedTheaterType]);
+
+  /**
+   * 바텀시트 필터 적용 핸들러
+   * 임시 상태의 값들을 실제 상태로 반영하여 필터링 적용
+   */
+  const handleFilterApply = useCallback(() => {
+    console.log('🔄 [Category] 필터 적용');
+
+    // 현재 활성화된 바텀시트에 따라 해당 필터 적용
+    if (activeBottomSheet === 'category') {
+      setSelectedMainCategoryId(tempSelectedMainCategoryId);
+      setSelectedUiCategoryId(tempSelectedMainCategoryId);
+      setSelectedSubCategoryId(tempSelectedSubCategoryId);
+    } else if (activeBottomSheet === 'region') {
+      setSelectedRegions([...tempSelectedRegions]);
+    } else if (activeBottomSheet === 'theater') {
+      setSelectedTheaterType([...tempSelectedTheaterType]);
+    }
+  }, [activeBottomSheet, tempSelectedMainCategoryId, tempSelectedSubCategoryId, tempSelectedRegions, tempSelectedTheaterType]);
+
+  /**
+   * 카테고리 바텀시트에서 1차 카테고리 선택 핸들러 (임시 상태 사용)
+   */
+  const handleTempCategorySelect = useCallback(
+    (categoryValue: CategoryValue) => {
+      if (categoryValue === 'all') {
+        setTempSelectedMainCategoryId(null);
+        setTempSelectedSubCategoryId(null);
+      } else {
+        const category = categories.find((c) => c.value === categoryValue);
+        if (category) {
+          setTempSelectedMainCategoryId(category.categoryId || null);
+          setTempSelectedSubCategoryId(null); // 1차 카테고리 변경 시 2차는 초기화
+        }
+      }
+    },
+    [categories],
+  );
+
+  /**
+   * 카테고리 바텀시트에서 2차 카테고리 선택 핸들러 (임시 상태 사용)
+   */
+  const handleTempSubCategorySelect = useCallback((subCategoryId: number | null) => {
+    setTempSelectedSubCategoryId(subCategoryId);
+  }, []);
+
+  // ========== 모바일 버튼 표시 텍스트 계산 ==========
+
+  /**
+   * 지역 버튼에 표시할 텍스트 계산
+   * 선택된 지역이 있으면 해당 지역명, 없으면 "지역"
+   */
+  const getRegionDisplayText = () => {
+    if (selectedRegions.length === 0) return '지역';
+    // REGIONS는 문자열 배열이므로 직접 반환
+    return selectedRegions[0] || '지역';
+  };
+
+  /**
+   * 상영관 종류 버튼에 표시할 텍스트 계산
+   * 선택된 상영관 종류가 있으면 해당 종류명, 없으면 "상영관 종류"
+   */
+  const getTheaterTypeDisplayText = () => {
+    if (selectedTheaterType.length === 0) return '상영관 종류';
+    return selectedTheaterType[0];
+  };
+
+  // ========== 렌더링 ==========
   return (
-    <ListShell
-      header={
-        <CategorySelectSection
+    <>
+      {/* 메인 레이아웃: ListShell 컴포넌트 사용 (header + sidebar + content 구조) */}
+      <ListShell
+        header={
+          <>
+            {/* ========== 데스크톱 헤더 ========== */}
+            {/* 1차/2차 카테고리 모두 선택 가능한 CategorySelectSection 사용 */}
+            <div className="hidden lg:block">
+              <CategorySelectSection
+                categories={categories}
+                selectedCategory={selectedUiCategoryId === null ? 'all' : categories.find((c) => c.categoryId === selectedUiCategoryId)?.value || 'all'}
+                onCategoryChange={(categoryValue) => {
+                  if (categoryValue === 'all') {
+                    setSelectedMainCategoryId(null);
+                    setSelectedUiCategoryId(null);
+                    setSelectedSubCategoryId(null);
+                  } else {
+                    const category = categories.find((c) => c.value === categoryValue);
+                    if (category) {
+                      setSelectedMainCategoryId(category.categoryId || null);
+                      setSelectedUiCategoryId(category.categoryId || null);
+                      setSelectedSubCategoryId(category.categoryId || null);
+                    }
+                  }
+                }}
+                selectedSubCategory={selectedSubCategoryId}
+                onSubCategoryChange={setSelectedSubCategoryId}
+                variant="brand1"
+              />
+            </div>
+          </>
+        }
+        // {/* ========== 데스크톱 사이드바 ========== */
+        // {/* 모바일에서는 숨김, 데스크톱에서만 표시되는 고정 필터 패널들 */}
+        sidebar={
+          <div className="max-lg:hidden space-y-10">
+            {/* 지역 필터 패널 */}
+            <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} />
+
+            {/* 상영관 종류 필터 패널 */}
+            <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} />
+          </div>
+        }
+        // {/* ========== 메인 컨텐츠 영역 ========== */}
+        content={
+          <div className="space-y-3">
+            {/* ========== 모바일 전용 카테고리 헤더 ========== */}
+            <div className="block lg:hidden space-y-3">
+              {/* 모바일에서만 표시되는 카테고리 필터 */}
+
+              {/* 1차 카테고리 선택 버튼들 */}
+              <div className="overflow-x-auto scrollbar-hide">
+                <CategoryButtonGroup
+                  items={categories}
+                  value={
+                    activeBottomSheet === 'category'
+                      ? categories.find((cat) => cat.categoryId === tempSelectedMainCategoryId)?.value || 'all'
+                      : categories.find((cat) => cat.categoryId === selectedUiCategoryId)?.value || 'all'
+                  }
+                  onChange={(categoryValue) => {
+                    if (activeBottomSheet === 'category') {
+                      // 바텀시트가 열린 상태: 임시 상태 업데이트
+                      const selectedCategory = categories.find((cat) => cat.value === categoryValue);
+                      setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
+                      // 1차 카테고리 선택 시 서브카테고리는 항상 전체(null)로 설정
+                      setTempSelectedSubCategoryId(null);
+                    } else {
+                      // 바텀시트가 닫힌 상태: 선택된 카테고리로 바텀시트 열기
+                      const selectedCategory = categories.find((cat) => cat.value === categoryValue);
+                      setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
+                      // 1차 카테고리 선택 시 서브카테고리는 항상 전체(null)로 설정
+                      setTempSelectedSubCategoryId(null);
+                      setActiveBottomSheet('category');
+                    }
+                  }}
+                  variant="brand1"
+                  uniformHeight={true}
+                  notchColor="bg-BG-1"
+                />
+              </div>
+
+              {/* 지역, 상영관 종류 필터 버튼들 */}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleOpenRegionBottomSheet} className="flex-1 flex items-center justify-center gap-1">
+                  <span>{getRegionDisplayText()}</span>
+                  <ChevronDown size={14} />
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleOpenTheaterBottomSheet} className="flex-1 flex items-center justify-center gap-1">
+                  <span>{getTheaterTypeDisplayText()}</span>
+                  <ChevronDown size={14} />
+                </Button>
+              </div>
+            </div>
+
+            {/* 정렬 옵션 바 (최신순, 인기순, 마감임박순 + 마감된 펀딩 포함 체크박스) */}
+            <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} />
+
+            {/* 펀딩 카드 목록 (무한스크롤 지원) */}
+            <ResponsiveCardList
+              items={items} // 표시할 펀딩 아이템 배열
+              mode="funding" // 카드 모드 (funding/vote/search)
+              loading={isLoading} // 초기 로딩 상태
+              empty={!isLoading && items.length === 0} // 빈 목록 상태
+              error={!!error} // 에러 상태
+              onCardClick={handleCardClick} // 카드 클릭 시 상세 페이지 이동
+              onVoteClick={handleVoteClick} // 좋아요 버튼 클릭 핸들러
+              onResetFilters={handleResetFilters} // 필터 초기화 핸들러
+              onRetry={handleRetry} // 에러 시 재시도 핸들러
+              onLoadMore={handleLoadMore} // 무한스크롤 로드 더보기
+              hasNextPage={hasNextPage} // 다음 페이지 존재 여부
+              isFetchingNextPage={isFetchingNextPage} // 다음 페이지 로딩 중 여부
+            />
+          </div>
+        }
+      />
+
+      {/* ========== 모바일 바텀시트들 ========== */}
+
+      {/* 카테고리 선택 바텀시트 */}
+      <FilterBottomSheet
+        isOpen={activeBottomSheet === 'category'}
+        onClose={() => {
+          // 취소 시 임시 상태를 원래 상태로 되돌림
+          setTempSelectedMainCategoryId(selectedMainCategoryId);
+          setTempSelectedSubCategoryId(selectedSubCategoryId);
+          setActiveBottomSheet(null);
+        }}
+        title="카테고리 선택하기"
+        onApplyFilter={handleFilterApply}
+      >
+        <CategoryBottomSheetContent
+          selectedCategory={categories.find((cat) => cat.categoryId === tempSelectedMainCategoryId)?.value || 'all'}
+          selectedSubCategory={tempSelectedSubCategoryId}
+          onCategoryChange={handleTempCategorySelect}
+          onSubCategoryChange={handleTempSubCategorySelect}
           categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedSubCategory={selectedSubCategory}
-          onSubCategoryChange={setSelectedSubCategory}
-          variant="brand1"
         />
-      }
-      sidebar={
-        <div className="max-lg:hidden space-y-10">
-          {/* 지역 필터 */}
-          <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} />
+      </FilterBottomSheet>
 
-          {/* 상영관 타입 필터 */}
-          <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} />
-        </div>
-      }
-      content={
-        <div className="space-y-3">
-          {/* 정렬 바 */}
-          <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} />
+      {/* 지역 선택 바텀시트 */}
+      <FilterBottomSheet
+        isOpen={activeBottomSheet === 'region'}
+        onClose={() => {
+          // 취소 시 임시 상태를 원래 상태로 되돌림
+          setTempSelectedRegions(selectedRegions);
+          setActiveBottomSheet(null);
+        }}
+        title="지역 선택하기"
+        onApplyFilter={handleFilterApply}
+        onReset={() => setTempSelectedRegions([])}
+        resetDisabled={tempSelectedRegions.length === 0}
+      >
+        <RegionBottomSheetContent regions={regions} value={tempSelectedRegions} onChange={setTempSelectedRegions} />
+      </FilterBottomSheet>
 
-          {/* 카드 목록 */}
-          <ResponsiveCardList
-            items={items}
-            mode="funding"
-            loading={isLoading}
-            empty={!isLoading && items.length === 0}
-            error={!!error}
-            onCardClick={handleCardClick}
-            onVoteClick={handleVoteClick}
-            onResetFilters={handleResetFilters}
-            onRetry={handleRetry}
-            onLoadMore={handleLoadMore}
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-          />
-        </div>
-      }
-    />
+      {/* 상영관 종류 선택 바텀시트 */}
+      <FilterBottomSheet
+        isOpen={activeBottomSheet === 'theater'}
+        onClose={() => {
+          // 취소 시 임시 상태를 원래 상태로 되돌림
+          setTempSelectedTheaterType(selectedTheaterType);
+          setActiveBottomSheet(null);
+        }}
+        title="상영관 종류 선택하기"
+        onApplyFilter={handleFilterApply}
+        onReset={() => setTempSelectedTheaterType([])}
+        resetDisabled={tempSelectedTheaterType.length === 0}
+      >
+        <TheaterTypeBottomSheetContent types={theaterTypes} value={tempSelectedTheaterType} onChange={setTempSelectedTheaterType} />
+      </FilterBottomSheet>
+    </>
   );
 }

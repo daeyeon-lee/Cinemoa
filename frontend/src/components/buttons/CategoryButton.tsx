@@ -15,11 +15,26 @@ interface CategoryButtonProps {
   showNotches?: boolean;
   uniformWidth?: boolean;
   iconColor?: string; // 아이콘 색상을 직접 지정할 수 있는 prop
+  uniformHeight?: boolean;
   onClick?: () => void;
   className?: string;
+  notchColor?: string;
 }
 
-export function CategoryButton({ children, icon, selected = false, page = 'home', categoryValue, showNotches = true, uniformWidth = false, iconColor, onClick, className }: CategoryButtonProps) {
+export function CategoryButton({
+  children,
+  icon,
+  selected = false,
+  page = 'home',
+  categoryValue,
+  showNotches = true,
+  uniformWidth = false,
+  uniformHeight = false,
+  iconColor,
+  onClick,
+  className,
+  notchColor = 'bg-BG-0',
+}: CategoryButtonProps) {
   const isVotePage = page === 'vote';
 
   const baseClasses = cn(
@@ -30,6 +45,8 @@ export function CategoryButton({ children, icon, selected = false, page = 'home'
     'max-sm:flex max-sm:flex-col max-sm:px-4 max-sm:py-2.5 max-sm:gap-1',
     // 균일한 폭 설정 (스포츠중계 크기 기준)
     uniformWidth && 'w-36 max-sm:w-20',
+    // 균일한 높이 설정
+    uniformHeight && 'h-12 max-sm:h-16',
     // 기본 색상
     selected ? (isVotePage ? 'bg-[#2cd8ce] text-primary' : 'bg-[#e83045] text-primary') : 'bg-slate-700 text-primary',
     // 호버 색상
@@ -72,8 +89,8 @@ export function CategoryButton({ children, icon, selected = false, page = 'home'
       {/* 노치 */}
       {showNotches && (
         <>
-          <div className="absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 bg-BG-0 w-4 h-4 -left-2" />
-          <div className="absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 bg-BG-0 w-4 h-4 -right-2" />
+          <div className={`absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 ${notchColor} w-4 h-4 -left-2`} />
+          <div className={`absolute rounded-full pointer-events-none top-1/2 -translate-y-1/2 ${notchColor} w-4 h-4 -right-2`} />
         </>
       )}
     </div>
