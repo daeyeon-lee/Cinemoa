@@ -391,11 +391,10 @@ public class FundingService {
         }
         // 최대 10개로 제한
         if (uniqueIds.size() > 10) {
-            throw new IllegalArgumentException("최대 10개의 fundingId만 처리 가능합니다.");
+            uniqueIds = uniqueIds.subList(0, 10);
         }
 
-        List<CardTypeFundingInfoDto> fundings = fundingListRepository.findByFundingIdIn(uniqueIds, userId);
-        return fundings;
+        return fundingListRepository.findByFundingIdIn(uniqueIds, userId);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
