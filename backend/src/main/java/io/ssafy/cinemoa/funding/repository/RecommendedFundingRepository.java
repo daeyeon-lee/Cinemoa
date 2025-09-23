@@ -40,6 +40,7 @@ public class RecommendedFundingRepository {
         }
 
         // 4. 쿼리 실행
+
         return jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToCardTypeFundingInfoDto,
@@ -102,22 +103,53 @@ public class RecommendedFundingRepository {
 
         public void buildUserSpecificBaseQuery(Long userId) {
             sql.append("""
-                    SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
-                           c.cinema_id, c.cinema_name, c.city, c.district,
-                           COALESCE(fs.participant_count, 0) as participant_count,
-                           COALESCE(fs.favorite_count, 0) as favorite_count,
-                           COALESCE(fs.view_count, 0) as view_count,
-                           CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked
-                    FROM fundings f
-                    LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
-                    LEFT JOIN screens s ON f.screen_id = s.screen_id
-                    LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
-                    LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    LEFT JOIN user_categories uc ON uc.category_id = f.category_id AND uc.user_id = ?
-                    WHERE f.leader_id != ? AND f.funding_type = 'FUNDING'
-                    ORDER BY fs.recommend_score
-                    LIMIT 10
+                    WITH user_preferred AS (
+                        SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
+                               f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
+                               c.cinema_id, c.cinema_name, c.city, c.district,
+                               COALESCE(fs.participant_count, 0) as participant_count,
+                               COALESCE(fs.favorite_count, 0) as favorite_count,
+                               COALESCE(fs.view_count, 0) as view_count,
+                               CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
+                               COALESCE(fs.recommend_score, 0) as recommend_score,
+                               1 as priority
+                        FROM fundings f
+                        INNER JOIN user_categories uc ON uc.category_id = f.category_id AND uc.user_id = ?
+                        LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
+                        LEFT JOIN screens s ON f.screen_id = s.screen_id
+                        LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                        LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
+                        WHERE f.leader_id != ?
+                          AND f.state = 'ON_PROGRESS'
+                        ORDER BY fs.recommend_score DESC
+                        LIMIT 10
+                    ),
+                    fallback_fundings AS (
+                        SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
+                               f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
+                               c.cinema_id, c.cinema_name, c.city, c.district,
+                               COALESCE(fs.participant_count, 0) as participant_count,
+                               COALESCE(fs.favorite_count, 0) as favorite_count,
+                               COALESCE(fs.view_count, 0) as view_count,
+                               false as is_liked,
+                               COALESCE(fs.recommend_score, 0) as recommend_score,
+                               2 as priority
+                        FROM fundings f
+                        LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
+                        LEFT JOIN screens s ON f.screen_id = s.screen_id
+                        LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                        WHERE f.state = 'ON_PROGRESS'
+                          AND f.funding_id NOT IN (SELECT funding_id FROM user_preferred)
+                        ORDER BY fs.recommend_score DESC
+                        LIMIT 10
+                    )
+                    SELECT * FROM (
+                        SELECT * FROM user_preferred
+                        UNION ALL
+                        SELECT * FROM fallback_fundings
+                        ORDER BY priority, recommend_score DESC
+                        LIMIT 10
+                    ) AS final_result
                     """);
             // userId를 파라미터로 추가 (좋아요 조회용, 생성자 제외용)
             params.add(userId);
@@ -128,19 +160,19 @@ public class RecommendedFundingRepository {
         public void buildBaseQuery() {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
-                           c.cinema_id, c.cinema_name, c.city, c.district,
-                           COALESCE(fs.participant_count, 0) as participant_count,
-                           COALESCE(fs.favorite_count, 0) as favorite_count,
-                           COALESCE(fs.view_count, 0) as view_count,
-                           false as is_liked
-                    FROM fundings f
-                    LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
-                    LEFT JOIN screens s ON f.screen_id = s.screen_id
-                    LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
-                    WHERE f.funding_type = 'FUNDING'
-                    ORDER BY fs.recommend_score
-                    LIMIT 10
+                               f.funding_type, f.max_people, f.category_id, f.video_name, s.price,
+                               c.cinema_id, c.cinema_name, c.city, c.district,
+                               COALESCE(fs.participant_count, 0) as participant_count,
+                               COALESCE(fs.favorite_count, 0) as favorite_count,
+                               COALESCE(fs.view_count, 0) as view_count,
+                               false as is_liked
+                        FROM fundings f
+                        LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
+                        LEFT JOIN screens s ON f.screen_id = s.screen_id
+                        LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                        WHERE f.state = 'ON_PROGRESS'
+                        ORDER BY COALESCE(fs.recommend_score, 0) DESC
+                        LIMIT 10
                     """);
         }
 
