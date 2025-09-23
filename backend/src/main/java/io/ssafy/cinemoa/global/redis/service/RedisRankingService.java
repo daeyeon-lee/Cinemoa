@@ -65,7 +65,21 @@ public class RedisRankingService {
      */
     public void decrementLikeBucket(Long fundingId) {
         String bucketKey = getCurrentBucketKey(FUNDING_LIKES_BUCKET_PREFIX);
-        redisTemplate.opsForHash().increment(bucketKey, fundingId.toString(), -1);
+        String fundingIdStr = fundingId.toString();
+
+        // 해당 fundingId가 버킷에 존재하는지 확인
+        if (redisTemplate.opsForHash().hasKey(bucketKey, fundingIdStr)) {
+            Long currentCount = (Long) redisTemplate.opsForHash().get(bucketKey, fundingIdStr);
+
+            // 현재 카운트가 0보다 큰 경우에만 감소
+            if (currentCount != null && currentCount > 0) {
+                redisTemplate.opsForHash().increment(bucketKey, fundingIdStr, -1);
+            } else {
+                // 카운트가 0이면 해당 키 삭제
+                redisTemplate.opsForHash().delete(bucketKey, fundingIdStr);
+            }
+        }
+
         redisTemplate.expire(bucketKey, Duration.ofHours(25)); // 24시간 + 1시간 여유분
     }
 

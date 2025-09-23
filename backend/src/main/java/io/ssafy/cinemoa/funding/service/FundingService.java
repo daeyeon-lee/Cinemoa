@@ -383,7 +383,7 @@ public class FundingService {
                 .cinema(cinemaInfo)
                 .build();
 
-        updateViewCount(fundingId);
+        updateViewCount(fundingId, funding.getFundingType());
 
         eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
         return response;
@@ -410,16 +410,19 @@ public class FundingService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void updateViewCount(Long fundingId) {
+    protected void updateViewCount(Long fundingId, FundingType fundingType) {
         // DB 전체 조회수 증가
         statRepository.incrementViewCount(fundingId);
 
-        // Redis 버킷에 조회수 카운트 증가
-        try {
-            redisRankingService.incrementViewBucket(fundingId);
-            log.debug("Redis 버킷 조회수 증가: fundingId={}", fundingId);
-        } catch (Exception e) {
-            log.warn("Redis 버킷 조회수 업데이트 실패: fundingId={}, error={}", fundingId, e.getMessage());
+        // FUNDING 타입인 경우에만 -> Redis 버킷에 조회수 카운트 증가
+        if (fundingType == FundingType.FUNDING) {
+            try {
+                redisRankingService.incrementViewBucket(fundingId);
+                log.debug("Redis 버킷 조회수 증가: fundingId={}, fundingType={}", fundingId, fundingType);
+            } catch (Exception e) {
+                log.warn("Redis 버킷 조회수 업데이트 실패: fundingId={}, fundingType={}, error={}",
+                        fundingId, fundingType, e.getMessage());
+            }
         }
     }
 
@@ -467,7 +470,6 @@ public class FundingService {
     public List<AnimateTask> getAnimatedRequired() {
         return fundingRepository.findAnimateRequired();
     }
-
 
     @EventListener(AnimateDoneEvent.class)
     @Transactional(propagation = Propagation.REQUIRES_NEW)

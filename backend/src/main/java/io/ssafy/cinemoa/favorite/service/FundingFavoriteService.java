@@ -4,6 +4,7 @@ import io.ssafy.cinemoa.favorite.exception.FavoriteException;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.favorite.repository.entity.UserFavorite;
 import io.ssafy.cinemoa.favorite.repository.entity.UserFavoriteId;
+import io.ssafy.cinemoa.funding.enums.FundingType;
 import io.ssafy.cinemoa.funding.event.FundingScoreUpdateEvent;
 import io.ssafy.cinemoa.funding.repository.FundingRepository;
 import io.ssafy.cinemoa.funding.repository.FundingStatRepository;
@@ -60,12 +61,15 @@ public class FundingFavoriteService {
 
         statRepository.incrementFavoriteCount(fundingId);
 
-        // Redis 버킷에 좋아요 카운트 증가
-        try {
-            redisRankingService.incrementLikeBucket(fundingId);
-            log.debug("Redis 버킷 좋아요 증가: fundingId={}", fundingId);
-        } catch (Exception e) {
-            log.warn("Redis 버킷 좋아요 업데이트 실패: fundingId={}, error={}", fundingId, e.getMessage());
+        // FUNDING 타입인 경우에만 Redis 버킷에 좋아요 카운트 증가
+        if (funding.getFundingType() == FundingType.FUNDING) {
+            try {
+                redisRankingService.incrementLikeBucket(fundingId);
+                log.debug("Redis 버킷 좋아요 증가: fundingId={}, fundingType={}", fundingId, funding.getFundingType());
+            } catch (Exception e) {
+                log.warn("Redis 버킷 좋아요 업데이트 실패: fundingId={}, fundingType={}, error={}",
+                        fundingId, funding.getFundingType(), e.getMessage());
+            }
         }
 
         eventPublisher.publishEvent(new FundingScoreUpdateEvent(fundingId));
