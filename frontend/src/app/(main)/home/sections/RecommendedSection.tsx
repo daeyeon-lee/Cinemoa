@@ -35,27 +35,29 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
         <h2 className="text-h5-b">{title}</h2>
       </div>
 
-      {/* Desktop: 카드를 절반씩 나누어 세로로 쌓기 - 동시 스크롤 */}
+      {/* Desktop: 위줄부터 차례대로 채워지고, 4개일 경우 2번째 줄은 표시하지 않음 */}
       <div className="hidden md:block">
         <HorizontalScroller>
           <div className="flex flex-col gap-8">
-            {/* 첫 번째 그룹 (절반) */}
+            {/* 첫 번째 줄 (위줄부터 차례대로, 최대 4개) */}
             <div className="flex gap-2">
-              {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
+              {items.slice(0, Math.min(4, items.length)).map((item, index) => (
                 <div key={item.funding.fundingId || index} className="w-[172px]">
                   <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}
             </div>
 
-            {/* 두 번째 그룹 (나머지 절반) */}
-            <div className="flex gap-2">
-              {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
-                <div key={item.funding.fundingId || index} className="w-[172px]">
-                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
-                </div>
-              ))}
-            </div>
+            {/* 두 번째 줄 (5개 이상일 때만 표시) */}
+            {items.length > 4 && (
+              <div className="flex gap-2">
+                {items.slice(4).map((item, index) => (
+                  <div key={item.funding.fundingId || index} className="w-[172px]">
+                    <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </HorizontalScroller>
       </div>

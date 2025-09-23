@@ -36,6 +36,9 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
     return null;
   }
 
+  // recentViewStore에서 이미 최근 방문 순서대로 정렬되어 있으므로 그대로 사용
+  // recentViewIds: [32, 29, 52, 19] → 리스트: 32 → 29 → 52 → 19 순으로 표시 (맨 앞이 최신)
+
   return (
     <div>
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
@@ -48,7 +51,7 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
         )}
       </div>
 
-      {/* 카드 그리드: 모든 세로 카드를 가로 스크롤로 배치 */}
+      {/* 카드 그리드: 모든 세로 카드를 가로 스크롤로 배치 (리스트에 들어온 순서대로) */}
       <HorizontalScroller className="w-full">
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">

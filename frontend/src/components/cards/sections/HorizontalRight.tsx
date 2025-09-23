@@ -95,8 +95,8 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
             {/* 진행률, 현재인원/목표인원 */}
             <div className="inline-flex justify-start items-center gap-1">
-              <div className="text-Brand1-Primary text-p3-b leading-none">{data.funding.progressRate} %</div>
-              <div className="text-slate-400 text-caption2 leading-3">
+              <div className="text-Brand1-Strong text-p3-b leading-none">{data.funding.progressRate} %</div>
+              <div className="text-secondary text-caption2 leading-3">
                 {data.funding.participantCount} / {data.funding.maxPeople}
               </div>
             </div>
