@@ -177,12 +177,11 @@ public class ParticipatedFundingRepository {
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    INNER JOIN user_transactions t ON t.funding_id = f.funding_id AND t.user_id = ? AND t.state = 'SUCCESS'
-                    WHERE f.leader_id != ? AND f.funding_type = 'FUNDING'
+                    INNER JOIN user_transactions t ON t.funding_id = f.funding_id AND t.user_id = ? AND t.state IN ('SUCCESS', 'REFUNDED')
+                    WHERE f.funding_type = 'FUNDING'
                     """);
 
-            // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용, 생성자 제외용)
-            params.add(userId);
+            // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용)
             params.add(userId);
             params.add(userId);
 
