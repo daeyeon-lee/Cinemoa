@@ -6,7 +6,7 @@ import { VoteInfo } from './blocks/VoteInfo';
 import { FundingInfo } from './blocks/FundingInfo';
 import { HeartIcon } from '@/component/icon/heartIcon';
 import { ApiSearchItem, FundingType, FundingState } from '@/types/searchApi';
-import { addFundingLike, deleteFundingLike } from '@/api/fundingActions';
+import { addFundingLike, deleteFundingLike } from '@/api/likes';
 import { useAuthStore } from '@/stores/authStore';
 
 type CineCardProps = {

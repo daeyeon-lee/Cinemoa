@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';                  // 버튼 컴포넌트
-import { Skeleton } from '@/components/ui/skeleton';              // 로딩 스켈레톤
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';   // 모달 컴포넌트
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';   // 결제 모달용
 import Payment from '@/app/(main)/payment/Payment';               // 결제 모달 내용
+import RefundConfirm from '@/app/(main)/refund/RefundConfirm';    // 환불 확인 모달
 import { HeartIcon } from '@/component/icon/heartIcon';           // 하트 아이콘
 import { ShareButton } from '@/components/share/ShareButton';      // 공유 버튼 컴포넌트
-import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요 토글)
+import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요)
 import { useAuthStore } from '@/stores/authStore';                // 로그인 사용자 상태
 import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingDetailContext';
 
@@ -24,6 +24,10 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
 
   // ✅ context → store 순으로 fallback
   const userId = contextUserId || storeUserId;
+
+  // Dialog 상태 관리
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
@@ -94,41 +98,64 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({
           {currentLikeCount}                                       {/* 좋아요 수 */}
         </Button>
 
-        {/* 🎟️ 참여하기 버튼 → 결제 모달 오픈 */}
-        <Dialog>
-          <DialogTrigger asChild>
+        {/* 조건부 버튼: 참여하기(결제) 또는 참여취소(환불) */}
+        {!isParticipated ? (
+          // 참여하지 않은 경우: 결제 모달
+          <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="brand1"
+                size="lg"
+                textSize="lg"
+                className="w-full"
+              >
+                참여하기
+              </Button>
+            </DialogTrigger>
+            <Payment
+              fundingId={fundingId}
+              userId={userId}
+              amount={price}
+              title={contextData.funding.title}
+              videoName={contextData.screening.videoName}
+              fundingEndsOn={contextData.funding.fundingEndsOn}
+              screenStartsOn={contextData.screening.screenStartsOn}
+              screenEndsOn={contextData.screening.screenEndsOn}
+              cinemaName={contextData.cinema.cinemaName}
+              screenName={contextData.screen?.screenName}
+              screenFeatures={{
+                isDolby: contextData.screen?.isDolby,
+                isImax: contextData.screen?.isImax,
+                isScreenx: contextData.screen?.isScreenx,
+                is4dx: contextData.screen?.is4dx,
+                isRecliner: contextData.screen?.isRecliner,
+              }}
+              onClose={() => setPaymentDialogOpen(false)}
+            />
+          </Dialog>
+        ) : (
+          // 이미 참여한 경우: 환불 확인 모달
+          <>
             <Button
-              variant="brand1"                                     // 브랜드 강조 색
+              variant="secondary"
               size="lg"
               textSize="lg"
-              className="w-full"                                   // 남은 영역 가득
-              disabled={isParticipated}                            // 이미 참여했다면 비활성화
+              className="w-full"
+              onClick={() => setRefundDialogOpen(true)}
             >
-              {isParticipated ? '참여완료' : '참여하기'}
+              참여 취소하기
             </Button>
-          </DialogTrigger>
-
-          {/* 결제 모달: Context에서 데이터 가져오기 */}
-          <Payment
-            fundingId={fundingId}                                  // 결제 대상 펀딩
-            userId={userId}                                        // 로그인 사용자 (없으면 결제 진행 불가 처리 필요)
-            amount={price}                                         // 결제 금액
-            title={contextData.funding.title}                      // 펀딩 제목
-            videoName={contextData.screening.videoName}            // 영화 제목
-            fundingEndsOn={contextData.funding.fundingEndsOn}      // 펀딩 종료일
-            screenStartsOn={contextData.screening.screenStartsOn}  // 상영 시작 시간
-            screenEndsOn={contextData.screening.screenEndsOn}      // 상영 종료 시간
-            cinemaName={contextData.cinema.cinemaName}             // 영화관명
-            screenName={contextData.screen?.screenName}            // 상영관명
-            screenFeatures={{
-              isDolby: contextData.screen?.isDolby,
-              isImax: contextData.screen?.isImax,
-              isScreenx: contextData.screen?.isScreenx,
-              is4dx: contextData.screen?.is4dx,
-              isRecliner: contextData.screen?.isRecliner,
-            }}
-          />
-        </Dialog>
+            {refundDialogOpen && (
+              <RefundConfirm
+                fundingId={fundingId}
+                userId={userId}
+                amount={price}
+                title={contextData.funding.title}
+                onClose={() => setRefundDialogOpen(false)}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

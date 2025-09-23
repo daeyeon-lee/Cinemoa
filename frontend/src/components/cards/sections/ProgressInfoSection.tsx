@@ -5,7 +5,7 @@ import { useFundingDetail } from '@/contexts/FundingDetailContext';
 
 
 const ProgressInfoSection = () => {
-  // Context에서 데이터 가져오기
+  // Context에서 데이터 가져오기 (결제/환불 후 새로고침으로 항상 최신 상태)
   const { data } = useFundingDetail();
   const { funding, stat } = data;
   

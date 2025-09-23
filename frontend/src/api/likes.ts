@@ -1,7 +1,7 @@
 /**
  * 펀딩 액션 관련 API
  * 
- * 좋아요 추가/취소, 참여하기 등 상호작용 API만 담당합니다.
+ * 좋아요 추가/취소
  */
 
 import type { ApiResponse } from '@/types/fundingDetail';
@@ -101,27 +101,3 @@ export const deleteFundingLike = async (
   }
 };
 
-// 펀딩 참여하기 API (필요시 사용)
-export const participateInFunding = async (fundingId: number, userId: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}funding/${fundingId}/participate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`참여하기 실패: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    console.log('[펀딩 참여 성공]:', fundingId);
-    
-    return result;
-  } catch (error) {
-    console.error('[펀딩 참여 에러]:', error);
-    throw error;
-  }
-};

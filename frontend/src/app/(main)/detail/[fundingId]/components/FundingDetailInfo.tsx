@@ -39,12 +39,12 @@ export default function FundingDetailInfo() {
       ? `${formatTime(screening.screenStartsOn)} ~ ${formatTime(screening.screenEndsOn)}`
       : "-";
 
-  // ✅ 영화관 이름 및 어드레스(간단 합성)
-  const cinemaName = cinema ? cinema.cinemaName : "-";
-  const cinemaAddr =
-    cinema && cinema.city && cinema.district
-      ? `${cinema.city} ${cinema.district}`
-      : "-";
+  // // ✅ 영화관 이름 및 어드레스(간단 합성)
+  // const cinemaName = cinema ? cinema.cinemaName : "-";
+  // const cinemaAddr =
+  //   cinema && cinema.city && cinema.district
+  //     ? `${cinema.city} ${cinema.district}`
+  //     : "-";
 
   return (
     <section className="px-4">
@@ -145,7 +145,7 @@ export default function FundingDetailInfo() {
             <CardContent>
               {/* 상단: 영화관명 / 상영관 특성 */}
               <div className="flex items-baseline gap-4 mb-4">
-                <p className="p1-b text-primary">{cinemaName}</p>
+                <p className="p1-b text-primary">{cinema.cinemaName}</p>
                 <p className="p1-b text-seconday p2">
                   {/* 예: 2관 | Dolby Atmos 등. screen 특징 조합 */}
                   {screen?.screenName ? `${screen.screenName}` : ""}
@@ -184,15 +184,15 @@ export default function FundingDetailInfo() {
                   <div className="flex items-center gap-4">
                     <LocationIcon />
                     <div>
-                      <p className="p2 text-ter티ary">영화관 주소</p>
-                      <p className="p1 text-primary">{cinemaAddr}</p>
+                      <p className="p2 text-tertiary">영화관 주소</p>
+                      <p className="p1 text-primary">{cinema.address}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* 카카오맵: 영화관명 기준 검색 */}
                 <div className="rounded-[6px] overflow-hidden">
-                  <KakaoMap width="100%" height="300px" location={cinemaName} />
+                  <KakaoMap width="100%" height="300px" location={cinema.cinemaName} />
                 </div>
               </div>
             </CardContent>
