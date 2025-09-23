@@ -48,7 +48,7 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <p className="text-gray-500">데이터를 불러오는 중...</p>
+        <p className="p1-b text-secondary">데이터를 불러오는 중...</p>
       </div>
     );
   }
@@ -56,10 +56,10 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
   // 에러 상태
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <p className="text-red-500">데이터를 불러오는 중 오류가 발생했습니다.</p>
-        <p className="text-sm text-gray-500">{error.message}</p>
-        <button onClick={() => refetch()} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-2">
+        <p className="p1-b text-Brand1-Primary">데이터를 불러오는 중 오류가 발생했습니다.</p>
+        <p className="p1- text-secondary">{error.message}</p>
+        <button onClick={() => refetch()} className="px-4 py-2 bg-Brand1-Primary text-white rounded hover:bg-Brand1-Secondary">
           다시 시도
         </button>
       </div>
@@ -70,7 +70,7 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
   if (!detailData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">데이터를 찾을 수 없습니다.</p>
+        <p className="p1-b text-secondary">데이터를 찾을 수 없습니다.</p>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
   // 알 수 없는 타입
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px]">
-      <p className="text-gray-500">알 수 없는 데이터 타입입니다.</p>
+      <p className="p1-b text-secondary">알 수 없는 데이터 타입입니다.</p>
       <p className="text-sm text-gray-400">Type: {(detailData as DetailData)?.type || 'undefined'}</p>
     </div>
   );
