@@ -42,7 +42,7 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
   return (
     <div>
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 ">
         <h2 className="text-h5-b">{title}</h2>
         {onMoreClick && (
           <button onClick={onMoreClick} className="text-p3 text-secondary hover:text-slate-400 transition-colors">
@@ -54,7 +54,7 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
       {/* 카드 그리드: 모든 세로 카드를 가로 스크롤로 배치 (리스트에 들어온 순서대로) */}
       <HorizontalScroller className="w-full">
         {items.map((item, index) => (
-          <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
+          <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0 h-[400px]">
             <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
           </div>
         ))}

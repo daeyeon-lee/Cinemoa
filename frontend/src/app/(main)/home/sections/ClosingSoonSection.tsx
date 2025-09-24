@@ -47,7 +47,7 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
       {/* 가로 스크롤 - 화살표 버튼 포함 */}
       <HorizontalScroller>
         {items.map((item, index) => (
-          <div key={item.funding.fundingId || index} className="w-[172px]">
+          <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
             <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
           </div>
         ))}

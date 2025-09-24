@@ -83,21 +83,21 @@ export default function MyPage() {
   const getStateBadgeInfo = (state: string, fundingType: 'FUNDING' | 'VOTE') => {
     switch (state) {
       case 'SUCCESS':
-        return { text: '성공', className: 'bg-emerald-400 text-slate-900' };
+        return { text: '성공', className: 'bg-emerald-500 text-inverse' };
       case 'EVALUATING':
-        return { text: '심사중', className: 'bg-amber-300 text-slate-900' };
+        return { text: '심사중', className: 'bg-amber-300 text-inverse' }; // 현재 없음
       case 'REJECTED':
-        return { text: '반려됨', className: 'bg-red-500 text-white' };
+        return { text: '반려됨', className: 'bg-Brand1-Strong text-primary' };
       case 'WAITING':
-        return { text: '대기중', className: 'bg-amber-300 text-slate-900' };
+        return { text: '대기중', className: 'bg-amber-300 text-inverse' }; // 현재 없음
       case 'ON_PROGRESS':
-        return { text: fundingType === 'FUNDING' ? '진행중' : '진행중', className: 'bg-cyan-400 text-slate-900' };
+        return { text: fundingType === 'FUNDING' ? '진행중' : '진행중', className: 'bg-Brand2-Strong text-inverse' };
       case 'FAILED':
-        return { text: '실패', className: 'bg-red-500 text-white' };
+        return { text: '실패', className: 'bg-Brand1-Strong text-primary' };
       case 'VOTING':
-        return { text: '진행중', className: 'bg-cyan-400 text-slate-900' };
+        return { text: '진행중', className: 'bg-Brand2-Strong text-inverse' };
       default:
-        return { text: '알 수 없음', className: 'bg-slate-500 text-white' };
+        return { text: '알 수 없음', className: 'bg-Brand1-Strong text-primary' }; // 현재 없음
     }
   };
 
@@ -402,21 +402,30 @@ export default function MyPage() {
             <div className="flex justify-start items-center gap-6">
               <Avatar src={userInfo?.profileImgUrl} size={72} />
               <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
-                <div className="text-primary h3-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}님, 안녕하세요`}</div>
-                <div className="h-8 flex justify-start items-center gap-[14px]">
+                <div className="text-primary h3-b">
+                  {isLoading ? (
+                    '로딩 중...'
+                  ) : (
+                    <>
+                      <span className="text-primary">안녕하세요, </span>
+                      <span className="text-Brand2-Strong">{userInfo?.nickname || '사용자'}님</span>
+                    </>
+                  )}
+                </div>
+                <div className="h-8 flex justify-start items-center gap-2 sm:gap-[14px]">
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
-                    onClick={() => setIsRefundAccountModalOpen(true)}
+                    className="flex-1 sm:w-[120px] px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600"
+                    onClick={() => alert('서비스 준비중입니다')}
                   >
                     환불 계좌 수정
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
-                    onClick={() => setIsCardModalOpen(true)}
+                    className="flex-1 sm:w-[120px] px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600"
+                    onClick={() => alert('서비스 준비중입니다')}
                   >
                     결제 카드 등록
                   </Button>
@@ -424,41 +433,27 @@ export default function MyPage() {
               </div>
             </div>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="w-28 px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
-            onClick={() => setIsEditProfileModalOpen(true)}
-          >
+          <Button variant="secondary" size="sm" className="w-28 px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
             프로필 수정
           </Button>
         </div>
 
-        {/* 모바일: 두 줄 레이아웃 */}
-        <div className="w-full sm:hidden flex justify-start items-center gap-5">
-          <Avatar src={userInfo?.profileImgUrl} size={72} />
-          <div className="flex flex-col flex-1 justify-start items-start gap-2">
-            <div className="w-full flex justify-between items-center">
-              <div className="text-primary h3-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}</div>
-            </div>
-            <div className="w-64 h-8 flex justify-between items-center">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
-                onClick={() => setIsRefundAccountModalOpen(true)}
-              >
-                환불 계좌 수정
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-[120px] px-3 py-1.5 bg-slate-700 text-slate-300 text-sm font-normal rounded-md hover:bg-slate-600"
-                onClick={() => setIsCardModalOpen(true)}
-              >
-                결제 카드 등록
-              </Button>
-            </div>
+        {/* 모바일: 세로 레이아웃 */}
+        <div className="w-full sm:hidden flex flex-col items-start gap-4">
+          <div className="flex items-center gap-4">
+            <Avatar src={userInfo?.profileImgUrl} size={52} />
+            <div className="text-primary h5-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}</div>
+          </div>
+          <div className="w-full flex flex-col gap-2">
+            <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
+              프로필 수정
+            </Button>
+            <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
+              환불 계좌 수정
+            </Button>
+            <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
+              결제 카드 등록
+            </Button>
           </div>
         </div>
       </div>
@@ -506,7 +501,7 @@ export default function MyPage() {
           {/* 상영회 카드 */}
           <div className="self-stretch inline-flex justify-start items-center gap-2">
             {myProposals.length === 0 ? (
-              <div className="w-full flex justify-center items-center">
+              <div className="w-full flex justify-center items-center pt-12">
                 <div className="flex flex-col justify-center items-center gap-4">
                   <div className="text-center">
                     <div className="p1-b text-secondary mb-2">내가 제안한 상영회가 없습니다</div>

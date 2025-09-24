@@ -130,11 +130,11 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
             {/* 상태 태그 오버레이 */}
             {showStateTag &&
               (() => {
-                const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '진행중', className: 'bg-amber-300 text-slate-900' };
+                const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '대기중', className: 'bg-amber-300 text-secondary' };
 
                 return (
                   <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] rounded-md ${badgeInfo.className}`}>
-                    <div className="text-[10px] font-medium leading-3">{badgeInfo.text}</div>
+                    <div className="p3-b">{badgeInfo.text}</div>
                   </div>
                 );
               })()}
