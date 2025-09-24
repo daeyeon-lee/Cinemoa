@@ -59,11 +59,21 @@ export function useFundingLike() {
     // Optimistic Update - 즉시 UI 반영
     onMutate: async ({ fundingId, userId, isLiked }) => {
       console.log('🟡 onMutate 실행 - 낙관적 업데이트 시작');
+      
+      // 상세 페이지 캐시 취소
       await queryClient.cancelQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
+      
+      // 목록 페이지 캐시들도 취소 (홈, 카테고리, 검색 등)
+      await queryClient.cancelQueries({ queryKey: ['home'] });
+      await queryClient.cancelQueries({ queryKey: ['category'] });
+      await queryClient.cancelQueries({ queryKey: ['search'] });
+      await queryClient.cancelQueries({ queryKey: ['SEARCH'] });
+      await queryClient.cancelQueries({ queryKey: ['recentlyViewed'] });
 
       const previousDetailData = queryClient.getQueryData(['DETAIL', fundingId.toString(), userId]);
-      console.log('👉 기존 캐시:', previousDetailData);
+      console.log('👉 기존 상세 캐시:', previousDetailData);
       
+      // 상세 페이지 캐시 업데이트
       queryClient.setQueryData(
         ['DETAIL', fundingId.toString(), userId],
         (old: ApiResponse<DetailData> | undefined) => {
@@ -90,6 +100,68 @@ export function useFundingLike() {
         }
       );
 
+      // 목록 페이지 캐시들도 업데이트
+      const updateListCache = (queryKey: string[]) => {
+        queryClient.setQueryData(queryKey, (old: any) => {
+          if (!old || !old.data || !old.data.content) return old;
+          
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              content: old.data.content.map((item: any) => {
+                if (item.funding.fundingId === fundingId) {
+                  return {
+                    ...item,
+                    funding: {
+                      ...item.funding,
+                      isLiked: !isLiked,
+                      favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
+                    }
+                  };
+                }
+                return item;
+              })
+            }
+          };
+        });
+      };
+
+      // 모든 목록 캐시 업데이트
+      updateListCache(['home', 'recommended']);
+      updateListCache(['home', 'popular']);
+      updateListCache(['home', 'closingSoon']);
+      updateListCache(['home', 'recentlyViewed']);
+      updateListCache(['category']);
+      updateListCache(['search']);
+      
+      // 최근 본 상영회 캐시 업데이트 (동적 쿼리 키 처리)
+      const recentlyViewedQueries = queryClient.getQueriesData({ queryKey: ['recentlyViewed'] });
+      recentlyViewedQueries.forEach(([queryKey, data]) => {
+        if (data && typeof data === 'object' && 'data' in data) {
+          const typedData = data as any;
+          if (typedData.data && Array.isArray(typedData.data)) {
+            const updatedData = {
+              ...typedData,
+              data: typedData.data.map((item: any) => {
+                if (item.funding.fundingId === fundingId) {
+                  return {
+                    ...item,
+                    funding: {
+                      ...item.funding,
+                      isLiked: !isLiked,
+                      favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
+                    }
+                  };
+                }
+                return item;
+              })
+            };
+            queryClient.setQueryData(queryKey, updatedData);
+          }
+        }
+      });
+
       return { previousDetailData };
     },
 
@@ -103,7 +175,15 @@ export function useFundingLike() {
 
     onSettled: (data, error, { fundingId, userId }) => {
       console.log('⚪ onSettled 실행 - 서버 데이터 동기화');
+      // 상세 페이지 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
+      
+      // 목록 페이지 캐시들도 무효화하여 서버 데이터와 동기화
+      queryClient.invalidateQueries({ queryKey: ['home'] });
+      queryClient.invalidateQueries({ queryKey: ['category'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+      queryClient.invalidateQueries({ queryKey: ['SEARCH'] });
+      queryClient.invalidateQueries({ queryKey: ['recentlyViewed'] });
     },
 
     onSuccess: (data, { fundingId }) => {
