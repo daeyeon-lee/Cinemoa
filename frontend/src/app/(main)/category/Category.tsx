@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
 // ui
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
@@ -25,7 +24,6 @@ import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 //api 관련
 import { useAuthStore } from '@/stores/authStore';
 import { useSearch } from '@/hooks/queries/useSearch';
-import { useFundingLike } from '@/hooks/queries/useFunding'; // ✅ 동일 훅 import
 import type { SearchParams, SortBy } from '@/types/searchApi';
 /**
  * 둘러보기 페이지 컴포넌트
@@ -44,7 +42,6 @@ export default function Category() {
   // console.log('🎯 [Category] 컴포넌트 렌더링');
   const router = useRouter();
   const { user } = useAuthStore();
-  const queryClient = useQueryClient(); // ✅ React Query 클라이언트 접근
 
   // ========== 필터 상태 관리 ==========
   // 카테고리 관련 상태들 (3개의 상태로 분리하여 정확한 추적)
@@ -180,7 +177,6 @@ export default function Category() {
   // ========== 데이터 조회 및 무한스크롤 ==========
   // useSearch 훅을 통한 API 데이터 조회 (React Query 기반 무한스크롤)
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
-  const { mutate: toggleLike } = useFundingLike(); // ✅ 좋아요 토글 훅
 
   // API에서 받아온 모든 페이지의 아이템들을 평탄화한 배열
   const items = data?.content || [];
@@ -242,58 +238,12 @@ export default function Category() {
 
   /**
    * 좋아요(하트) 버튼 클릭 핸들러
+   * TODO: 실제 좋아요 API 연동 필요
    */
-  const handleVoteClick = useCallback(
-    (fundingId: number) => {
-      if (!user?.userId) {
-        // 비로그인 처리 (로그인 유도 등)
-        console.log('🔐 로그인 필요');
-        return;
-      }
-
-      // 1) 현재 목록 캐시들에서 해당 카드의 isLiked를 찾아냄
-      const queries = queryClient.getQueriesData({ queryKey: ['search'] });
-      let currentIsLiked: boolean | null = null;
-
-      for (const [, data] of queries) {
-        if (!data) continue;
-
-        // 무한 스크롤 or 단일 페이지 대응
-        const pages = Array.isArray((data as any)?.pages) ? (data as any).pages : [data];
-
-        for (const page of pages) {
-          const content = page?.data?.content ?? page?.content;
-          if (!Array.isArray(content)) continue;
-
-          for (const item of content) {
-            const id = Number(item?.funding?.fundingId ?? item?.fundingId);
-            if (id === fundingId) {
-              // ✅ 카드에서 표시하는 필드를 그대로 사용하세요
-              // (프로젝트에 따라 item.funding.stat.isLiked 인 곳도 있음)
-              currentIsLiked =
-                (item?.funding?.isLiked ?? item?.funding?.stat?.isLiked) === true;
-              break;
-            }
-          }
-          if (currentIsLiked !== null) break;
-        }
-        if (currentIsLiked !== null) break;
-      }
-
-      // 2) 못 찾았으면 보수적으로 false로 간주 (또는 상세 캐시 확인)
-      const safeIsLiked = currentIsLiked ?? false;
-
-      console.log('❤️ [Category] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
-
-      // 3) 토글 실행 (공통 훅: 목록/상세 모두 같은 낙관적 업데이트 로직 공유)
-      toggleLike({
-        fundingId,
-        userId: String(user.userId),
-        isLiked: safeIsLiked,
-      });
-    },
-    [user?.userId, queryClient, toggleLike]
-  );
+  const handleVoteClick = useCallback((id: number) => {
+    console.log('❤️ [Category] 좋아요 버튼 클릭:', id);
+    // TODO: 좋아요 토글 로직 구현
+  }, []);
 
   // 무한 스크롤 처리
   const handleScroll = useCallback(() => {
@@ -313,36 +263,6 @@ export default function Category() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
-
-  // ✅ bfcache 복원 시 목록/홈 강제 갱신
-  useEffect(() => {
-    // pageshow: 뒤로가기 복원(bfcache)까지 포착하는 이벤트
-    const handlePageShow = (e: PageTransitionEvent) => {
-      // e.persisted === true 이면 bfcache에서 복원된 것
-      if (e.persisted) {
-        console.log('🔄 [Category] bfcache 복원 감지 - 쿼리 무효화');
-        // 🔄 검색/홈 쿼리 무효화 → refetch 트리거
-        queryClient.invalidateQueries({ queryKey: ['search'] }); // 'search' 키 전체
-        queryClient.invalidateQueries({ queryKey: ['home'] });   // 홈 섹션도 쓰면 같이
-      }
-    };
-
-    // 탭 비활성 → 활성 전환 시도도 안전망으로 갱신
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('👁️ [Category] 탭 활성화 감지 - 쿼리 무효화');
-        queryClient.invalidateQueries({ queryKey: ['search'] });
-      }
-    };
-
-    window.addEventListener('pageshow', handlePageShow);
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      window.removeEventListener('pageshow', handlePageShow);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [queryClient]);
 
   /**
    * 바텀시트 열기 핸들러들

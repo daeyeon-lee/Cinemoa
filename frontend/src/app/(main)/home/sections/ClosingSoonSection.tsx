@@ -15,6 +15,7 @@ interface ClosingSoonSectionProps {
   /** 섹션 제목 */
   title: string;
   /** 표시할 카드 아이템 목록 */
+  /** 표시할 카드 아이템 목록 */
   items: ApiSearchItem[];
   /** 로딩 상태 여부 */
   loading?: boolean;
@@ -22,8 +23,6 @@ interface ClosingSoonSectionProps {
   onMoreClick?: () => void;
   /** 카드 클릭 핸들러 */
   onCardClick?: (fundingId: number) => void;
-  /** 좋아요 버튼 클릭 핸들러 */
-  onVoteClick?: (fundingId: number) => void;
 }
 
 /**
@@ -31,7 +30,7 @@ interface ClosingSoonSectionProps {
  * 모든 세로 카드를 가로 스크롤 가능한 형태로 배치
  * 모든 세로 카드를 가로 스크롤 가능한 형태로 배치
  */
-export function ClosingSoonSection({ title, items, loading = false, onMoreClick, onCardClick, onVoteClick }: ClosingSoonSectionProps) {
+export function ClosingSoonSection({ title, items, loading = false, onMoreClick, onCardClick }: ClosingSoonSectionProps) {
   return (
     <div>
       {/* 섹션 헤더: 제목과 더보기 버튼 */}
@@ -49,7 +48,7 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
       <HorizontalScroller>
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
-                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
           </div>
         ))}
       </HorizontalScroller>
