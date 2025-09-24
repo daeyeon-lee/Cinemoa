@@ -10,7 +10,6 @@ import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 // 웹
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
-import { CategoryButtonGroup } from '@/components/filters/CategoryButtonGroup';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 // 모바일
@@ -424,7 +423,7 @@ export default function Category() {
         }
         // {/* ========== 메인 컨텐츠 영역 ========== */}
         content={
-          <div className="space-y-2">
+          <div className="space-y-3">
             {/* ========== 모바일 전용 필터 헤더 ========== */}
             <div className="block lg:hidden">
               {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}
@@ -433,7 +432,7 @@ export default function Category() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenCategoryBottomSheet}
-                  className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-2 pr-7 whitespace-nowrap`}
+                  className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getCategoryDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -442,7 +441,7 @@ export default function Category() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenRegionBottomSheet}
-                  className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-2 pr-7 whitespace-nowrap`}
+                  className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getRegionDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -451,7 +450,7 @@ export default function Category() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenTheaterBottomSheet}
-                  className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-2 pr-7 whitespace-nowrap`}
+                  className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getTheaterTypeDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
