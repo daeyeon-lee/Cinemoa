@@ -21,13 +21,15 @@ interface RecommendedSectionProps {
   onMoreClick?: () => void;
   /** 카드 클릭 핸들러 */
   onCardClick?: (fundingId: number) => void;
+  /** 좋아요 버튼 클릭 핸들러 */
+  onVoteClick?: (fundingId: number) => void;
 }
 
 /**
  * 추천 상영회 섹션
  * 세로 카드를 가로 스크롤로 배치하되, 기본 4개까지 보여주고 그 이후는 가로 스크롤 가능
  */
-export function RecommendedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecommendedSectionProps) {
+export function RecommendedSection({ title, items, loading = false, onMoreClick, onCardClick, onVoteClick }: RecommendedSectionProps) {
   return (
     <div>
       {/* 섹션 헤더: 제목 (더보기 버튼은 선택사항) */}
@@ -43,7 +45,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
             <div className="flex gap-2">
               {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
                 <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
-                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
                 </div>
               ))}
             </div>
@@ -52,7 +54,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
             <div className="flex gap-2">
               {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
                 <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
-                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+                  <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
                 </div>
               ))}
             </div>
@@ -66,7 +68,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
           <div className="flex gap-2" style={{ width: `${items.length * 180}px` }}>
             {items.map((item, index) => (
               <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
-                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
               </div>
             ))}
           </div>
