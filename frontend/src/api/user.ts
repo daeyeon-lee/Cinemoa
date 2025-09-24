@@ -86,7 +86,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
     if (!response.ok) {
       console.warn('[추천api] 실패, search fallback 사용');
       // 데이터가 없으면 search로 8개 조회 (최신순)
-      return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+      return await getSearchFunding({ sortBy: 'POPULAR', size: 8, userId });
     }
 
     const rawResult = await response.json();
@@ -94,7 +94,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
     // 데이터가 비어있으면 fallback (변환 전에 미리 체크)
     if (!rawResult.data || rawResult.data.length === 0) {
       console.warn('[추천api] 빈 데이터, search fallback 사용');
-      return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+      return await getSearchFunding({ sortBy: 'POPULAR', size: 8, userId });
     }
 
     console.log('[추천api] 성공:', rawResult);
@@ -112,7 +112,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
     };
   } catch (error) {
     console.error('[추천api] 오류, search fallback 사용:', error);
-    return await getSearchFunding({ sortBy: 'POPULAR', size: 8 });
+    return await getSearchFunding({ sortBy: 'POPULAR', size: 8, userId });
   }
 };
 
@@ -191,8 +191,9 @@ export const getExpiringSoonFunding = async (userId?: number): Promise<GetClosin
 };
 
 // Search API fallback 함수
-const getSearchFunding = async (params: { sortBy: 'RECOMMENDED' | 'POPULAR'; size: number }): Promise<ApiSearchResponse> => {
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL}search?sortBy=${params.sortBy}&size=${params.size}`;
+const getSearchFunding = async (params: { sortBy: 'RECOMMENDED' | 'POPULAR'; size: number; userId?: number }): Promise<ApiSearchResponse> => {
+  const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}search?sortBy=${params.sortBy}&size=${params.size}`;
+  const url = params.userId ? `${baseUrl}&userId=${params.userId}` : baseUrl;
 
   const response = await fetch(url, {
     method: 'GET',
