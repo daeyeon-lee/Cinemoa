@@ -7,6 +7,7 @@ import io.ssafy.cinemoa.cinema.repository.ScreenRepository;
 import io.ssafy.cinemoa.cinema.repository.ScreenUnavailableTImeBatchRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
+import io.ssafy.cinemoa.external.text.client.TextSummaryApiClient;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
@@ -19,6 +20,8 @@ import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.FundingStatInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.ProposerInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.ScreenInfo;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse.VideoInfo;
+import io.ssafy.cinemoa.funding.dto.VideoContentRequest;
+import io.ssafy.cinemoa.funding.dto.VideoContentResult;
 import io.ssafy.cinemoa.funding.dto.VoteCreateRequest;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.funding.enums.FundingType;
@@ -109,23 +112,24 @@ public class FundingService {
             return {1}
             """;
     private final CategoryRepository categoryRepository;
-    private final ApplicationEventPublisher eventPublisher;
     private final FundingEstimatedDayRepository fundingEstimatedDayRepository;
     private final FundingRepository fundingRepository;
     private final FundingStatRepository statRepository;
     private final FundingListRepository fundingListRepository;
-
     private final ScreenRepository screenRepository;
     private final CinemaRepository cinemaRepository;
-
-    private final ImageService imageService;
-
     private final UserRepository userRepository;
     private final UserFavoriteRepository userFavoriteRepository;
     private final UserTransactionRepository userTransactionRepository;
+    private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
+
+    private final ImageService imageService;
     private final RedisService redisService;
     private final RedisRankingService redisRankingService;
-    private final ScreenUnavailableTImeBatchRepository unavailableTImeBatchRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
+
+    private final TextSummaryApiClient textSummaryApiClient;
 
     @Transactional
     public FundingCreationResult createFunding(MultipartFile image, FundingCreateRequest request) {
@@ -179,7 +183,7 @@ public class FundingService {
                 .build();
         statRepository.save(fundingStat);
         eventPublisher.publishEvent(new AccountCreationRequestEvent(funding.getFundingId()));
- 
+
         return new FundingCreationResult(funding.getFundingId());
     }
 
@@ -467,7 +471,6 @@ public class FundingService {
         return fundingRepository.findAnimateRequired();
     }
 
-
     @EventListener(AnimateDoneEvent.class)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveAnimateResult(AnimateDoneEvent event) {
@@ -479,4 +482,19 @@ public class FundingService {
         String url = imageService.translatePath(ImageCategory.BANNER.getPrefix() + "-" + event.getAnimationUrl());
         funding.setTicketBanner(url);
     }
+
+    @Transactional
+    public VideoContentResult processVideoContent(VideoContentRequest request) {
+
+        try {
+            // 상영물 상세내용 요약 실행 (GMS API 호출)
+            String apiResponse = textSummaryApiClient.summarizeText(request);
+            return new VideoContentResult(apiResponse);
+
+        } catch (Exception e) {
+            log.error("상영물 상세내용 중 오류 발생 - 오류: {}", e.getMessage(), e);
+            throw InternalServerException.ofSummarize();
+        }
+    }
+
 }
