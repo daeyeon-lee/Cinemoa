@@ -24,13 +24,15 @@ interface RecentlyViewedSectionProps {
   onMoreClick?: () => void;
   /** 카드 클릭 핸들러 */
   onCardClick?: (fundingId: number) => void;
+  /** 좋아요 버튼 클릭 핸들러 */
+  onVoteClick?: (fundingId: number) => void;
 }
 
 /**
  * 최근 본 상영회 섹션
  * 6개의 세로 카드를 그리드로 배치
  */
-export function RecentlyViewedSection({ title, items, loading = false, onMoreClick, onCardClick }: RecentlyViewedSectionProps) {
+export function RecentlyViewedSection({ title, items, loading = false, onMoreClick, onCardClick, onVoteClick }: RecentlyViewedSectionProps) {
   // 데이터가 없고 로딩 중이 아닐 때는 섹션을 렌더링하지 않음
   if (!loading && (!items || items.length === 0)) {
     return null;
@@ -55,7 +57,7 @@ export function RecentlyViewedSection({ title, items, loading = false, onMoreCli
       <HorizontalScroller className="w-full">
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0 h-[400px]">
-            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
+                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
           </div>
         ))}
       </HorizontalScroller>

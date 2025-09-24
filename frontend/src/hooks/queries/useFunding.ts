@@ -64,6 +64,7 @@ export function useFundingLike() {
       const previousDetailData = queryClient.getQueryData(['DETAIL', fundingId.toString(), userId]);
       console.log('👉 기존 캐시:', previousDetailData);
       
+      // ✅ 상세 캐시 갱신
       queryClient.setQueryData(
         ['DETAIL', fundingId.toString(), userId],
         (old: ApiResponse<DetailData> | undefined) => {
@@ -87,6 +88,72 @@ export function useFundingLike() {
               }
             }
           };
+        }
+      );
+
+      // ✅ 목록 캐시도 함께 갱신 (search 쿼리들)
+      queryClient.setQueriesData(
+        // ✅ 'search'로 시작하는 모든 목록 쿼리 대상으로
+        { predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'search' },
+        (old: any) => {
+          if (!old) return old;
+
+          // 1) 무한 스크롤 형태 (old.pages 존재)
+          if (Array.isArray(old.pages)) {
+            return {
+              ...old,
+              pages: old.pages.map((page: any) => {
+                // 페이지 스키마가 { data: { content: [...] } } 또는 { content: [...] } 둘 가능성 고려
+                const content = page?.data?.content ?? page?.content;
+                if (!Array.isArray(content)) return page;
+
+                const nextContent = content.map((item: any) => {
+                  // ApiSearchItem 구조: { funding: { fundingId, isLiked, favoriteCount }, cinema: {...} }
+                  if (Number(item?.funding?.fundingId) !== fundingId) return item;
+
+                  // 카드의 좋아요/카운트 갱신
+                  const updatedFunding = {
+                    ...item.funding,
+                    isLiked: !isLiked,
+                    favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
+                  };
+
+                  return {
+                    ...item,
+                    funding: updatedFunding,
+                  };
+                });
+
+                // 원래 구조 유지해서 반환
+                if (page?.data?.content) return { ...page, data: { ...page.data, content: nextContent } };
+                if (page?.content) return { ...page, content: nextContent };
+                return page;
+              }),
+            };
+          }
+
+          // 2) 일반 페이지네이션/단일 페이지 형태
+          const content = old?.data?.content ?? old?.content;
+          if (!Array.isArray(content)) return old;
+
+          const nextContent = content.map((item: any) => {
+            if (Number(item?.funding?.fundingId) !== fundingId) return item;
+
+            const updatedFunding = {
+              ...item.funding,
+              isLiked: !isLiked,
+              favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
+            };
+
+            return {
+              ...item,
+              funding: updatedFunding,
+            };
+          });
+
+          if (old?.data?.content) return { ...old, data: { ...old.data, content: nextContent } };
+          if (old?.content) return { ...old, content: nextContent };
+          return old;
         }
       );
 
