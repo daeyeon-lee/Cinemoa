@@ -27,4 +27,9 @@ public class InternalServerException extends BaseException {
     public static InternalServerException ofTransfer() {
         return new InternalServerException("송금 처리중 오류가 발생하였습니다.", ResourceCode.PAYMENT);
     }
+
+    public static InternalServerException ofSummarize() {
+        return new InternalServerException("텍스트 요약 중 오류가 발생했습니다.", ResourceCode.SUMMARIZE);
+    }
+
 }

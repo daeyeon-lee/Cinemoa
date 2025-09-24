@@ -7,6 +7,8 @@ import io.ssafy.cinemoa.funding.dto.FundingCreationResult;
 import io.ssafy.cinemoa.funding.dto.FundingDetailResponse;
 import io.ssafy.cinemoa.funding.dto.FundingHoldRequest;
 import io.ssafy.cinemoa.funding.dto.FundingLikeRequest;
+import io.ssafy.cinemoa.funding.dto.VideoContentRequest;
+import io.ssafy.cinemoa.funding.dto.VideoContentResult;
 import io.ssafy.cinemoa.funding.service.ExpiringFundingService;
 import io.ssafy.cinemoa.funding.service.FundingService;
 import io.ssafy.cinemoa.funding.service.PopularFundingService;
@@ -129,6 +131,13 @@ public class FundingController {
 
         List<CardTypeFundingInfoDto> result = popularFundingService.getTopPopularFundings(userId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(result, "조회 성공"));
+    }
+
+    @PostMapping("/video-content")
+    public ResponseEntity<ApiResponse<?>> processVideoContent(
+            @RequestBody VideoContentRequest request) {
+        VideoContentResult result = fundingService.processVideoContent(request);
+        return ResponseEntity.ok(ApiResponse.ofSuccess(result, "처리 완료"));
     }
 
 }
