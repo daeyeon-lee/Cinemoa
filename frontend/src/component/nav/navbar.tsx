@@ -102,7 +102,9 @@ export default function Navbar() {
             <img src="/cinemoa_logo_long.png" alt="씨네모아" className="h-8" />
           </Link>
           <div className="flex items-center space-x-4">
-            <SearchIcon />
+            <Link href="/search/start">
+              <SearchIcon />
+            </Link>
             {isClient && user && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer" onClick={handleMyPageClick}>
@@ -173,7 +175,7 @@ export default function Navbar() {
         <div className="flex items-center space-x-4">
           <div className="flex w-full items-center space-x-2">
             {/* 홈 페이지와 검색 페이지가 아닐 때만 검색창 표시 */}
-            {pathname !== '/' && pathname !== '/home' && pathname !== '/search' && (
+            {pathname !== '/' && pathname !== '/home' && pathname !== '/search' && pathname !== '/search/start' && (
               <div className="relative flex-1 min-w-0">
                 <Input
                   type="text"
@@ -181,11 +183,12 @@ export default function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="h-8 bg-BG-1 text-primary placeholder:text-tertiary border-none rounded-[8px] pr-10 pl-3"
+                  onFocus={() => router.push('/search/start')}
+                  className="h-8 bg-BG-1 text-primary placeholder:text-tertiary border-none rounded-[8px] pr-10 pl-3 cursor-pointer"
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer" onClick={handleSearch}>
+                <Link href="/search/start" className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer">
                   <SearchIcon stroke="#94A3B8" />
-                </div>
+                </Link>
               </div>
             )}
             {isClient && user && isLoggedIn() ? (

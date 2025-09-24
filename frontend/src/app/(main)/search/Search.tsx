@@ -344,10 +344,10 @@ export default function Search() {
   return (
     <div>
       {/* 상단 검색창 */}
-      <div className="w-full max-w-2xl mx-auto mt-16 mb-10 flex items-center gap-2">
+      <div className="w-full max-w-2xl mx-auto my-4 lg:my-7 px-4 flex items-center">
         <Input type="search" placeholder="검색어 입력하기" value={inputQuery} onChange={(e) => setInputQuery(e.target.value)} onKeyDown={handleKeyDown} className="flex-1" />
         <Button onClick={handleSearch} variant="ghost" className="hover:bg-BG-0">
-          <SearchIcon width={36} height={36} stroke="#cbd5e1" />
+          <SearchIcon width={24} height={24} stroke="#cbd5e1" className="md:w-9 md:h-9" />
         </Button>
       </div>
 

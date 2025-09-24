@@ -13,7 +13,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
       case 'number':
         return 'flex h-10 w-full rounded-[6px] bg-BG-1 px-3 py-1 text-p2-b shadow-sm transition-colors placeholder:text-subtle placeholder:p1-b focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]';
       case 'search':
-        return 'flex h-16 w-full bg-BG-0 px-3 py-4 text-h2 placeholder:text-primary placeholder:text-h2 border-b-2 border-tertiary focus:outline-none [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none';
+        return 'flex h-12 w-full bg-BG-0 px-1 py-4 text-h4 placeholder:text-primary placeholder:text-h4 md:h-16 md:text-h3 md:placeholder:text-h3 border-b-2 border-tertiary focus:outline-none [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none';
     }
   };
 
