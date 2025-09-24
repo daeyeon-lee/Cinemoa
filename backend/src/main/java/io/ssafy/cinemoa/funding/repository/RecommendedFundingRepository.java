@@ -122,7 +122,6 @@ public class RecommendedFundingRepository {
                         WHERE f.leader_id != ?
                           AND f.funding_type = 'FUNDING'
                           AND f.state = 'ON_PROGRESS'
-                        ORDER BY fs.recommend_score DESC
                         LIMIT 10
                     ),
                     fallback_fundings AS (
@@ -143,7 +142,6 @@ public class RecommendedFundingRepository {
                         WHERE f.state = 'ON_PROGRESS'
                           AND f.funding_type = 'FUNDING'
                           AND f.funding_id NOT IN (SELECT funding_id FROM user_preferred)
-                        ORDER BY fs.recommend_score DESC
                         LIMIT 10
                     )
                     SELECT * FROM (
@@ -155,6 +153,7 @@ public class RecommendedFundingRepository {
                     ) AS final_result
                     """);
             // userId를 파라미터로 추가 (좋아요 조회용, 생성자 제외용)
+            params.add(userId);
             params.add(userId);
             params.add(userId);
             params.add(userId);
