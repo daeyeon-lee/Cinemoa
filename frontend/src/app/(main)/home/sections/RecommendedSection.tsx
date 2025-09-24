@@ -38,11 +38,11 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
       {/* Desktop: 카드를 절반씩 나누어 세로로 쌓기 - 동시 스크롤 (lg 이상) */}
       <div className="hidden lg:block">
         <HorizontalScroller>
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-1">
             {/* 첫 번째 그룹 (절반) */}
             <div className="flex gap-2">
               {items.slice(0, Math.ceil(items.length / 2)).map((item, index) => (
-                <div key={item.funding.fundingId || index} className="w-[172px]">
+                <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
                   <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}
@@ -51,7 +51,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
             {/* 두 번째 그룹 (나머지 절반) */}
             <div className="flex gap-2">
               {items.slice(Math.ceil(items.length / 2)).map((item, index) => (
-                <div key={item.funding.fundingId || index} className="w-[172px]">
+                <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
                   <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} />
                 </div>
               ))}

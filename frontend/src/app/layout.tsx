@@ -23,7 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ko">
       {/* 루트 컴포넌트 스타일 지정 : 배경색 지정, navbar,main,footer flex로 나눔, 폰트 색상 지정 */}
-      <body className="antialiased bg-BG-0 flex flex-col text-primary">
+      <body className="antialiased bg-BG-0 flex flex-col text-primary min-h-screen">
         {/* 카카오맵 스크립트 */}
         <Script type="text/javascript" src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapApiKey}&libraries=services&autoload=false`} strategy="beforeInteractive" />
         {/* 구글 로그인 스크립트 */}

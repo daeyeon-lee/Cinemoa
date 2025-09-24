@@ -162,12 +162,12 @@ export default function Home() {
           </div>
 
           {/* 두 번째 행: 종료 임박 상영회 - Full Width */}
-          <div className="w-full">
+          <div className="w-full mb-12">
             <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} />
           </div>
 
           {/* 세 번째 행: 최근 본 상영회 - Full Width */}
-          <div className="mt-12">
+          <div>
             <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} />
           </div>
         </div>
