@@ -9,7 +9,7 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ isLoadingMor
 
   return (
     <div className="flex justify-center items-center py-8">
-      <div className="text-slate-400">더 불러오는 중...</div>
+      <div className="text-tertiary caption1">로딩중...</div>
     </div>
   );
 };
@@ -20,13 +20,7 @@ interface NoMoreDataProps {
 }
 
 export const NoMoreData: React.FC<NoMoreDataProps> = ({ hasNextPage, dataLength }) => {
-  if (hasNextPage || dataLength === 0) return null;
-
-  return (
-    <div className="flex justify-center items-center py-8">
-      <div className="text-slate-500 text-sm">모든 데이터를 불러왔습니다.</div>
-    </div>
-  );
+  return null;
 };
 
 interface InitialLoadingProps {
@@ -38,8 +32,7 @@ export const InitialLoading: React.FC<InitialLoadingProps> = ({ isLoading }) => 
 
   return (
     <div className="flex justify-center items-center h-64">
-      <div className="text-slate-400">로딩 중...</div>
+      <div className="text-tertiary">로딩 중...</div>
     </div>
   );
 };
-

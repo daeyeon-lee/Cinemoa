@@ -96,7 +96,7 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
         hasOnLoadMore: !!onLoadMore,
         hasNextPage,
         isFetchingNextPage,
-        itemsCount: items.length
+        itemsCount: items.length,
       });
 
       // onLoadMore 함수가 있고, 다음 페이지가 있으며, 현재 로딩 중이 아닐 때만 실행
@@ -108,7 +108,7 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
       }
     },
     hasNextPage, // 다음 페이지가 있는지
-    isFetchingNextPage // 현재 다음 페이지를 로딩 중인지
+    isFetchingNextPage, // 현재 다음 페이지를 로딩 중인지
   );
   // 로딩 상태: 스켈레톤 카드 8개 표시 (개발 단계 UI 확인용)
   if (loading) {
@@ -190,7 +190,7 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <p className="text-slate-400 mb-4">불러오기 실패</p>
+        <p className="mb-4">불러오기 실패</p>
         <Button variant="outline" onClick={onRetry}>
           다시 시도
         </Button>
@@ -202,7 +202,7 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   if (empty || items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <p className="text-slate-400 mb-4">조건을 완화하세요</p>
+        <p className="mb-4">조건을 만족하는 데이터가 없습니다</p>
         <Button variant="outline" onClick={onResetFilters}>
           필터 초기화
         </Button>
@@ -231,11 +231,10 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
         ))}
       </div>
 
-
       {/* 수동 로드 더보기 버튼 (백업용 - 자동 스크롤이 작동하지 않을 때) */}
       {hasNextPage && !isFetchingNextPage && (
         <div className="flex justify-center mt-4">
-          <Button onClick={onLoadMore} variant="outline" size="sm" className="text-xs text-slate-500">
+          <Button onClick={onLoadMore} variant="secondary" size="sm" className="">
             더보기
           </Button>
         </div>

@@ -442,7 +442,10 @@ export default function MyPage() {
         <div className="w-full sm:hidden flex flex-col items-start gap-4">
           <div className="flex items-center gap-4">
             <Avatar src={userInfo?.profileImgUrl} size={52} />
-            <div className="text-primary h5-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}</div>
+            <div className="flex flex-col">
+              <span className="text-primary h6-b">안녕하세요, </span>
+              <div className="text-Brand2-Strong h6-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}님</div>
+            </div>
           </div>
           <div className="w-full flex flex-col gap-2">
             <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
@@ -515,7 +518,7 @@ export default function MyPage() {
             ) : (
               <HorizontalScroller className="w-full">
                 {myProposals.map((proposal, index) => (
-                  <div key={proposal.funding.fundingId} className="w-[172px] flex-shrink-0">
+                  <div key={proposal.funding.fundingId} className="w-[172px] flex-shrink-0 h-[400px]">
                     <CineCardVertical
                       data={convertCardItemToApiSearchItem(convertToCardData(proposal))}
                       onCardClick={handleCardClick}
@@ -587,7 +590,7 @@ export default function MyPage() {
               ) : (
                 <HorizontalScroller className="w-full">
                   {myParticipated.map((participated, index) => (
-                    <div key={participated.funding.fundingId} className="w-[172px] flex-shrink-0">
+                    <div key={participated.funding.fundingId} className="w-[172px] flex-shrink-0 h-[400px]">
                       <CineCardVertical
                         data={convertCardItemToApiSearchItem(convertParticipatedToCardData(participated))}
                         onCardClick={handleCardClick}
@@ -661,7 +664,7 @@ export default function MyPage() {
                 <HorizontalScroller className="w-full">
                   {myLiked &&
                     myLiked.map((liked, index) => (
-                      <div key={liked.funding.fundingId} className="w-[172px] flex-shrink-0">
+                      <div key={liked.funding.fundingId} className="w-[172px] flex-shrink-0 h-[400px]">
                         <CineCardVertical
                           data={convertCardItemToApiSearchItem(convertLikedToCardData(liked))}
                           onCardClick={handleCardClick}
