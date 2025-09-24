@@ -237,7 +237,7 @@ export default function Ticket({ onClose }: TicketProps) {
                 <div className="h-[520px] max-lg:h-[400px] rounded-2xl overflow-hidden relative group">
                   {/* 동영상 없으면 이미지로 들어옴 */}
                   {ticket.funding.ticketBanner ? (
-                    <video src={ticket.funding.ticketBanner} className="w-full h-full object-cover " />
+                    <video src={ticket.funding.ticketBanner} className="w-full h-full object-cover" autoPlay loop muted playsInline />
                   ) : (
                     <img src={ticket.funding.bannerUrl || ''} alt={ticket.funding.title || ''} className="w-full h-full object-cover" />
                   )}
