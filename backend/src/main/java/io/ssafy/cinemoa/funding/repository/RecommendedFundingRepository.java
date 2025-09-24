@@ -132,13 +132,14 @@ public class RecommendedFundingRepository {
                                COALESCE(fs.participant_count, 0) as participant_count,
                                COALESCE(fs.favorite_count, 0) as favorite_count,
                                COALESCE(fs.view_count, 0) as view_count,
-                               false as is_liked,
+                               CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
                                COALESCE(fs.recommend_score, 0) as recommend_score,
                                2 as priority
                         FROM fundings f
                         LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                         LEFT JOIN screens s ON f.screen_id = s.screen_id
                         LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                        LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
                         WHERE f.state = 'ON_PROGRESS'
                           AND f.funding_type = 'FUNDING'
                           AND f.funding_id NOT IN (SELECT funding_id FROM user_preferred)
