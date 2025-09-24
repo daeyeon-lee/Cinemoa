@@ -1,32 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '../primitives/Progress';
 import { ApiSearchItem } from '@/types/searchApi';
-import { addFundingLike, deleteFundingLike } from '@/api/likes';
-import { useAuthStore } from '@/stores/authStore';
 
 type HorizontalRightProps = {
   data: ApiSearchItem;
   loadingState?: 'ready' | 'loading' | 'error';
   onVoteClick?: (fundingId: number) => void;
+  currentIsLiked?: boolean;
+  currentLikeCount?: number;
+  isLoading?: boolean;
 };
 
-const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 'ready', onVoteClick }) => {
+const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 'ready', onVoteClick, currentIsLiked = false, currentLikeCount = 0, isLoading = false }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
-
-  // 좋아요 토글을 위한 상태 관리
-  const { user } = useAuthStore();
-  const userId = user?.userId?.toString();
-
-  // 로컬 상태로 좋아요 상태 관리
-  const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
-  const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
-  const [isLoading, setIsLoading] = useState(false);
-  // const [lastRequestTime, setLastRequestTime] = useState<number>(0);
-
-  // 현재 좋아요 상태와 좋아요 수
-  const currentIsLiked = localIsLiked;
-  const currentLikeCount = localLikeCount;
 
   const calculateDaysLeft = (endDate: string): number => {
     const end = new Date(endDate);
@@ -38,47 +25,8 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
 
   const daysLeft = calculateDaysLeft(data.funding.fundingEndsOn);
 
-  const handleVoteClick = async (e: React.MouseEvent) => {
+  const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    // 로그인 체크
-    if (!userId) {
-      alert('로그인 후 이용해주세요.');
-      return;
-    }
-
-    // 중복 클릭 방지 (로딩 중이거나 최근 1초 내 요청)
-    // const now = Date.now();
-    // if (isLoading || (now - lastRequestTime < 1000)) {
-    //   console.log('[HorizontalRight] 중복 요청 방지:', { isLoading, timeSinceLastRequest: now - lastRequestTime });
-    //   return;
-    // }
-
-    setIsLoading(true);
-    // setLastRequestTime(now);
-
-    // 낙관적 업데이트 - 즉시 로컬 상태 변경
-    setLocalIsLiked(!currentIsLiked);
-    setLocalLikeCount(currentIsLiked ? currentLikeCount - 1 : currentLikeCount + 1);
-
-    try {
-      // API 호출
-      if (currentIsLiked) {
-        await deleteFundingLike(data.funding.fundingId, userId);
-      } else {
-        await addFundingLike(data.funding.fundingId, userId);
-      }
-    } catch (error) {
-      // 에러 시 롤백
-      setLocalIsLiked(currentIsLiked);
-      setLocalLikeCount(currentLikeCount);
-      console.error('좋아요 토글 실패:', error);
-      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsLoading(false);
-    }
-
-    // 기존 onVoteClick 콜백도 호출
     if (onVoteClick) {
       onVoteClick(data.funding.fundingId);
     }
