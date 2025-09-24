@@ -1,6 +1,12 @@
+'use client';
+import { usePathname } from 'next/navigation';
+
 export default function Footer() {
+  const pathname = usePathname();
+  const isDetailPage = pathname.startsWith('/detail');
+
   return (
-    <footer className="bg-BG-1 px-4 py-10 mt-10 pb-[160px] lg:pb-10">
+    <footer className={`bg-BG-1 px-4 py-10 mt-10 ${isDetailPage ? 'pb-[160px]' : 'pb-10'}`}>
       <div className="flex flex-col items-center justify-center gap-2">
         <p className="p3-b text-tertiary">SSAFY Cinemoa 프로젝트</p>
         <p className="caption1 text-tertiary">이용약관 | 개인정보 처리방침 | 판매 및 환불 | 법적 고지</p>
