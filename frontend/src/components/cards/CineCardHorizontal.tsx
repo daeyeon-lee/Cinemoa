@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { HorizontalLeft } from './sections/HorizontalLeft';
 import { HorizontalRight } from './sections/HorizontalRight';
 import { PerforationLine } from './primitives/PerforationLine';
@@ -45,7 +45,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
     }
   };
 
-  const handleVoteClick = async (e: React.MouseEvent) => {
+  const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
 
     // 로그인 체크

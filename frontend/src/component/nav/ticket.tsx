@@ -164,44 +164,45 @@ export default function Ticket({ onClose }: TicketProps) {
   }
 
   return (
-    <div id="ticket-container" className="w-full max-w-sm mx-auto max-h-[100vh] overflow-hidden" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+    <div id="ticket-container" className="w-full max-w-sm mx-auto max-h-[100vh] overflow-hidden py-8" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* 스택형 카드 컨테이너 */}
-      <div className="relative w-full h-[650px] max-lg:h-[550px]" style={{ perspective: '1200px' }}>
-        {/* 배경 티켓들 (스택 효과) */}
-        {ticketList.map((ticket, index) => {
-          if (index <= currentIndex) return null; // 현재 티켓과 이전 티켓들은 보이지 않음
+      <div className="relative w-full h-[600px] max-lg:h-[500px]" style={{ perspective: '1200px' }}>
+        {/* 배경 티켓들 (스택 효과) - 항상 숨김 */}
+        {false &&
+          ticketList.map((ticket, index) => {
+            if (index <= currentIndex) return null; // 현재 티켓과 이전 티켓들은 보이지 않음
 
-          const stackIndex = index - currentIndex - 1;
-          const zIndex = ticketList.length - index;
-          const translateY = stackIndex * 12;
-          const scale = 1 - stackIndex * 0.08;
-          const opacity = 1 - stackIndex * 0.25;
+            const stackIndex = index - currentIndex - 1;
+            const zIndex = ticketList.length - index;
+            const translateY = stackIndex * 12;
+            const scale = 1 - stackIndex * 0.08;
+            const opacity = 1 - stackIndex * 0.25;
 
-          return (
-            <div
-              key={index}
-              className="absolute inset-0 w-full h-full"
-              style={{
-                zIndex,
-                transform: `translateY(${translateY}px) scale(${scale})`,
-                opacity: Math.max(opacity, 0.2),
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            >
-              <div className="bg-gradient-to-br from-slate-800 via-purple-800 to-slate-700 rounded-3xl overflow-hidden shadow-2xl relative border border-purple-500/30 h-full">
-                <div className="relative h-full overflow-hidden">
-                  {ticket.funding.ticketBanner ? (
-                    <img src={ticket.funding.ticketBanner} alt={ticket.funding.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <img src={ticket.funding.bannerUrl || ''} alt={ticket.funding.title || ''} className="w-full h-full object-cover" />
-                  )}
-                  {/* 오버레이 */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            return (
+              <div
+                key={index}
+                className="absolute inset-0 w-full h-full"
+                style={{
+                  zIndex,
+                  transform: `translateY(${translateY}px) scale(${scale})`,
+                  opacity: Math.max(opacity, 0.2),
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              >
+                <div className="bg-gradient-to-br from-slate-800 via-purple-800 to-slate-700 rounded-3xl overflow-hidden shadow-2xl relative border border-purple-500/30 h-full">
+                  <div className="relative h-full overflow-hidden">
+                    {ticket.funding.ticketBanner ? (
+                      <img src={ticket.funding.ticketBanner} alt={ticket.funding.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={ticket.funding.bannerUrl || ''} alt={ticket.funding.title || ''} className="w-full h-full object-cover" />
+                    )}
+                    {/* 오버레이 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
         {/* 현재 활성 티켓 (3D 플립 효과) */}
         <div
@@ -233,10 +234,10 @@ export default function Ticket({ onClose }: TicketProps) {
                 </div>
 
                 {/* 포스터 이미지 */}
-                <div className="h-[580px] max-lg:h-[450px] rounded-2xl overflow-hidden relative group">
+                <div className="h-[520px] max-lg:h-[400px] rounded-2xl overflow-hidden relative group">
                   {/* 동영상 없으면 이미지로 들어옴 */}
                   {ticket.funding.ticketBanner ? (
-                    <video src={ticket.funding.ticketBanner} className="w-full h-full object-cover " />
+                    <video src={ticket.funding.ticketBanner} className="w-full h-full object-cover" autoPlay loop muted playsInline />
                   ) : (
                     <img src={ticket.funding.bannerUrl || ''} alt={ticket.funding.title || ''} className="w-full h-full object-cover" />
                   )}
@@ -275,13 +276,13 @@ export default function Ticket({ onClose }: TicketProps) {
                 <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-pink-500 rounded-full blur-xl transform -translate-x-1/2 -translate-y-1/2"></div>
               </div>
 
-              <div className="relative p-6 pb-20 flex flex-col text-white overflow-hidden z-10 h-full">
+              <div className="relative p-6 pb-16 flex flex-col text-white overflow-hidden z-10 h-full">
                 {/* 티켓 헤더 */}
                 <div className="text-center mb-6 flex-shrink-0">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-4">
-                    <span className="text-white/90 text-sm font-medium">SMART TICKET</span>
+                    <span className="text-white/90 h6-b">SMART TICKET</span>
                   </div>
-                  <p className="p2 text-secondary"> {ticket.funding.title}</p>
+                  <p className="p1 text-secondary"> {ticket.funding.title}</p>
                   <h3 className="h3-b text-primary">{ticket.funding.videoName}</h3>
                 </div>
 
@@ -293,8 +294,8 @@ export default function Ticket({ onClose }: TicketProps) {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div>
-                            <p className="text-white/60 text-xs font-medium uppercase tracking-wider">상영관</p>
-                            <p className="text-white font-semibold">{ticket.cinema.cinemaName}</p>
+                            <p className="text-white/60 h6-b">상영관</p>
+                            <p className="text-white h4-b">{ticket.cinema.cinemaName}</p>
                           </div>
                         </div>
                       </div>
@@ -303,8 +304,8 @@ export default function Ticket({ onClose }: TicketProps) {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div>
-                            <p className="text-white/60 text-xs font-medium uppercase tracking-wider">상영일시</p>
-                            <p className="text-white font-semibold">{ticket.funding.screenDate}</p>
+                            <p className="text-white/60 h6-b">상영일시</p>
+                            <p className="text-white h4-b">{ticket.funding.screenDate}</p>
                           </div>
                         </div>
                       </div>
@@ -313,8 +314,8 @@ export default function Ticket({ onClose }: TicketProps) {
                       <div className="flex items-center justify-between pb-3">
                         <div className="flex items-center gap-3">
                           <div>
-                            <p className="text-white/60 text-xs font-medium uppercase tracking-wider">금액</p>
-                            <p className="text-white font-semibold">{ticket.funding.price?.toLocaleString()}원</p>
+                            <p className="text-white/60 h4-b">금액</p>
+                            <p className="text-white h4-b">{ticket.funding.price?.toLocaleString()}원</p>
                           </div>
                         </div>
                       </div>
@@ -335,7 +336,7 @@ export default function Ticket({ onClose }: TicketProps) {
       </div>
 
       {/* 점 인디케이터 */}
-      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
         {ticketList.map((_, index) => (
           <button
             key={index}

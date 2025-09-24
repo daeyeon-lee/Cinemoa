@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Media } from './primitives/Media';
 import { BarcodeDecor } from './primitives/BarcodeDecor';
 import { PerforationLine } from './primitives/PerforationLine';
@@ -51,7 +51,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
     }
   };
 
-  const handleVoteClick = async (e: React.MouseEvent) => {
+  const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
 
     // 로그인 체크
