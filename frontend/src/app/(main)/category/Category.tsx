@@ -432,7 +432,7 @@ export default function Category() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenCategoryBottomSheet}
-                  className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-2 pr-7 whitespace-nowrap`}
+                  className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getCategoryDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -441,7 +441,7 @@ export default function Category() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenRegionBottomSheet}
-                  className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-2 pr-7 whitespace-nowrap`}
+                  className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getRegionDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -450,7 +450,7 @@ export default function Category() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenTheaterBottomSheet}
-                  className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-2 pr-7 whitespace-nowrap`}
+                  className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getTheaterTypeDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
