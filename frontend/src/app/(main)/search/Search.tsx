@@ -11,7 +11,6 @@ import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 // 웹
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
-import { CategoryButtonGroup } from '@/components/filters/CategoryButtonGroup';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 // 모바일
@@ -20,7 +19,6 @@ import { CategoryBottomSheetContent } from '@/components/filters/sheets/Category
 import { RegionBottomSheetContent } from '@/components/filters/sheets/RegionBottomSheetContent';
 import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/TheaterTypeBottomSheetContent';
 //type, 상수
-import type { CardItem } from '@/components/lists/ResponsiveCardList';
 import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 //api 관련
