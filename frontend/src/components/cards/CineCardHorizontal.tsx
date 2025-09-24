@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { HorizontalLeft } from './sections/HorizontalLeft';
 import { HorizontalRight } from './sections/HorizontalRight';
 import { PerforationLine } from './primitives/PerforationLine';
 import { ApiSearchItem, FundingType, FundingState } from '@/types/searchApi';
-import { addFundingLike, deleteFundingLike } from '@/api/likes';
-import { useAuthStore } from '@/stores/authStore';
 
 type CineCardProps = {
   data: ApiSearchItem;
@@ -19,18 +17,9 @@ type CineCardProps = {
 const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
-  // 좋아요 토글을 위한 상태 관리
-  const { user } = useAuthStore();
-  const userId = user?.userId?.toString();
-
-  // 로컬 상태로 좋아요 상태 관리
-  const [localIsLiked, setLocalIsLiked] = useState(data.funding.isLiked);
-  const [localLikeCount, setLocalLikeCount] = useState(data.funding.favoriteCount);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // 현재 좋아요 상태와 좋아요 수
-  const currentIsLiked = localIsLiked;
-  const currentLikeCount = localLikeCount;
+  // ✅ props로만 제어 - React Query 캐시에서 오는 값 사용
+  const currentIsLiked = data.funding.isLiked;
+  const currentLikeCount = data.funding.favoriteCount;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -47,39 +36,10 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
     }
   };
 
-  const handleVoteClick = async (e: React.MouseEvent) => {
+  const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    // 로그인 체크
-    if (!userId) {
-      alert('로그인 후 이용해주세요.');
-      return;
-    }
-
-    setIsLoading(true);
-
-    // 낙관적 업데이트 - 즉시 로컬 상태 변경
-    setLocalIsLiked(!currentIsLiked);
-    setLocalLikeCount(currentIsLiked ? currentLikeCount - 1 : currentLikeCount + 1);
-
-    try {
-      // API 호출
-      if (currentIsLiked) {
-        await deleteFundingLike(data.funding.fundingId, userId);
-      } else {
-        await addFundingLike(data.funding.fundingId, userId);
-      }
-    } catch (error) {
-      // 에러 시 롤백
-      setLocalIsLiked(currentIsLiked);
-      setLocalLikeCount(currentLikeCount);
-      console.error('좋아요 토글 실패:', error);
-      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsLoading(false);
-    }
-
-    // 기존 onVoteClick 콜백도 호출 (필요시)
+    
+    // ✅ 단순히 부모의 핸들러만 호출 - 모든 로직은 부모에서 처리
     if (onVoteClick) {
       onVoteClick(data.funding.fundingId);
     }
@@ -94,7 +54,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
         formatDate={formatDate}
         isFunding={isFunding}
         currentIsLiked={currentIsLiked}
-        isLoading={isLoading}
+        isLoading={false}
         onVoteClick={handleVoteClick}
         showStateTag={showStateTag}
         getStateBadgeInfo={getStateBadgeInfo}
@@ -105,7 +65,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
       </div>
       {/* 오른쪽(가격+달성률+현재인원/목표인원+-일남음+진행률바) */}
       {/* 투표면 좋아요수+버튼 */}
-      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={isLoading} />
+      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={false} />
     </div>
   );
 };
