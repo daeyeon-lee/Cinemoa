@@ -10,7 +10,6 @@ import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 // 웹
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
-import { CategoryButtonGroup } from '@/components/filters/CategoryButtonGroup';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 // 모바일
@@ -424,7 +423,7 @@ export default function Category() {
         }
         // {/* ========== 메인 컨텐츠 영역 ========== */}
         content={
-          <div className="space-y-2">
+          <div className="space-y-3">
             {/* ========== 모바일 전용 필터 헤더 ========== */}
             <div className="block lg:hidden">
               {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}
