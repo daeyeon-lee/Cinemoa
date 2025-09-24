@@ -32,8 +32,8 @@ export const CategoryBottomSheetContent: React.FC<CategoryBottomSheetContentProp
   return (
     <div className="flex flex-col gap-8">
       {/* 1차 카테고리 선택 */}
-      <div className="w-full">
-        <CategoryButtonGroup items={categories} value={selectedCategory} onChange={onCategoryChange} variant={variant} uniformHeight={true} notchColor="bg-BG-1" allowWrap={true} />
+      <div className="w-full overflow-x-auto scrollbar-hide">
+        <CategoryButtonGroup items={categories} value={selectedCategory} onChange={onCategoryChange} variant={variant} uniformHeight={true} notchColor="bg-BG-1" allowWrap={false} />
       </div>
 
       {/* 2차 카테고리 선택 - 1차 카테고리가 선택되었을 때만 표시 */}
