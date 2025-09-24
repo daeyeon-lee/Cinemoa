@@ -59,10 +59,10 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
 
         {/* 모바일/태블릿: 세로로 3개씩 + 가로 스크롤 (lg 미만) */}
         <div className="block lg:hidden">
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex gap-8">
+          <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth">
+            <div className="flex gap-4">
               {/* 첫 번째 그룹 (1-3위) */}
-              <div className="w-[300px] flex-shrink-0">
+              <div className="w-[calc(100vw-2.5rem)] flex-shrink-0 snap-start">
                 <div className="space-y-3">
                   {items.slice(0, 3).map((item, index) => (
                     <div key={item.funding.fundingId || index} className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
 
               {/* 두 번째 그룹 (4-6위) - 6개 이상일 때만 표시 */}
               {items.length > 3 && (
-                <div className="w-[300px] flex-shrink-0">
+                <div className="w-[calc(100vw-2.5rem)] flex-shrink-0 snap-start">
                   <div className="space-y-3">
                     {items.slice(3, 6).map((item, index) => (
                       <div key={item.funding.fundingId || index} className="flex items-center gap-2">
