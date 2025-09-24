@@ -16,6 +16,45 @@ export interface UserInfoErrorResponse {
   message: string;
   code: number;
 }
+// 성공한 펀딩만 조회(티켓용)
+export interface SuccessFunding {
+  funding: {
+    fundingId: number;
+    title: string;
+    videoName: string;
+    bannerUrl: string;
+    ticketBanner: string; // 티켓용 배너 추가
+    state: 'SUCCESS';
+    progressRate: number;
+    fundingEndsOn: string;
+    screenDate?: string;
+    screenMinDate?: string;
+    screenMaxDate?: string;
+    price: number;
+    maxPeople: number;
+    participantCount: number;
+    favoriteCount: number;
+    isLiked: boolean;
+    fundingType: 'FUNDING' | 'VOTE';
+  };
+  cinema: {
+    cinemaId: number;
+    cinemaName: string;
+    city: string;
+    district: string;
+  };
+}
+
+export interface SuccessFundingResponse {
+  state: string;
+  message: string;
+  code: number;
+  data: {
+    content: SuccessFunding[];
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
+}
 
 // 내가 제안한 상영회 관련 타입
 export interface FundingProposal {
@@ -195,5 +234,3 @@ export interface CardItem {
   funding: CardFunding;
   cinema: CardCinema;
 }
-
-
