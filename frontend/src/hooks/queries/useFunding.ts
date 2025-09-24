@@ -59,12 +59,21 @@ export function useFundingLike() {
     // Optimistic Update - 즉시 UI 반영
     onMutate: async ({ fundingId, userId, isLiked }) => {
       console.log('🟡 onMutate 실행 - 낙관적 업데이트 시작');
+      
+      // 상세 페이지 캐시 취소
       await queryClient.cancelQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
+      
+      // 목록 페이지 캐시들도 취소 (홈, 카테고리, 검색 등)
+      await queryClient.cancelQueries({ queryKey: ['home'] });
+      await queryClient.cancelQueries({ queryKey: ['category'] });
+      await queryClient.cancelQueries({ queryKey: ['search'] });
+      await queryClient.cancelQueries({ queryKey: ['SEARCH'] });
+      await queryClient.cancelQueries({ queryKey: ['recentlyViewed'] });
 
       const previousDetailData = queryClient.getQueryData(['DETAIL', fundingId.toString(), userId]);
-      console.log('👉 기존 캐시:', previousDetailData);
+      console.log('👉 기존 상세 캐시:', previousDetailData);
       
-      // ✅ 상세 캐시 갱신
+      // 상세 페이지 캐시 업데이트
       queryClient.setQueryData(
         ['DETAIL', fundingId.toString(), userId],
         (old: ApiResponse<DetailData> | undefined) => {
@@ -91,71 +100,67 @@ export function useFundingLike() {
         }
       );
 
-      // ✅ 목록 캐시도 함께 갱신 (search 쿼리들)
-      queryClient.setQueriesData(
-        // ✅ 'search'로 시작하는 모든 목록 쿼리 대상으로
-        { predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === 'search' },
-        (old: any) => {
-          if (!old) return old;
-
-          // 1) 무한 스크롤 형태 (old.pages 존재)
-          if (Array.isArray(old.pages)) {
-            return {
-              ...old,
-              pages: old.pages.map((page: any) => {
-                // 페이지 스키마가 { data: { content: [...] } } 또는 { content: [...] } 둘 가능성 고려
-                const content = page?.data?.content ?? page?.content;
-                if (!Array.isArray(content)) return page;
-
-                const nextContent = content.map((item: any) => {
-                  // ApiSearchItem 구조: { funding: { fundingId, isLiked, favoriteCount }, cinema: {...} }
-                  if (Number(item?.funding?.fundingId) !== fundingId) return item;
-
-                  // 카드의 좋아요/카운트 갱신
-                  const updatedFunding = {
-                    ...item.funding,
-                    isLiked: !isLiked,
-                    favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
-                  };
-
+      // 목록 페이지 캐시들도 업데이트
+      const updateListCache = (queryKey: string[]) => {
+        queryClient.setQueryData(queryKey, (old: any) => {
+          if (!old || !old.data || !old.data.content) return old;
+          
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              content: old.data.content.map((item: any) => {
+                if (item.funding.fundingId === fundingId) {
                   return {
                     ...item,
-                    funding: updatedFunding,
+                    funding: {
+                      ...item.funding,
+                      isLiked: !isLiked,
+                      favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
+                    }
                   };
-                });
+                }
+                return item;
+              })
+            }
+          };
+        });
+      };
 
-                // 원래 구조 유지해서 반환
-                if (page?.data?.content) return { ...page, data: { ...page.data, content: nextContent } };
-                if (page?.content) return { ...page, content: nextContent };
-                return page;
-              }),
+      // 모든 목록 캐시 업데이트
+      updateListCache(['home', 'recommended']);
+      updateListCache(['home', 'popular']);
+      updateListCache(['home', 'closingSoon']);
+      updateListCache(['home', 'recentlyViewed']);
+      updateListCache(['category']);
+      updateListCache(['search']);
+      
+      // 최근 본 상영회 캐시 업데이트 (동적 쿼리 키 처리)
+      const recentlyViewedQueries = queryClient.getQueriesData({ queryKey: ['recentlyViewed'] });
+      recentlyViewedQueries.forEach(([queryKey, data]) => {
+        if (data && typeof data === 'object' && 'data' in data) {
+          const typedData = data as any;
+          if (typedData.data && Array.isArray(typedData.data)) {
+            const updatedData = {
+              ...typedData,
+              data: typedData.data.map((item: any) => {
+                if (item.funding.fundingId === fundingId) {
+                  return {
+                    ...item,
+                    funding: {
+                      ...item.funding,
+                      isLiked: !isLiked,
+                      favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
+                    }
+                  };
+                }
+                return item;
+              })
             };
+            queryClient.setQueryData(queryKey, updatedData);
           }
-
-          // 2) 일반 페이지네이션/단일 페이지 형태
-          const content = old?.data?.content ?? old?.content;
-          if (!Array.isArray(content)) return old;
-
-          const nextContent = content.map((item: any) => {
-            if (Number(item?.funding?.fundingId) !== fundingId) return item;
-
-            const updatedFunding = {
-              ...item.funding,
-              isLiked: !isLiked,
-              favoriteCount: isLiked ? item.funding.favoriteCount - 1 : item.funding.favoriteCount + 1,
-            };
-
-            return {
-              ...item,
-              funding: updatedFunding,
-            };
-          });
-
-          if (old?.data?.content) return { ...old, data: { ...old.data, content: nextContent } };
-          if (old?.content) return { ...old, content: nextContent };
-          return old;
         }
-      );
+      });
 
       return { previousDetailData };
     },
@@ -170,7 +175,15 @@ export function useFundingLike() {
 
     onSettled: (data, error, { fundingId, userId }) => {
       console.log('⚪ onSettled 실행 - 서버 데이터 동기화');
+      // 상세 페이지 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
+      
+      // 목록 페이지 캐시들도 무효화하여 서버 데이터와 동기화
+      queryClient.invalidateQueries({ queryKey: ['home'] });
+      queryClient.invalidateQueries({ queryKey: ['category'] });
+      queryClient.invalidateQueries({ queryKey: ['search'] });
+      queryClient.invalidateQueries({ queryKey: ['SEARCH'] });
+      queryClient.invalidateQueries({ queryKey: ['recentlyViewed'] });
     },
 
     onSuccess: (data, { fundingId }) => {

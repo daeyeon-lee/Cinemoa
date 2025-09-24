@@ -3,6 +3,8 @@ import { HorizontalLeft } from './sections/HorizontalLeft';
 import { HorizontalRight } from './sections/HorizontalRight';
 import { PerforationLine } from './primitives/PerforationLine';
 import { ApiSearchItem, FundingType, FundingState } from '@/types/searchApi';
+import { useAuthStore } from '@/stores/authStore';
+import { useFundingLike } from '@/hooks/queries/useFunding';
 
 type CineCardProps = {
   data: ApiSearchItem;
@@ -17,7 +19,14 @@ type CineCardProps = {
 const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
-  // ✅ props로만 제어 - React Query 캐시에서 오는 값 사용
+  // 좋아요 토글을 위한 상태 관리
+  const { user } = useAuthStore();
+  const userId = user?.userId?.toString();
+
+  // React Query 훅 사용으로 상태 동기화
+  const likeMutation = useFundingLike();
+
+  // 현재 좋아요 상태와 좋아요 수 (서버 데이터 기반)
   const currentIsLiked = data.funding.isLiked;
   const currentLikeCount = data.funding.favoriteCount;
 
@@ -38,8 +47,21 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
 
   const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // ✅ 단순히 부모의 핸들러만 호출 - 모든 로직은 부모에서 처리
+
+    // 로그인 체크
+    if (!userId) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+
+    // React Query mutation 사용으로 상태 동기화
+    likeMutation.mutate({
+      fundingId: data.funding.fundingId,
+      userId,
+      isLiked: currentIsLiked,
+    });
+
+    // 기존 onVoteClick 콜백도 호출 (필요시)
     if (onVoteClick) {
       onVoteClick(data.funding.fundingId);
     }
@@ -54,7 +76,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
         formatDate={formatDate}
         isFunding={isFunding}
         currentIsLiked={currentIsLiked}
-        isLoading={false}
+        isLoading={likeMutation.isPending}
         onVoteClick={handleVoteClick}
         showStateTag={showStateTag}
         getStateBadgeInfo={getStateBadgeInfo}
@@ -65,7 +87,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
       </div>
       {/* 오른쪽(가격+달성률+현재인원/목표인원+-일남음+진행률바) */}
       {/* 투표면 좋아요수+버튼 */}
-      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={false} />
+      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={likeMutation.isPending} />
     </div>
   );
 };
