@@ -35,7 +35,7 @@ const HorizontalLeft: React.FC<HorizontalLeftProps> = ({ data, loadingState = 'r
 
         {/* 펀딩 카드일 때만 좋아요 버튼 표시 */}
         {isFunding && (
-          <button onClick={onVoteClick} className="absolute top-[4px] left-[4px] p-1 rounded-full" disabled={isLoading}>
+          <button onClick={onVoteClick} className="absolute top-0.5 left-0.5 p-1 rounded-full" disabled={isLoading}>
             <HeartIcon filled={currentIsLiked} size={24} />
           </button>
         )}
