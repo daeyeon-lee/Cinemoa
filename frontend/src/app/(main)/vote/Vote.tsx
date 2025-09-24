@@ -11,7 +11,6 @@ import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 // 웹
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
-import { CategoryButtonGroup } from '@/components/filters/CategoryButtonGroup';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 // 모바일
@@ -20,8 +19,6 @@ import { CategoryBottomSheetContent } from '@/components/filters/sheets/Category
 import { RegionBottomSheetContent } from '@/components/filters/sheets/RegionBottomSheetContent';
 import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/TheaterTypeBottomSheetContent';
 //type, 상수
-import type { CardItem } from '@/components/lists/ResponsiveCardList';
-
 import { REGIONS, THEATER_TYPES } from '@/constants/regions';
 import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 //api 관련
@@ -241,7 +238,7 @@ export default function Vote() {
   const getCategoryDisplayText = () => {
     if (selectedMainCategoryId === null) return '카테고리';
 
-    const mainCategory = categories.find(cat => cat.categoryId === selectedMainCategoryId);
+    const mainCategory = categories.find((cat) => cat.categoryId === selectedMainCategoryId);
     if (!mainCategory) return '카테고리';
 
     // 1차 카테고리만 선택된 경우
@@ -250,7 +247,7 @@ export default function Vote() {
     }
 
     // 2차 카테고리가 선택된 경우
-    const subCategory = mainCategory.items?.find(sub => sub.categoryId === selectedSubCategoryId);
+    const subCategory = mainCategory.items?.find((sub) => sub.categoryId === selectedSubCategoryId);
     if (subCategory) {
       return `${mainCategory.label}-${subCategory.categoryName}`;
     }
@@ -347,11 +344,7 @@ export default function Vote() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenCategoryBottomSheet}
-                  className={`${
-                    getCategoryDisplayText() === '카테고리'
-                      ? 'flex-1'
-                      : 'flex-shrink-0'
-                  } relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
+                  className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getCategoryDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -360,11 +353,7 @@ export default function Vote() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenRegionBottomSheet}
-                  className={`${
-                    getRegionDisplayText() === '지역'
-                      ? 'flex-1'
-                      : 'flex-shrink-0'
-                  } relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
+                  className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getRegionDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
@@ -373,11 +362,7 @@ export default function Vote() {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenTheaterBottomSheet}
-                  className={`${
-                    getTheaterTypeDisplayText() === '상영관 종류'
-                      ? 'flex-1'
-                      : 'flex-shrink-0'
-                  } relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
+                  className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
                   <span className="truncate">{getTheaterTypeDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
