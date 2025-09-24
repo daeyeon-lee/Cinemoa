@@ -3,6 +3,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
 
 import SearchIcon from '@/component/icon/searchIcon';
+import TicketIcon from '@/component/icon/ticketIcon';
 import UserIcon from '@/component/icon/userIcon';
 import LoginIcon from '@/component/icon/loginIcon';
 import LogoutIcon from '@/component/icon/logoutIcon';
@@ -10,6 +11,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/api/auth';
@@ -21,6 +23,8 @@ export default function Navbar() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
+  const [isTicketOpen, setIsTicketOpen] = useState(false);
+  const [isMobileTicketOpen, setIsMobileTicketOpen] = useState(false);
   const { user, isLoggedIn } = useAuthStore();
 
   // 클라이언트 사이드에서만 인증 상태 확인
@@ -98,24 +102,44 @@ export default function Navbar() {
       <div className="border-b border-1 border-[#1E293B] px-5 lg:hidden">
         {/* 첫 번째 줄: 로고 + 아이콘들 */}
         <div className="flex items-center justify-between mb-4 ">
+          {/* 로고 */}
           <Link href="/" className="cursor-pointer">
             <img src="/cinemoa_logo_long.png" alt="씨네모아" className="h-8" />
           </Link>
-          <div className="flex items-center space-x-4">
-            <Link href="/search/start">
-              <SearchIcon />
-            </Link>
+          <div className="flex items-center space-x-2">
+            {/* 스마트 티켓 아이콘 - 로그인한 사용자만 */}
+            {isClient && user && isLoggedIn() && (
+              <Dialog open={isMobileTicketOpen} onOpenChange={setIsMobileTicketOpen}>
+                <DialogTrigger asChild>
+                  <button className="cursor-pointer">
+                    <TicketIcon />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md w-[90vw] max-h-[100vh] overflow-y-auto p-0 bg-transparent border-none shadow-none sm:w-full">
+                  <DialogHeader variant="simple">
+                    <VisuallyHidden>
+                      <DialogTitle>스마트 티켓</DialogTitle>
+                    </VisuallyHidden>
+                  </DialogHeader>
+                  <Ticket onClose={() => setIsMobileTicketOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            )}
+            {/* 검색 아이콘 */}
+            <SearchIcon />
             {isClient && user && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer" onClick={handleMyPageClick}>
                   <UserIcon />
                 </Link>
+                {/* 로그아웃 아이콘 */}
                 <button onClick={handleLogout} className="cursor-pointer">
                   <LogoutIcon />
                 </button>
               </>
             ) : (
               <Link href="/auth" className="cursor-pointer">
+                {/* 로그인 아이콘 */}
                 <LoginIcon />
               </Link>
             )}
@@ -124,9 +148,6 @@ export default function Navbar() {
 
         {/* 두 번째 줄: 네비게이션 메뉴 */}
         <nav className="flex items-center space-x-6">
-          {/* <Link href="/" className="text-tertiary text-base font-bold cursor-pointer">
-            홈
-          </Link> */}
           <Link href="/category" className={getLinkClasses('/category')}>
             둘러보기
             {isActive('/category') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
@@ -193,17 +214,19 @@ export default function Navbar() {
             )}
             {isClient && user && isLoggedIn() ? (
               <>
-                <Dialog>
+                <Dialog open={isTicketOpen} onOpenChange={setIsTicketOpen}>
                   <DialogTrigger asChild>
                     <Button variant="secondary" size="sm" textSize="sm" className="rounded-[99px] hover:bg-BG-3">
                       스마트 티켓
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-md max-h-[100vh] overflow-y-auto">
-                    <DialogHeader className="self-stretch">
-                      <DialogTitle>스마트 티켓</DialogTitle>
+                  <DialogContent className="max-w-md w-[90vw] max-h-[100vh] overflow-y-auto p-0 bg-transparent border-none shadow-none sm:w-full">
+                    <DialogHeader variant="simple">
+                      <VisuallyHidden>
+                        <DialogTitle>스마트 티켓</DialogTitle>
+                      </VisuallyHidden>
                     </DialogHeader>
-                    <Ticket />
+                    <Ticket onClose={() => setIsTicketOpen(false)} />
                   </DialogContent>
                 </Dialog>
                 <Link href="/mypage" className="flex-none cursor-pointer" onClick={handleMyPageClick}>

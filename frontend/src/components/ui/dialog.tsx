@@ -53,15 +53,27 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
 );
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-// 모달 헤더 영역(제목 + 닫기 버튼 - 동일선상)
-const DialogHeader = ({ className, onClose, ...props }: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) => (
-  <div className={cn('flex justify-between items-center', className)} {...props}>
-    {props.children}
-    <DialogClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none" onClick={onClose}>
-      <X className="h-6 w-6 text-subtle" />
-    </DialogClose>
-  </div>
-);
+// 모달 헤더 영역
+const DialogHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    variant?: 'default' | 'simple';
+    onClose?: () => void;
+  }
+>(({ className, variant = 'default', onClose, ...props }, ref) => {
+  if (variant === 'simple') {
+    return <div ref={ref} className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />;
+  }
+
+  return (
+    <div ref={ref} className={cn('flex justify-between items-center', className)} {...props}>
+      {props.children}
+      <DialogClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none" onClick={onClose}>
+        <X className="h-6 w-6 text-subtle" />
+      </DialogClose>
+    </div>
+  );
+});
 DialogHeader.displayName = 'DialogHeader';
 
 // 모달 하단 영역
