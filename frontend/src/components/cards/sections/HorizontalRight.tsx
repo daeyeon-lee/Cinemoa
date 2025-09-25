@@ -6,7 +6,7 @@ import { ApiSearchItem } from '@/types/searchApi';
 type HorizontalRightProps = {
   data: ApiSearchItem;
   loadingState?: 'ready' | 'loading' | 'error';
-  onVoteClick?: (fundingId: number) => void;
+  onVoteClick?: (e: React.MouseEvent) => void;
   currentIsLiked?: boolean;
   currentLikeCount?: number;
   isLoading?: boolean;
@@ -29,7 +29,7 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
   const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onVoteClick) {
-      onVoteClick(data.funding.fundingId);
+      onVoteClick(e);
     }
   };
 

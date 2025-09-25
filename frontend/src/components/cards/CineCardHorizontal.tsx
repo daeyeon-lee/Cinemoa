@@ -117,7 +117,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({
       <HorizontalRight
         data={data}
         loadingState={loadingState}
-        onVoteClick={onVoteClick}
+        onVoteClick={handleVoteClick}
         currentIsLiked={currentIsLiked}
         currentLikeCount={currentLikeCount}
         isLoading={likeMutation.isPending}
