@@ -30,7 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || ''} />
 
         {/* GA4 디버거 (개발 환경에서만 표시) */}
-        {/* <GA4Debugger /> */}
+        <GA4Debugger />
 
         {/* 카카오맵 스크립트 */}
         <Script type="text/javascript" src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapApiKey}&libraries=services&autoload=false`} strategy="beforeInteractive" />

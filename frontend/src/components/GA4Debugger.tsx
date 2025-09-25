@@ -19,7 +19,7 @@ export default function GA4Debugger() {
     const checkGA4 = () => {
       const gtagLoaded = typeof window !== 'undefined' && typeof window.gtag === 'function';
       const dataLayerExists = typeof window !== 'undefined' && Array.isArray(window.dataLayer);
-      const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_DEVELOP || '';
+      const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || '';
 
       setGaStatus({
         gtagLoaded,

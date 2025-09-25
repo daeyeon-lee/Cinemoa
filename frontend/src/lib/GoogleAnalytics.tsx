@@ -66,3 +66,49 @@ export const trackCustomEvent = (eventName: string, parameters?: Record<string, 
     window.gtag('event', eventName, parameters);
   }
 };
+
+// 비즈니스 메트릭 추적 함수들
+export const trackFundingEvent = (action: string, fundingId: number, amount?: number, category?: string) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'funding_event', {
+      event_category: 'funding',
+      event_label: action,
+      funding_id: fundingId,
+      value: amount || 0,
+      currency: 'KRW',
+      category: category || 'unknown',
+    });
+  }
+};
+
+export const trackUserAction = (action: string, itemId: number, itemType: string) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'user_action', {
+      event_category: 'engagement',
+      event_label: action,
+      item_id: itemId,
+      item_type: itemType,
+    });
+  }
+};
+
+export const trackPaymentEvent = (action: string, amount: number, currency: string = 'KRW') => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'payment_event', {
+      event_category: 'ecommerce',
+      event_label: action,
+      value: amount,
+      currency: currency,
+    });
+  }
+};
+
+export const trackSearchEvent = (searchTerm: string, resultsCount: number) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'search', {
+      event_category: 'engagement',
+      search_term: searchTerm,
+      results_count: resultsCount,
+    });
+  }
+};
