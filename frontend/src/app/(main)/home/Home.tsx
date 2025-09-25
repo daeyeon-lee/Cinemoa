@@ -149,7 +149,7 @@ export default function Home() {
         isLiked: safeIsLiked,
       });
     },
-    [user?.userId, queryClient, toggleLike]
+    [user?.userId, queryClient, toggleLike],
   );
 
   // ✅ bfcache 복원 시 홈/검색 쿼리 강제 갱신
@@ -160,7 +160,7 @@ export default function Home() {
       if (e.persisted) {
         console.log('🔄 [Home] bfcache 복원 감지 - 쿼리 무효화');
         // 🔄 홈/검색 쿼리 무효화 → refetch 트리거
-        queryClient.invalidateQueries({ queryKey: ['home'] });   // 홈 섹션들
+        queryClient.invalidateQueries({ queryKey: ['home'] }); // 홈 섹션들
         queryClient.invalidateQueries({ queryKey: ['search'] }); // 검색 쿼리들
       }
     };
@@ -184,7 +184,7 @@ export default function Home() {
   }, [queryClient]);
 
   return (
-    <div className="w-full px-5">
+    <div className="w-full">
       <main className="gap-5">
         {/* Desktop: 로고+검색+카테고리 - Full Width */}
         <div className="hidden sm:block py-8">
@@ -245,37 +245,59 @@ export default function Home() {
         </div>
 
         {/* Desktop Layout - 웹 버전 (lg 이상) */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block ">
           {/* 첫 번째 행: 추천 상영회 | 인기 상영회 */}
           <div className="w-full flex flex-col gap-4 lg:flex-row lg:gap-8 mb-12">
             {/* Left Column - Recommended (2/3) */}
-            <div className="flex-1 lg:w-2/3">
+            <div className="flex-1 lg:w-2/3 max-lg:pl-5">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
             </div>
 
             {/* Right Column - Popular (1/3) */}
-            <aside className="lg:w-1/3 h-fit">
+            <aside className="lg:w-1/3 h-fit px-5">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
             </aside>
           </div>
 
           {/* 두 번째 행: 종료 임박 상영회 - Full Width */}
-          <div className="w-full mb-12">
-            <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
+          <div className="w-full mb-12 max-lg:pl-5">
+            <ClosingSoonSection
+              title="종료 임박 상영회"
+              items={closingSoonItems}
+              loading={isLoadingClosingSoon}
+              onMoreClick={() => console.log('종료 임박 더보기')}
+              onCardClick={handleCardClick}
+              onVoteClick={handleVoteClick}
+            />
           </div>
 
           {/* 세 번째 행: 최근 본 상영회 - Full Width */}
-          <div>
+          <div className="max-lg:pl-5">
             <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
           </div>
         </div>
 
         {/* Mobile/Tablet Layout - 한 줄씩 세로 스택 (lg 미만) */}
         <div className="lg:hidden space-y-8">
-          <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
-          <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
-          <ClosingSoonSection title="종료 임박 상영회" items={closingSoonItems} loading={isLoadingClosingSoon} onMoreClick={() => console.log('종료 임박 더보기')} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
-          <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
+          <div className="px-5">
+            <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
+          </div>
+          <div className="pl-5">
+            <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
+          </div>
+          <div className="pl-5">
+            <ClosingSoonSection
+              title="종료 임박 상영회"
+              items={closingSoonItems}
+              loading={isLoadingClosingSoon}
+              onMoreClick={() => console.log('종료 임박 더보기')}
+              onCardClick={handleCardClick}
+              onVoteClick={handleVoteClick}
+            />
+          </div>
+          <div className="pl-5">
+            <RecentlyViewedSection title="최근 본 상영회" items={recentlyViewedItems} loading={isLoadingRecentlyViewed} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
+          </div>
         </div>
       </main>
     </div>
