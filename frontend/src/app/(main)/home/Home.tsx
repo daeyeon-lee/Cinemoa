@@ -187,8 +187,8 @@ export default function Home() {
     <div className="w-full">
       <main className="gap-5">
         {/* Desktop: 로고+검색+카테고리 - Full Width */}
-        <div className="hidden sm:block py-8">
-          <div className="flex flex-col items-center gap-8 w-full">
+        <div className="hidden sm:block py-8 ">
+          <div className="flex flex-col items-center gap-8 w-full ">
             <Image src="/cinemoa_logo_long.png" alt="씨네모아 로고" width={196} height={40} priority />
 
             <div className="flex flex-col items-center gap-3 w-full">
@@ -249,18 +249,18 @@ export default function Home() {
           {/* 첫 번째 행: 추천 상영회 | 인기 상영회 */}
           <div className="w-full flex flex-col gap-4 lg:flex-row lg:gap-8 mb-12">
             {/* Left Column - Recommended (2/3) */}
-            <div className="flex-1 lg:w-2/3 max-lg:pl-5">
+            <div className="flex-1 lg:w-2/3 max-md:pl-5 md:px-5">
               <RecommendedSection title="추천 상영회" items={recommendedItems} loading={isLoadingRecommended} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
             </div>
 
             {/* Right Column - Popular (1/3) */}
-            <aside className="lg:w-1/3 h-fit px-5">
+            <aside className="lg:w-1/3 h-fit max-md:pl-5 md:px-5">
               <PopularSection title="인기 상영회" items={popularItems} loading={isLoadingPopular} onCardClick={handleCardClick} onVoteClick={handleVoteClick} />
             </aside>
           </div>
 
           {/* 두 번째 행: 종료 임박 상영회 - Full Width */}
-          <div className="w-full mb-12 max-lg:pl-5">
+          <div className="w-full mb-12 max-md:pl-5">
             <ClosingSoonSection
               title="종료 임박 상영회"
               items={closingSoonItems}
