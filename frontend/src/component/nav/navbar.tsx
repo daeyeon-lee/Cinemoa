@@ -29,7 +29,7 @@ function Avatar({ src, size = 32 }: { src?: string; size?: number }) {
   return (
     <div
       // 동그란 아바타 프레임 + 잘림 처리
-      className="rounded-full overflow-hidden flex-shrink-0 bg-center bg-cover bg-no-repeat border border-slate-700"
+      className="rounded-full overflow-hidden flex-shrink-0 bg-center bg-cover bg-no-repeat"
       // 크기와 배경 이미지 동적 지정
       style={{
         width: size,
@@ -299,11 +299,11 @@ export default function Navbar() {
                     로그인
                   </Button>
                 </Link>
-                {/* <Link href="/auth">
+                <Link href="/auth">
                   <Button className="w-full rounded-[99px] text-inverse font-semibold text-xs" variant="primary" size="sm" textSize="sm">
                     회원가입
                   </Button>
-                </Link> */}
+                </Link>
               </>
             )}
           </div>
