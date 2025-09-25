@@ -178,21 +178,24 @@ public class ParticipatedFundingRepository {
         public void buildBaseQuery(Long userId, String state) {
             sql.append("""
                     SELECT f.funding_id, f.title, f.summary, f.banner_url, f.ticket_banner, f.state, f.ends_on, f.screen_day,
-                           f.funding_type, f.max_people, f.video_name, s.price,
-                           c.cinema_id, c.cinema_name, c.city, c.district,
-                           COALESCE(fs.participant_count, 0) as participant_count,
-                           COALESCE(fs.favorite_count, 0) as favorite_count,
-                           CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked
-                    FROM fundings f
-                    LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
-                    LEFT JOIN screens s ON f.screen_id = s.screen_id
-                    LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
-                    LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    WHERE f.funding_type = 'FUNDING'
-                      AND EXISTS (
-                        SELECT 1 FROM user_transactions t
-                        WHERE t.funding_id = f.funding_id AND t.user_id = ? AND t.state = 'SUCCESS'
-                      )
+                              f.funding_type, f.max_people, f.video_name, s.price,
+                              c.cinema_id, c.cinema_name, c.city, c.district,
+                              COALESCE(fs.participant_count, 0) as participant_count,
+                              COALESCE(fs.favorite_count, 0) as favorite_count,
+                              CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
+                              t.created_at as participated_at
+                       FROM fundings f
+                       LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
+                       LEFT JOIN screens s ON f.screen_id = s.screen_id
+                       LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
+                       LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
+                       INNER JOIN (
+                           SELECT funding_id, user_id, MAX(created_at) as created_at
+                           FROM user_transactions
+                           WHERE user_id = ? AND state = 'SUCCESS'
+                           GROUP BY funding_id, user_id
+                       ) t ON t.funding_id = f.funding_id
+                       WHERE f.funding_type = 'FUNDING'
                     """);
 
             // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용)
