@@ -316,6 +316,7 @@ public class FundingService {
                 .bannerUrl(funding.getBannerUrl())
                 .content(funding.getContent())
                 .state(funding.getState())
+                .screenDate(funding.getScreenDay())
                 .fundingEndsOn(funding.getEndsOn())
                 .price(price)
                 .build();
