@@ -295,12 +295,12 @@ export default function Navbar() {
             ) : (
               <>
                 <Link href="/auth">
-                  <Button className="w-full rounded-[99px]" variant="primary" size="sm" textSize="sm">
+                  <Button className="w-full rounded-[99px]" variant="secondary" size="sm" textSize="sm">
                     로그인
                   </Button>
                 </Link>
                 <Link href="/auth">
-                  <Button className="w-full rounded-[99px] text-inverse font-semibold text-xs" variant="primary" size="sm" textSize="sm">
+                  <Button className="w-full rounded-[99px] text-inverse" variant="primary" size="sm" textSize="sm">
                     회원가입
                   </Button>
                 </Link>
