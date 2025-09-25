@@ -34,7 +34,7 @@ const ListShell: React.FC<ListShellProps> = ({ header, sidebar, content, classNa
       <div className="max-lg:hidden w-full pb-3">{header}</div>
 
       {/* 하단 메인 컨테이너 */}
-      <div className="flex flex-col lg:flex-row justify-between max-w-full mx-auto lg:gap-16 pt-3">
+      <div className="flex flex-col lg:flex-row justify-between max-w-full mx-auto lg:gap-16 lg:pt-4">
         {/* 좌측 보조 필터 영역 (데스크톱: 200px 고정, 모바일: 숨김) */}
         <div className="w-56 flex-shrink-0">{sidebar}</div>
 

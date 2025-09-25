@@ -269,8 +269,7 @@ export default function Category() {
             if (id === fundingId) {
               // ✅ 카드에서 표시하는 필드를 그대로 사용하세요
               // (프로젝트에 따라 item.funding.stat.isLiked 인 곳도 있음)
-              currentIsLiked =
-                (item?.funding?.isLiked ?? item?.funding?.stat?.isLiked) === true;
+              currentIsLiked = (item?.funding?.isLiked ?? item?.funding?.stat?.isLiked) === true;
               break;
             }
           }
@@ -291,7 +290,7 @@ export default function Category() {
         isLiked: safeIsLiked,
       });
     },
-    [user?.userId, queryClient, toggleLike]
+    [user?.userId, queryClient, toggleLike],
   );
 
   // 무한 스크롤 처리
@@ -322,7 +321,7 @@ export default function Category() {
         console.log('🔄 [Category] bfcache 복원 감지 - 쿼리 무효화');
         // 🔄 검색/홈 쿼리 무효화 → refetch 트리거
         queryClient.invalidateQueries({ queryKey: ['search'] }); // 'search' 키 전체
-        queryClient.invalidateQueries({ queryKey: ['home'] });   // 홈 섹션도 쓰면 같이
+        queryClient.invalidateQueries({ queryKey: ['home'] }); // 홈 섹션도 쓰면 같이
       }
     };
 
@@ -505,7 +504,7 @@ export default function Category() {
         content={
           <div className="">
             {/* ========== 모바일 전용 필터 헤더 ========== */}
-            <div className="block lg:hidden pb-2">
+            <div className="block lg:hidden pb-3">
               {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 <Button
