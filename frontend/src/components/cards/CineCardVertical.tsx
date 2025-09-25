@@ -54,6 +54,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
   const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
 
+    // ✅ 중복 클릭 방지: 이미 처리 중이면 무시
+    if (likeMutation.isPending) {
+      console.log('🚫 좋아요 처리 중 - 중복 클릭 방지');
+      return;
+    }
+
     // 로그인 체크
     if (!userId) {
       alert('로그인 후 이용해주세요.');

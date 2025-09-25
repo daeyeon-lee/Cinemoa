@@ -56,6 +56,11 @@ export function useFundingLike() {
       }
     },
     
+    // ✅ 중복 요청 방지 옵션들
+    retry: false, // 재시도 비활성화
+    retryDelay: 0, // 재시도 지연 시간 0
+    networkMode: 'online', // 온라인일 때만 실행
+    
     // Optimistic Update - 즉시 UI 반영
     onMutate: async ({ fundingId, userId, isLiked }) => {
       console.log('🟡 onMutate 실행 - 낙관적 업데이트 시작');
