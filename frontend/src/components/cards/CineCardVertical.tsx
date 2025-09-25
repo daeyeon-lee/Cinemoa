@@ -150,7 +150,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
         {/* 영화 정보 */}
         <div className="space-y-2 mt-3">
           {/* 영화 제목 */}
-          <h3 className="text-p2-b line-clamp-2 leading-tight min-h-[2.5rem]">{data.funding.videoName}</h3>
+          <h3 className="text-p2-b line-clamp-2">{data.funding.videoName}</h3>
           {/* 배지 영역(지역+상영날짜) */}
           <div className="flex gap-1 flex-wrap ">
             <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{data.cinema.district}</span>

@@ -94,7 +94,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({
   })();
 
   return (
-    <div className={`w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02] min-w-[300px] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
+    <div className={`w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02]  min-w-[300px] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
       {/* 왼쪽(이미지+영화제목+지역+상영일+프로젝트제목) */}
       <HorizontalLeft
         data={data}
