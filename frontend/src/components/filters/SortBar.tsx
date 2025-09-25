@@ -47,7 +47,7 @@ const SortBar: React.FC<SortBarProps> = ({ sortBy, onSortChange, isClosed, onIsC
   ];
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between pb-3">
       {/* 좌측: 정렬 기준 선택 */}
       <div className="flex items-center gap-1">
         <Select value={sortBy} onValueChange={onSortChange}>

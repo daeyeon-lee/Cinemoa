@@ -381,9 +381,9 @@ export default function Search() {
         }
         content={
           <>
-            <div className="space-y-3">
+            <div className="">
               {/* ========== 모바일 전용 필터 헤더 ========== */}
-              <div className="block lg:hidden">
+              <div className="block lg:hidden pb-2">
                 {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   <Button
