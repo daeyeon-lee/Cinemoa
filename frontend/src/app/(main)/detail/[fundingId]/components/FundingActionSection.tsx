@@ -4,6 +4,7 @@ import { Dialog } from '@/components/ui/dialog'; // 결제 모달용
 import Payment from '@/app/(main)/payment/Payment'; // 결제 모달 내용
 import RefundConfirm from '@/app/(main)/refund/RefundConfirm'; // 환불 확인 모달
 import AlertDialog from '@/components/ui/alert-dialog'; // 참여 불가 모달
+import ConfirmDialog from '@/components/ui/confirm-dialog'; // 환불 완료 모달
 import { HeartIcon } from '@/component/icon/heartIcon'; // 하트 아이콘
 import { ShareButton } from '@/components/share/ShareButton'; // 공유 버튼 컴포넌트
 import InfoIcon from '@/component/icon/infoIcon'; // 정보 아이콘
@@ -31,6 +32,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   const [fullCapacityDialogOpen, setFullCapacityDialogOpen] = useState(false);
+  const [refundCompleteDialogOpen, setRefundCompleteDialogOpen] = useState(false);
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
@@ -84,6 +86,37 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
     // 정원에 여유가 있으면 결제 모달 열기
     setPaymentDialogOpen(true);
   };
+
+  // 환불 완료 핸들러
+  const handleRefundComplete = () => {
+    console.log('환불 완료 핸들러 호출됨');
+    setRefundDialogOpen(false); // RefundConfirm 모달 닫기
+    setRefundCompleteDialogOpen(true); // 완료 모달 열기
+    console.log('refundCompleteDialogOpen을 true로 설정함');
+  };
+
+  // 환불 완료 모달이 떠있을 때는 기본 UI 숨기기
+  console.log('FundingActionSection 렌더링, refundCompleteDialogOpen:', refundCompleteDialogOpen);
+  if (refundCompleteDialogOpen) {
+    console.log('환불 완료 AlertDialog 렌더링 중');
+    return (
+      <AlertDialog
+        title="참여 취소 완료"
+        content="참여 취소가 완료되었습니다"
+        info="환불 처리가 완료되었습니다. 환불 금액은 결제한 카드로 영업일 기준 2-3일 내에 입금됩니다."
+        icon={<InfoIcon stroke="#10B981" size={48} />}
+        btnLabel="확인"
+        subBtnLabel=""
+        onBtnLabel={() => {
+          console.log('환불 완료 모달 확인 버튼 클릭됨');
+          setRefundCompleteDialogOpen(false);
+          // 확인 버튼 클릭 시 페이지 새로고침으로 최신 상태 반영
+          window.location.href = `/detail/${fundingId}`;
+        }}
+        onSubBtnLabel={() => {}}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col pt-5 border-t border-slate-600 gap-4">
@@ -151,13 +184,13 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
                 // content={`현재 펀딩의 참여 인원이 가득 차서\n참여할 수 없습니다.`}
                 info="현재 펀딩의 참여 인원이 가득 차서 참여할 수 없습니다"
                 icon={<InfoIcon stroke="#FF5768" size={48} />}
-                btnLabel="확인"
-                subBtnLabel="다른 펀딩 보기"
-                onBtnLabel={() => setFullCapacityDialogOpen(false)}
-                onSubBtnLabel={() => {
+                btnLabel="다른 펀딩 보기"
+                subBtnLabel="확인"
+                onBtnLabel={() => {
                   setFullCapacityDialogOpen(false);
                   window.location.href = '/category';
                 }}
+                onSubBtnLabel={() => setFullCapacityDialogOpen(false)}
               />
             )}
           </>
@@ -167,7 +200,16 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
             <Button variant="secondary" size="lg" textSize="lg" className="w-full" onClick={() => setRefundDialogOpen(true)}>
               참여 취소하기
             </Button>
-            {refundDialogOpen && <RefundConfirm fundingId={fundingId} userId={userId} amount={price} title={contextData.funding.title} onClose={() => setRefundDialogOpen(false)} />}
+            {refundDialogOpen && (
+              <RefundConfirm 
+                fundingId={fundingId} 
+                userId={userId} 
+                amount={price} 
+                title={contextData.funding.title} 
+                onClose={() => setRefundDialogOpen(false)}
+                onSuccess={handleRefundComplete}
+              />
+            )}
           </>
         )}
       </div>

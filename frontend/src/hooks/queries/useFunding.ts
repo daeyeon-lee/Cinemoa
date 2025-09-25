@@ -213,8 +213,8 @@ export function useFundingLike() {
   });
 }
 
-// 환불 전용 훅 (환불 API + 페이지 새로고침)
-export function useFundingRefund() {
+// 환불 전용 훅 (환불 API + 선택적 페이지 새로고침)
+export function useFundingRefund(options?: { skipRedirect?: boolean }) {
   return useMutation({
     mutationFn: async ({ fundingId, userId }: { fundingId: number; userId: string }) => {
       // console.log('[환불 API 호출]', fundingId, userId);
@@ -228,8 +228,10 @@ export function useFundingRefund() {
 
     onSuccess: (data, { fundingId }) => {
       // console.log('🟢 환불 성공:', fundingId);
-      // 환불 완료 후 페이지 새로고침으로 최신 상태 반영
-      window.location.href = `/detail/${fundingId}`;
+      // skipRedirect가 true가 아닌 경우에만 페이지 새로고침
+      if (!options?.skipRedirect) {
+        window.location.href = `/detail/${fundingId}`;
+      }
     },
   });
 }

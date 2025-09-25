@@ -11,6 +11,7 @@ interface RefundConfirmProps {
   amount?: number;
   title?: string;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
 export default function RefundConfirm({ 
@@ -18,10 +19,11 @@ export default function RefundConfirm({
   userId,
   amount,
   title,
-  onClose 
+  onClose,
+  onSuccess
 }: RefundConfirmProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const refundMutation = useFundingRefund();
+  const refundMutation = useFundingRefund({ skipRedirect: true });
 
   // 환불 진행
   const handleRefund = async () => {
@@ -36,6 +38,16 @@ export default function RefundConfirm({
       refundMutation.mutate({
         fundingId,
         userId,
+      }, {
+        onSuccess: () => {
+          setIsLoading(false);
+          onSuccess?.(); // 환불 성공 시 완료 모달 표시
+        },
+        onError: (error) => {
+          console.error('환불 처리 중 오류:', error);
+          alert('환불 처리 중 오류가 발생했습니다.');
+          setIsLoading(false);
+        }
       });
     } catch (error) {
       console.error('환불 처리 중 오류:', error);

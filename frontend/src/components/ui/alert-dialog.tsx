@@ -78,8 +78,21 @@ export default function AlertDialog({
           )}
         </div>
 
-        {/* 버튼 */}
+        {/* 서브 버튼 */}
         <div className="flex gap-3">
+          {subBtnLabel && (
+            <Button 
+              variant="secondary" 
+              size="lg" 
+              textSize="lg"
+              className="flex-1"
+              onClick={onSubBtnLabel}
+              disabled={isLoading}
+            >
+              {subBtnLabel}
+            </Button>
+          )}
+          {/* 버튼 */}
           <Button 
             variant="brand1" 
             size="lg" 
@@ -90,19 +103,6 @@ export default function AlertDialog({
           >
             {btnLabel}
           </Button>
-          {/* 서브 버튼 */}
-          {subBtnLabel && (
-            <Button 
-            variant="secondary" 
-            size="lg" 
-            textSize="lg"
-            className="flex-1"
-            onClick={onSubBtnLabel}
-            disabled={isLoading}
-          >
-            {subBtnLabel}
-            </Button>
-          )}
         </div>
       </div>
     </div>
