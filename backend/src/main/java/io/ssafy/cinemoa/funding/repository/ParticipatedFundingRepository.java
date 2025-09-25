@@ -1,7 +1,7 @@
 package io.ssafy.cinemoa.funding.repository;
 
-import io.ssafy.cinemoa.funding.dto.ParticipatedFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.CursorRequestDto;
+import io.ssafy.cinemoa.funding.dto.ParticipatedFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.TimestampCursorInfo;
 import io.ssafy.cinemoa.funding.enums.FundingState;
 import io.ssafy.cinemoa.global.enums.ResourceCode;
@@ -40,8 +40,8 @@ public class ParticipatedFundingRepository {
      * @return 참여한 펀딩 목록
      */
     public CursorResponse<ParticipatedFundingInfoDto> findParticipatedFundings(Long userId,
-                                                                           String state,
-                                                                           CursorRequestDto request) {
+                                                                               String state,
+                                                                               CursorRequestDto request) {
         // 1. 기본 쿼리 구성 (state 필터 포함)
         ParticipatedQueryBuilder queryBuilder = new ParticipatedQueryBuilder();
         queryBuilder.buildBaseQuery(userId, state);
@@ -124,11 +124,11 @@ public class ParticipatedFundingRepository {
 
         // 좋아요 여부
         boolean isLiked = rs.getBoolean("is_liked");
-        
+
         // state 확인
         String state = rs.getString("state");
         FundingState fundingState = FundingState.valueOf(state);
-        
+
         // SUCCESS 상태일 때만 ticketBanner 포함, 아니면 null
         String ticketBanner = null;
         if ("SUCCESS".equals(state)) {
@@ -182,15 +182,17 @@ public class ParticipatedFundingRepository {
                            c.cinema_id, c.cinema_name, c.city, c.district,
                            COALESCE(fs.participant_count, 0) as participant_count,
                            COALESCE(fs.favorite_count, 0) as favorite_count,
-                           CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked,
-                           t.created_at as participated_at
+                           CASE WHEN uf.user_id IS NOT NULL THEN true ELSE false END as is_liked
                     FROM fundings f
                     LEFT JOIN cinemas c ON f.cinema_id = c.cinema_id
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    INNER JOIN user_transactions t ON t.funding_id = f.funding_id AND t.user_id = ? AND t.state IN ('SUCCESS', 'REFUNDED')
                     WHERE f.funding_type = 'FUNDING'
+                      AND EXISTS (
+                        SELECT 1 FROM user_transactions t
+                        WHERE t.funding_id = f.funding_id AND t.user_id = ? AND t.state IN ('SUCCESS', 'REFUNDED')
+                      )
                     """);
 
             // userId를 파라미터로 추가 (좋아요 조회용, 참여자 조회용)
@@ -219,7 +221,8 @@ public class ParticipatedFundingRepository {
                         break;
                     default:
                         // 잘못된 state 값인 경우 예외 발생
-                        throw new BadRequestException("잘못된 상태 필터입니다. (ALL, ON_PROGRESS, CLOSE 중 하나를 선택하세요)", ResourceCode.INPUT);
+                        throw new BadRequestException("잘못된 상태 필터입니다. (ALL, ON_PROGRESS, CLOSE 중 하나를 선택하세요)",
+                                ResourceCode.INPUT);
                 }
             }
         }
