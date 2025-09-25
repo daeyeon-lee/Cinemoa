@@ -1,4 +1,4 @@
-import { CreateFundingParams, CreateFundingResponse } from '@/types/funding';
+import { CreateFundingParams, CreateFundingResponse, DetailSummaryResponse } from '@/types/funding';
 const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 // 펀딩 생성 API
 export const createFunding = async (data: CreateFundingParams, posterUrl: string): Promise<CreateFundingResponse> => {
@@ -9,21 +9,20 @@ export const createFunding = async (data: CreateFundingParams, posterUrl: string
   // const blob = await response.blob();
   // formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
   // formData.append('bannerImg', new File([blob], 'banner.png', { type: blob.type || 'image/png' }));
-   
+
   // 외부 URL (TMDB 같은) → JSON 필드에 posterUrl 추가
-   if (posterUrl.startsWith('http')) {
+  if (posterUrl.startsWith('http')) {
     formData.append(
       'request',
       new Blob([JSON.stringify({ ...data, posterUrl })], {
         type: 'application/json',
-      })
+      }),
     );
   }
   // Base64 (data:image/...) → Blob 변환해서 파일 전송
   else if (posterUrl.startsWith('data:image')) {
     const byteString = atob(posterUrl.split(',')[1]);
-    const mimeType =
-      posterUrl.split(',')[0].match(/:(.*?);/)?.[1] || 'image/png';
+    const mimeType = posterUrl.split(',')[0].match(/:(.*?);/)?.[1] || 'image/png';
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
     for (let i = 0; i < byteString.length; i++) {
@@ -31,14 +30,8 @@ export const createFunding = async (data: CreateFundingParams, posterUrl: string
     }
     const blob = new Blob([ab], { type: mimeType });
 
-    formData.append(
-      'request',
-      new Blob([JSON.stringify(data)], { type: 'application/json' })
-    );
-    formData.append(
-      'bannerImg',
-      new File([blob], 'banner.png', { type: mimeType })
-    );
+    formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    formData.append('bannerImg', new File([blob], 'banner.png', { type: mimeType }));
   }
   try {
     console.log('=== 펀딩 생성 API 요청 시작 ===');
@@ -69,6 +62,34 @@ export const createFunding = async (data: CreateFundingParams, posterUrl: string
     return result;
   } catch (error) {
     console.error('=== 펀딩 생성 API 요청 실패 ===');
+    console.error('에러:', error);
+    throw error;
+  }
+};
+
+// 상세 내역 요약 api
+
+export const getDetailSummary = async (videoContent: string): Promise<DetailSummaryResponse> => {
+  try {
+    const url = `${BaseUrl}funding/video-content`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ videoContent }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
+    }
+
+    const result = await response.json();
+    console.log('응답 데이터:', result);
+    return result;
+  } catch (error) {
     console.error('에러:', error);
     throw error;
   }
