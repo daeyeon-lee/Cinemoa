@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Drawer } from 'vaul';
-import { X } from 'lucide-react';
+import { X, RefreshCw } from 'lucide-react';
 
 /**
  * 필터링을 위한 바텀시트 컴포넌트
@@ -49,8 +49,8 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
       <Drawer.Portal>
         <Drawer.Title>{title}</Drawer.Title>
         <Drawer.Description className="sr-only">{title} 필터 옵션을 선택하고 적용할 수 있습니다.</Drawer.Description>
-        <Drawer.Overlay className="fixed inset-0 bg-black/60" />
-        <Drawer.Content className="bg-BG-1 flex flex-col rounded-t-2xl h-[400px] fixed bottom-0 left-0 right-0 px-6 pb-8">
+        <Drawer.Overlay className="fixed inset-0 bg-black/60 z-50" />
+        <Drawer.Content className="bg-BG-1 flex flex-col rounded-t-2xl h-[400px] fixed bottom-0 left-0 right-0 px-6 pb-8 z-50">
           {/* 드래그 핸들 */}
           <div className="mx-auto w-9 h-1 flex-shrink-0 rounded-full bg-BG-2 mb-5 mt-2" />
 
@@ -70,7 +70,8 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
             {/* 초기화 버튼 */}
             {onReset && (
               <div className="flex justify-end">
-                <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary" disabled={resetDisabled}>
+                <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary flex items-center gap-1" disabled={resetDisabled}>
+                  <RefreshCw size={14} />
                   초기화
                 </Button>
               </div>
@@ -82,8 +83,9 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                 onApplyFilter();
                 onClose();
               }}
-              className="w-full"
+              className="w-full text-white"
               size="lg"
+              textSize="lg"
               variant={variant}
             >
               {applyButtonText}
