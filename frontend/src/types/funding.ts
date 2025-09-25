@@ -51,3 +51,13 @@ export interface CreateFundingResponse {
     fundingId: number;
   };
 }
+
+// 상세 내역 조회
+export interface DetailSummaryResponse {
+  state: string;
+  message: string;
+  code: number;
+  data: {
+    processedVideoContent: string;
+  };
+}
