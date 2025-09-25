@@ -161,7 +161,7 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
 
       setIsEmailSent(true);
       setIsVerificationRequested(true);
-      // console.log('이메일 전송 완료');
+      console.log('이메일 전송 완료');
     } catch (error: any) {
       console.error('이메일 전송 실패:', error);
       setEmailError(error.message || '이메일 전송에 실패했습니다.');
@@ -199,6 +199,7 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
         setIsVerificationSuccess(true);
         setIsVerificationSent(true);
         setSecretKey(result.data.secretKey);
+        console.log('인증 완료');
         // console.log('인증 완료, secretKey:', result.data.secretKey);
       } else {
         setVerificationCodeError(result.message || '인증에 실패했습니다.');

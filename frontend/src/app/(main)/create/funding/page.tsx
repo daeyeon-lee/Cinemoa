@@ -28,16 +28,16 @@ export default function FundingPage() {
   const [perPersonAmount, setPerPersonAmount] = useState<number | null>(null);
   // 펀딩 정보 데이터 처리 함수
   const handleFundingData = (data: fundinginfo) => {
-    console.log('=== handleFundingData ===');
-    console.log('받은 데이터:', data);
+    // console.log('=== handleFundingData ===');
+    // console.log('받은 데이터:', data);
     setFundingData(data);
     setActiveTab('movie-info');
   };
 
   // 상영물 정보 가지고 영화관 정보로 이동
   const handleMovieData = (data: movieinfo) => {
-    console.log('=== handleMovieData ===');
-    console.log('받은 데이터:', data);
+    // console.log('=== handleMovieData ===');
+    // console.log('받은 데이터:', data);
     setMovieData(data);
     setActiveTab('theater-info');
   };

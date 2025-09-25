@@ -29,7 +29,7 @@ export default function VotePage() {
   // 펀딩 정보 데이터 처리 함수
   const handleFundingData = (data: VoteFundinginfo) => {
     // console.log('=== handleFundingData ===');
-    console.log('받은 데이터:', data);
+    // console.log('받은 데이터:', data);
     setVoteFundingData(data);
     setVoteActiveTab('vote-movie-info');
   };
@@ -37,7 +37,7 @@ export default function VotePage() {
   // 상영물 정보 데이터 처리 함수
   const handleMovieData = (data: VoteMovieinfo) => {
     // console.log('=== handleMovieData ===');
-    console.log('받은 데이터:', data);
+    // console.log('받은 데이터:', data);
     setVoteMovieData(data);
     setVoteActiveTab('vote-theater-info');
   };

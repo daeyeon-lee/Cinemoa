@@ -5,7 +5,7 @@ import { WonauthStartRequest, WonauthStartResponse, WonauthVerifyRequest, Wonaut
 export const startWonauth = async (data: WonauthStartRequest): Promise<WonauthStartResponse> => {
   try {
     console.log('=== 1원 인증 요청 시작 ===');
-    console.log('요청 데이터:', data);
+    // console.log('요청 데이터:', data);
 
     const response = await fetch('https://j13a110.p.ssafy.io:8443/api/wonauth/start', {
       method: 'POST',
@@ -37,7 +37,7 @@ export const startWonauth = async (data: WonauthStartRequest): Promise<WonauthSt
 export const verifyWonauth = async (data: WonauthVerifyRequest): Promise<WonauthVerifyResponse> => {
   try {
     console.log('=== 1원 인증번호 검증 시작 ===');
-    console.log('요청 데이터:', data);
+    // console.log('요청 데이터:', data);
 
     const response = await fetch('https://j13a110.p.ssafy.io:8443/api/wonauth/verify', {
       method: 'POST',

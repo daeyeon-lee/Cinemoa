@@ -57,7 +57,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     try {
       // 현재 입력된 내용을 videoContent로 사용
       const videoContent = movieDescription;
-      console.log('videoContent', videoContent);
+      // console.log('videoContent', videoContent);
 
       // videoContent가 비어있으면 에러 처리
       if (!videoContent || videoContent.trim() === '') {
@@ -275,8 +275,8 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
       videoContent: movieDescription, // 상영물 설명
     };
 
-    console.log('movieData', movieData);
-    console.log('========================');
+    // console.log('movieData', movieData);
+    // console.log('==============ㄴ==========');
 
     onNext(movieData);
   };

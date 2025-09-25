@@ -19,7 +19,7 @@ export const getCategories = async (): Promise<CategoryResponse[]> => {
     }
 
     const result = await response.json();
-    console.log('응답 데이터:', result.data.items);
+    // console.log('응답 데이터:', result.data.items);
     return result.data.items;
   } catch (error) {
     console.error('에러:', error);

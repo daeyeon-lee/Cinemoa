@@ -58,14 +58,14 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
 
   // 다음 단계로 넘어가는 핸들러
   const handleNext = async () => {
-    console.log('=== PaymentTab 제출 시작 ===');
-    console.log('현재 paymentData:', paymentData);
-    console.log('fundingId:', fundingId);
-    console.log('============================');
+    // console.log('=== PaymentTab 제출 시작 ===');
+    // console.log('현재 paymentData:', paymentData);
+    // console.log('fundingId:', fundingId);
+    // console.log('============================');
 
     // 결제 데이터 유효성 검사
     const hasRequiredData = paymentData.cardNumber1 && paymentData.cardNumber2 && paymentData.cardNumber3 && paymentData.cardNumber4 && paymentData.expiryDate && paymentData.cvc;
-    console.log('필수 데이터 입력 여부:', hasRequiredData);
+    // console.log('필수 데이터 입력 여부:', hasRequiredData);
 
     if (!hasRequiredData) {
       alert('필수 결제 정보를 입력해주세요.');
@@ -84,13 +84,13 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
         amount: amount || 0, // 1인당 결제 금액
       };
 
-      console.log('=== Payment API 요청 시작 ===');
-      console.log('요청 데이터:', paymentParams);
+      // console.log('=== Payment API 요청 시작 ===');
+      // console.log('요청 데이터:', paymentParams);
 
       const result = await createPayment(paymentParams);
 
-      console.log('=== Payment API 요청 성공 ===');
-      console.log('응답:', result);
+      // console.log('=== Payment API 요청 성공 ===');
+      // console.log('응답:', result);
       alert('결제가 성공적으로 완료되었습니다!');
       router.push('/mypage');
     } catch (error) {

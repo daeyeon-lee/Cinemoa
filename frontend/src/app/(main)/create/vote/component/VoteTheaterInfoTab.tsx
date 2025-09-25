@@ -35,10 +35,10 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
   // 다음 단계로 넘어가는 핸들러
   const handleNext = async () => {
     // 전달받은 데이터 확인
-    console.log('=== TheaterInfoTab 데이터 확인 ===');
-    console.log('fundingData:', fundingData);
-    console.log('movieData:', movieData);
-    console.log('=====================================');
+    // console.log('=== TheaterInfoTab 데이터 확인 ===');
+    // console.log('fundingData:', fundingData);
+    // console.log('movieData:', movieData);
+    // console.log('=====================================');
 
     // 각각의 정보를 구조화해서 API 요청
     const theaterData: VoteTheaterinfo = {
@@ -63,7 +63,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
     try {
       const result = await creatVoteFunding(completeData, posterUrl || '');
       console.log('=== 펀딩 생성 성공 ===');
-      console.log('응답:', result);
+      // console.log('응답:', result);
 
       // 성공 alert 표시 후 홈으로 이동
       alert('투표가 성공적으로 생성되었습니다!');

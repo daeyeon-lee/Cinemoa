@@ -103,10 +103,10 @@ export function useSearch(params: UseSearchParams = {}) {
       const response = await searchItems(requestParams);
 
       // console.log('[useSearch] 응답:', {
-        itemCount: response.data?.content?.length || 0,
-        hasNextPage: response.data?.hasNextPage,
-        nextCursor: response.data?.nextCursor,
-      });
+      //   itemCount: response.data?.content?.length || 0,
+      //   hasNextPage: response.data?.hasNextPage,
+      //   nextCursor: response.data?.nextCursor,
+      // });
 
       return response;
     },

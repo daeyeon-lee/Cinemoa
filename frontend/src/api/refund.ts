@@ -21,7 +21,7 @@ export const refundPayment = async (fundingId: number, userId: number): Promise<
     }
 
     const result = await response.json();
-    console.log('환불 응답 데이터:', result);
+    // console.log('환불 응답 데이터:', result);
     return result;
   } catch (error) {
     console.error('환불 에러:', error);
