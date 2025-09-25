@@ -251,10 +251,10 @@ export default function Step2Page() {
     }
 
     // 카테고리 ID 매핑
-    console.log('=== 카테고리 정보 확인 ===');
-    console.log('사용자 preferences:', user.preferences);
+    // console.log('=== 카테고리 정보 확인 ===');
+    // console.log('사용자 preferences:', user.preferences);
     const categoryIds = getCategoryIds(user.preferences);
-    console.log('변환된 카테고리 IDs:', categoryIds);
+    // console.log('변환된 카테고리 IDs:', categoryIds);
 
     if (categoryIds.length === 0) {
       console.error('선택된 카테고리가 없습니다.');
@@ -263,11 +263,11 @@ export default function Step2Page() {
 
     try {
       console.log('=== 회원가입 완료 API 호출 ===');
-      console.log('사용자 ID:', user.userId);
-      console.log('카테고리 IDs:', categoryIds);
+      // console.log('사용자 ID:', user.userId);
+      // console.log('카테고리 IDs:', categoryIds);
       // console.log('은행 코드:', bankCode);
       // console.log('계좌번호:', values.accountNumber);
-      console.log('이메일:', user.email);
+      // console.log('이메일:', user.email);
       // console.log('SecretKey:', secretKey);
 
       // 추가 정보 입력 API 호출
@@ -361,7 +361,8 @@ export default function Step2Page() {
         setIsVerificationSuccess(true);
         setIsVerificationSent(true);
         setSecretKey(result.data.secretKey);
-        console.log('인증 완료, secretKey:', result.data.secretKey);
+        console.log('인증완료');
+        // console.log('인증 완료, secretKey:', result.data.secretKey);
       } else {
         setVerificationCodeError(result.message || '인증에 실패했습니다.');
       }

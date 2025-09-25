@@ -219,15 +219,15 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     };
 
     // console.log('=== MovieInfoTab 제출 ===');
-    console.log('선택된 카테고리 ID (문자열):', selectedCategoryId);
-    console.log('선택된 카테고리 ID (숫자):', parseInt(selectedCategoryId));
-    console.log('입력된 값:', movieData);
-    console.log('Store에 저장된 값:', {
-      categoryId: parseInt(selectedCategoryId),
-      videoName: movieTitle,
-      posterUrl: selectedImage,
-      videoContent: movieDescription,
-    });
+    // console.log('선택된 카테고리 ID (문자열):', selectedCategoryId);
+    // console.log('선택된 카테고리 ID (숫자):', parseInt(selectedCategoryId));
+    // console.log('입력된 값:', movieData);
+    // console.log('Store에 저장된 값:', {
+    //   categoryId: parseInt(selectedCategoryId),
+    //   videoName: movieTitle,
+    //   posterUrl: selectedImage,
+    //   videoContent: movieDescription,
+    // });
 
     onNext(movieData);
   };

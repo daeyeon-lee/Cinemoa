@@ -265,7 +265,7 @@ export default function Home() {
               title="종료 임박 상영회"
               items={closingSoonItems}
               loading={isLoadingClosingSoon}
-              onMoreClick={() => console.log('종료 임박 더보기')}
+              // onMoreClick={() => console.log('종료 임박 더보기')}
               onCardClick={handleCardClick}
               onVoteClick={handleVoteClick}
             />
@@ -290,7 +290,7 @@ export default function Home() {
               title="종료 임박 상영회"
               items={closingSoonItems}
               loading={isLoadingClosingSoon}
-              onMoreClick={() => console.log('종료 임박 더보기')}
+              // onMoreClick={() => console.log('종료 임박 더보기')}
               onCardClick={handleCardClick}
               onVoteClick={handleVoteClick}
             />

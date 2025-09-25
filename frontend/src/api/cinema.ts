@@ -39,7 +39,7 @@ export const getCinemas = async (params: CinemaParams = {}): Promise<CinemaRespo
     }
 
     const data = await response.json();
-    console.log('전체 영화관 조회:', data.data);
+    // console.log('전체 영화관 조회:', data.data);
     return data.data;
   } catch (error) {
     console.error('❌ API 오류:', error);
@@ -60,7 +60,7 @@ export const getCinemaDetail = async (cinemaId: number, features?: string[]): Pr
 
     const response = await fetch(url);
     const data = await response.json();
-    console.log('영화관 상세 조회:', data.data);
+    // console.log('영화관 상세 조회:', data.data);
     return data.data;
   } catch (error) {
     console.error('❌ API 오류:', error);
@@ -83,8 +83,8 @@ export const getReservationTime = async (screenId: number, targetDate: Date): Pr
     }
 
     const data = await response.json();
-    console.log('예약 가능시간:', data.data);
-    console.log('url:', url);
+    // console.log('예약 가능시간:', data.data);
+    // console.log('url:', url);
 
     return data.data;
   } catch (error) {

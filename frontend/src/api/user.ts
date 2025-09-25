@@ -28,7 +28,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
     }
 
     const result: UpdateUserInfoResponse = await response.json();
-    // console.log('=== 사용자 추가 정보 입력 성공 ===');
+    console.log('=== 사용자 추가 정보 입력 성공 ===');
     // console.log('응답 데이터:', result);
 
     return result;

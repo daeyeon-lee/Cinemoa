@@ -42,7 +42,7 @@ export const getFundingProposals = async (
   try {
     // 쿼리 파라미터 구성
     const queryParams = new URLSearchParams();
-    console.log('type:', type, 'cursor:', cursor, 'limit:', limit, 'paramName:', paramName);
+    // console.log('type:', type, 'cursor:', cursor, 'limit:', limit, 'paramName:', paramName);
     if (type) queryParams.append('type', type);
     if (cursor) queryParams.append(paramName, cursor);
     queryParams.append('limit', limit.toString());
@@ -55,7 +55,7 @@ export const getFundingProposals = async (
     }
 
     const data: FundingProposalsResponse = await response.json();
-    console.log('내가 제안한 상영회 목록:', data);
+    // console.log('내가 제안한 상영회 목록:', data);
     return data;
   } catch (error) {
     console.error('내가 제안한 상영회 조회 오류:', error);
@@ -74,7 +74,7 @@ export const getParticipatedFunding = async (
   try {
     // 쿼리 파라미터 구성
     const queryParams = new URLSearchParams();
-    console.log('state:', state, 'cursor:', cursor, 'limit:', limit, 'paramName:', paramName);
+    // console.log('state:', state, 'cursor:', cursor, 'limit:', limit, 'paramName:', paramName);
     if (state && state !== 'ALL') queryParams.append('state', state);
     if (cursor) queryParams.append(paramName, cursor);
     queryParams.append('limit', limit.toString());
@@ -87,7 +87,7 @@ export const getParticipatedFunding = async (
     }
 
     const data: ParticipatedFundingResponse = await response.json();
-    console.log('내가 참여한 상영회 목록:', data);
+    // console.log('내가 참여한 상영회 목록:', data);
     return data;
   } catch (error) {
     console.error('내가 참여한 상영회 조회 오류:', error);
@@ -100,7 +100,7 @@ export const getLikedFunding = async (userId: number, type?: 'funding' | 'vote',
   try {
     // 쿼리 파라미터 구성
     const queryParams = new URLSearchParams();
-    console.log('type:', type, 'cursor:', cursor, 'limit:', limit, 'paramName:', paramName);
+    // console.log('type:', type, 'cursor:', cursor, 'limit:', limit, 'paramName:', paramName);
     if (type) queryParams.append('type', type);
     if (cursor) queryParams.append(paramName, cursor);
     queryParams.append('limit', limit.toString());
@@ -113,7 +113,7 @@ export const getLikedFunding = async (userId: number, type?: 'funding' | 'vote',
     }
 
     const data: LikedFundingResponse = await response.json();
-    console.log('내가 보고싶어요 한 상영회 목록:', data);
+    // console.log('내가 보고싶어요 한 상영회 목록:', data);
     return data;
   } catch (error) {
     console.error('내가 보고싶어요 한 상영회 조회 오류:', error);

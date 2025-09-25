@@ -18,13 +18,13 @@ export const holdSeats = async (fundingId: number, userId: number): Promise<Hold
       throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
     }
     const result = await response.json();
-    console.log('응답 데이터:', result);
+    // console.log('응답 데이터:', result);
     return result;
   } catch (error) {
     console.error('에러:', error);
     throw error;
   } finally {
-    console.log('자리차지 요청 완료');
+    // console.log('자리차지 요청 완료');
   }
 };
 
@@ -47,7 +47,7 @@ export const createPayment = async (params: CreatePaymentParams): Promise<Create
     }
 
     const result = await response.json();
-    console.log('응답 데이터:', result);
+    // console.log('응답 데이터:', result);
     return result;
   } catch (error) {
     console.error('에러:', error);

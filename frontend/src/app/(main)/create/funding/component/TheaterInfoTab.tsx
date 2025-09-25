@@ -47,7 +47,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
 
   // 다음 단계로 넘어가는 핸들러
   const handleNext = async () => {
-    console.log('🚀 handleNext 함수 시작됨 (TheaterInfoTab)');
+    // console.log('🚀 handleNext 함수 시작됨 (TheaterInfoTab)');
     // 전달받은 데이터 확인
 
     // 각각의 정보를 구조화해서 API 요청

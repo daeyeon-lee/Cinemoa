@@ -47,10 +47,10 @@ export const useCategoryFilters = () => {
       setSelectedSubCategoryId(categoryId);
 
       // console.log('✅ [useCategoryFilters] 카테고리 초기화 완료:', {
-        selectedMainCategoryId: categoryId,
-        selectedUiCategoryId: categoryId,
-        selectedSubCategoryId: categoryId,
-      });
+      //   selectedMainCategoryId: categoryId,
+      //   selectedUiCategoryId: categoryId,
+      //   selectedSubCategoryId: categoryId,
+      // });
 
       // 사용 후 localStorage 정리 (일회성 사용)
       localStorage.removeItem('selectedCategoryId');

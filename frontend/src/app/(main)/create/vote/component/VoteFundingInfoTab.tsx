@@ -34,9 +34,9 @@ export default function VoteFundingInfoTab({ onNext, onPrev }: VoteFundingInfoTa
   // 다음 단계로 넘어가는 핸들러
   const handleNext = () => {
     form.handleSubmit((values) => {
-      console.log('=== VoteFundingInfoTab 제출 ===');
-      console.log('입력된 값:', values);
-      console.log('==========================');
+      // console.log('=== VoteFundingInfoTab 제출 ===');
+      // console.log('입력된 값ㄴ:', values);
+      // console.log('==============ㄴ============');
 
       // 명시적으로 fundinginfo 타입으로 변환
       const fundingData: fundinginfo = {

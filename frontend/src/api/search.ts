@@ -8,7 +8,7 @@ export const searchItems = async (params: SearchParams = {}): Promise<ApiSearchR
     const searchParams = cursor ? { ...otherParams, nextCursor: cursor } : otherParams;
 
     const url = buildUrl('search', searchParams);
-    console.log('[Search API] 요청:', url);
+    // console.log('[Search API] 요청:', url);
 
     const response = await fetch(url, {
       method: 'GET',
@@ -31,8 +31,8 @@ export const searchItems = async (params: SearchParams = {}): Promise<ApiSearchR
       throw new Error(`Server error: ${result.message} (code: ${result.code})`);
     }
 
-    console.log('[Search API] 성공:', `${result.data?.content?.length || 0}개 항목 조회`);
-    console.log('[Search API] 응답:', result);
+    // console.log('[Search API] 성공:', `${result.data?.content?.length || 0}개 항목 조회`);
+    // console.log('[Search API] 응답:', result);
     return result;
   } catch (error) {
     console.error('[Search API] 오류:', error);

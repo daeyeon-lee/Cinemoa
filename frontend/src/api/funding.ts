@@ -34,9 +34,9 @@ export const createFunding = async (data: CreateFundingParams, posterUrl: string
     formData.append('bannerImg', new File([blob], 'banner.png', { type: mimeType }));
   }
   try {
-    console.log('=== 펀딩 생성 API 요청 시작 ===');
-    console.log('요청 데이터 data:', data);
-    console.log('bannerImg:', posterUrl);
+    // console.log('=== 펀딩 생성 API 요청 시작 ===');
+    // console.log('요청 데이터 data:', data);
+    // console.log('bannerImg:', posterUrl);
 
     // for (const [key, value] of formData.entries()) {
     //   console.log(key, value);
@@ -56,8 +56,8 @@ export const createFunding = async (data: CreateFundingParams, posterUrl: string
     }
 
     const result: CreateFundingResponse = await response.json();
-    console.log('=== 펀딩 생성 API 요청 성공 ===');
-    console.log('응답 데이터:', result);
+    // console.log('=== 펀딩 생성 API 요청 성공 ===');
+    // console.log('응답 데이터:', result);
 
     return result;
   } catch (error) {
@@ -87,7 +87,7 @@ export const getDetailSummary = async (videoContent: string): Promise<DetailSumm
     }
 
     const result = await response.json();
-    console.log('응답 데이터:', result);
+    // console.log('응답 데이터:', result);
     return result;
   } catch (error) {
     console.error('에러:', error);
