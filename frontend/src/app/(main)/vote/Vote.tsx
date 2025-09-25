@@ -335,14 +335,14 @@ export default function Vote() {
       }
       content={
         <>
-          <div className="space-y-3">
+          <div className="">
             {/* ========== 모바일 전용 필터 헤더 ========== */}
-            <div className="block lg:hidden">
+            <div className="block lg:hidden pb-2">
               {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenCategoryBottomSheet}
                   className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
@@ -351,7 +351,7 @@ export default function Vote() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenRegionBottomSheet}
                   className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
@@ -360,7 +360,7 @@ export default function Vote() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenTheaterBottomSheet}
                   className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
