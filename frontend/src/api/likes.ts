@@ -11,9 +11,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 // 중복 요청 방지를 위한 요청 추적
 const pendingRequests = new Map<string, Promise<ApiResponse<null>>>();
 
-// 요청 키 생성 함수
-const getRequestKey = (fundingId: number, userId: string, action: 'add' | 'delete') => {
-  return `${action}-${fundingId}-${userId}`;
+// 요청 키 생성 함수 - 동일한 fundingId+userId에 대해서는 하나의 키만 사용
+const getRequestKey = (fundingId: number, userId: string) => {
+  return `like-${fundingId}-${userId}`;
 };
 
 // ✅ 좋아요 추가
@@ -24,7 +24,7 @@ export const addFundingLike = async (
   const numericUserId = Number(userId);
   if (isNaN(numericUserId)) throw new Error('유효하지 않은 userId');
 
-  const requestKey = getRequestKey(fundingId, userId, 'add');
+  const requestKey = getRequestKey(fundingId, userId);
   
   // ✅ 중복 요청 방지: 이미 진행 중인 요청이 있으면 기존 요청 반환
   if (pendingRequests.has(requestKey)) {
@@ -81,7 +81,7 @@ export const deleteFundingLike = async (
   const numericUserId = Number(userId);
   if (isNaN(numericUserId)) throw new Error('유효하지 않은 userId');
 
-  const requestKey = getRequestKey(fundingId, userId, 'delete');
+  const requestKey = getRequestKey(fundingId, userId);
   
   // ✅ 중복 요청 방지: 이미 진행 중인 요청이 있으면 기존 요청 반환
   if (pendingRequests.has(requestKey)) {

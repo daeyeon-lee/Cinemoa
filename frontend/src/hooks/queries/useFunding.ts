@@ -39,6 +39,7 @@ export function useFundingLike() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['fundingLike'],
     // 👉 isLiked를 인자로 받도록 복원
     mutationFn: async ({ fundingId, userId, isLiked }: { 
       fundingId: number; 
@@ -46,6 +47,22 @@ export function useFundingLike() {
       isLiked: boolean; // 클릭 직전 상태
     }) => {
       console.log('[MutationFn 호출]', fundingId, userId, '현재 isLiked:', isLiked);
+
+      // ✅ 중복 요청 방지: 동일한 fundingId+userId 조합에 대한 요청이 이미 진행 중인지 확인
+      const existingMutation = queryClient.getMutationCache().find({
+        predicate: (mutation) => {
+          const state = mutation.state;
+          return state.status === 'pending' && 
+                 mutation.options.mutationKey?.[0] === 'fundingLike' &&
+                 mutation.options.mutationKey?.[1] === fundingId &&
+                 mutation.options.mutationKey?.[2] === userId;
+        }
+      });
+
+      if (existingMutation) {
+        console.log('React Query 레벨 중복 요청 방지:', { fundingId, userId });
+        throw new Error('이미 진행 중인 요청입니다.');
+      }
 
       if (isLiked) {
         // 현재 좋아요 상태 → true → 취소 요청
