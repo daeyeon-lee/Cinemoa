@@ -77,7 +77,7 @@ export default function Category() {
 
     if (savedCategoryId) {
       const categoryId = parseInt(savedCategoryId, 10);
-      console.log('🎯 [Category] localStorage에서 categoryId 감지:', categoryId);
+      // console.log('🎯 [Category] localStorage에서 categoryId 감지:', categoryId);
 
       // 1차 카테고리 선택 (ex: categoryId=1이면 영화 전체 선택)
       // ID 1=영화, 2=시리즈, 3=공연, 4=스포츠중계
@@ -85,7 +85,7 @@ export default function Category() {
       setSelectedUiCategoryId(categoryId);
       setSelectedSubCategoryId(categoryId);
 
-      console.log('✅ [Category] 카테고리 초기화 완료:', {
+      // console.log('✅ [Category] 카테고리 초기화 완료:', {
         selectedMainCategoryId: categoryId,
         selectedUiCategoryId: categoryId,
         selectedSubCategoryId: categoryId,
@@ -185,7 +185,7 @@ export default function Category() {
   const items = data?.content || [];
 
   // 디버깅용 현재 상태 로깅
-  console.log('📊 [Category] 현재 데이터 상태:', {
+  // console.log('📊 [Category] 현재 데이터 상태:', {
     data,
     error: !!error,
     searchParams,
@@ -213,7 +213,7 @@ export default function Category() {
    * 네트워크 오류나 서버 오류 시 데이터 다시 불러오기
    */
   const handleRetry = useCallback(() => {
-    console.log('🔄 [Category] 재시도 버튼 클릭');
+    // console.log('🔄 [Category] 재시도 버튼 클릭');
     refetch();
   }, [refetch]);
 
@@ -223,7 +223,7 @@ export default function Category() {
    */
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
-      console.log('📋 [Category] 다음 페이지 로드');
+      // console.log('📋 [Category] 다음 페이지 로드');
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -246,7 +246,7 @@ export default function Category() {
     (fundingId: number) => {
       if (!user?.userId) {
         // 비로그인 처리 (로그인 유도 등)
-        console.log('🔐 로그인 필요');
+        // console.log('🔐 로그인 필요');
         return;
       }
 
@@ -281,7 +281,7 @@ export default function Category() {
       // 2) 못 찾았으면 보수적으로 false로 간주 (또는 상세 캐시 확인)
       const safeIsLiked = currentIsLiked ?? false;
 
-      console.log('❤️ [Category] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
+      // console.log('❤️ [Category] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
 
       // 3) 토글 실행 (공통 훅: 목록/상세 모두 같은 낙관적 업데이트 로직 공유)
       toggleLike({
@@ -302,7 +302,7 @@ export default function Category() {
     const documentHeight = document.documentElement.scrollHeight;
 
     if (scrollTop + windowHeight >= documentHeight - 100) {
-      console.log('[Category] 스크롤 감지 - 다음 페이지 로드');
+      // console.log('[Category] 스크롤 감지 - 다음 페이지 로드');
       fetchNextPage();
     }
   }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
@@ -318,7 +318,7 @@ export default function Category() {
     const handlePageShow = (e: PageTransitionEvent) => {
       // e.persisted === true 이면 bfcache에서 복원된 것
       if (e.persisted) {
-        console.log('🔄 [Category] bfcache 복원 감지 - 쿼리 무효화');
+        // console.log('🔄 [Category] bfcache 복원 감지 - 쿼리 무효화');
         // 🔄 검색/홈 쿼리 무효화 → refetch 트리거
         queryClient.invalidateQueries({ queryKey: ['search'] }); // 'search' 키 전체
         queryClient.invalidateQueries({ queryKey: ['home'] }); // 홈 섹션도 쓰면 같이
@@ -328,7 +328,7 @@ export default function Category() {
     // 탭 비활성 → 활성 전환 시도도 안전망으로 갱신
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        console.log('👁️ [Category] 탭 활성화 감지 - 쿼리 무효화');
+        // console.log('👁️ [Category] 탭 활성화 감지 - 쿼리 무효화');
         queryClient.invalidateQueries({ queryKey: ['search'] });
       }
     };
@@ -369,7 +369,7 @@ export default function Category() {
    * 임시 상태의 값들을 실제 상태로 반영하여 필터링 적용
    */
   const handleFilterApply = useCallback(() => {
-    console.log('🔄 [Category] 필터 적용');
+    // console.log('🔄 [Category] 필터 적용');
 
     // 현재 활성화된 바텀시트에 따라 해당 필터 적용
     if (activeBottomSheet === 'category') {

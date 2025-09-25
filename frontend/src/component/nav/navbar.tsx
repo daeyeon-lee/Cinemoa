@@ -35,7 +35,7 @@ export default function Navbar() {
   // 인증 상태 디버깅
   useEffect(() => {
     if (isClient) {
-      console.log('[Navbar] 인증 상태:', { user, isLoggedIn: isLoggedIn(), isClient });
+      // console.log('[Navbar] 인증 상태:', { user, isLoggedIn: isLoggedIn(), isClient });
     }
   }, [isClient, user, isLoggedIn]);
   const isActive = (path: string) => {

@@ -6,7 +6,7 @@ import type { GetPopularFundingResponse, GetClosingSoonFundingResponse } from '@
 // 사용자 추가 정보 입력 API
 export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserInfoRequest): Promise<UpdateUserInfoResponse> => {
   try {
-    console.log('=== 사용자 추가 정보 입력 시작 ===');
+    // console.log('=== 사용자 추가 정보 입력 시작 ===');
     // console.log('사용자 ID:', userId);
     // console.log('요청 데이터:', data);
 
@@ -28,7 +28,7 @@ export const updateUserAdditionalInfo = async (userId: number, data: UpdateUserI
     }
 
     const result: UpdateUserInfoResponse = await response.json();
-    console.log('=== 사용자 추가 정보 입력 성공 ===');
+    // console.log('=== 사용자 추가 정보 입력 성공 ===');
     // console.log('응답 데이터:', result);
 
     return result;
@@ -70,10 +70,10 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
   try {
     // 새로운 API 경로 사용 - userId는 쿼리 파라미터로 전달
     const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/recommendation`;
-    console.log('userId:', userId);
+    // console.log('userId:', userId);
     const url = userId ? `${baseUrl}?userId=${userId}` : baseUrl;
 
-    console.log('[추천api] 요청:', url);
+    // console.log('[추천api] 요청:', url);
 
     const response = await fetch(url, {
       method: 'GET',
@@ -97,7 +97,7 @@ export const getRecommendedFunding = async (userId?: number): Promise<ApiSearchR
       return await getSearchFunding({ sortBy: 'POPULAR', size: 8, userId });
     }
 
-    console.log('[추천api] 성공:', rawResult);
+    // console.log('[추천api] 성공:', rawResult);
 
     // rawResult를 ApiSearchResponse 구조로 변환하여 반환
     return {
@@ -122,7 +122,7 @@ export const getPopularFunding = async (userId?: number): Promise<GetPopularFund
     const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/popular`;
     const url = userId ? `${baseUrl}?userId=${userId}` : baseUrl;
 
-    console.log('[인기api] 요청 URL:', url);
+    // console.log('[인기api] 요청 URL:', url);
 
     const response = await fetch(url, {
       method: 'GET',
@@ -145,7 +145,7 @@ export const getPopularFunding = async (userId?: number): Promise<GetPopularFund
     }
 
     const data: GetPopularFundingResponse = await response.json();
-    console.log('[인기api] 응답 성공:', data);
+    // console.log('[인기api] 응답 성공:', data);
 
     return data;
   } catch (error) {
@@ -166,7 +166,7 @@ export const getExpiringSoonFunding = async (userId?: number): Promise<GetClosin
   try {
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}funding/expiring${userId ? `?userId=${userId}` : ''}`;
 
-    console.log('[종료임박api] 요청 URL:', url);
+    // console.log('[종료임박api] 요청 URL:', url);
 
     const response = await fetch(url, {
       method: 'GET',
@@ -181,7 +181,7 @@ export const getExpiringSoonFunding = async (userId?: number): Promise<GetClosin
     }
 
     const data: GetClosingSoonFundingResponse = await response.json();
-    console.log('[종료임박api] 응답 데이터:', data);
+    // console.log('[종료임박api] 응답 데이터:', data);
 
     return data;
   } catch (error) {
@@ -212,7 +212,7 @@ export const getRecentlyViewed = async (ids: string[], userId?: number): Promise
   try {
     const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}funding/list?ids=${ids.join(',')}`;
     const url = userId ? `${baseUrl}&userId=${userId}` : baseUrl;
-    console.log('[Search API] 요청:', url);
+    // console.log('[Search API] 요청:', url);
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -227,7 +227,7 @@ export const getRecentlyViewed = async (ids: string[], userId?: number): Promise
       throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
     }
     const result: ApiRecentlyViewedResponse = await response.json();
-    console.log('[최신api] 응답 성공:', result.data);
+    // console.log('[최신api] 응답 성공:', result.data);
     return result;
   } catch (error) {
     console.error('[Search API] 오류:', error);

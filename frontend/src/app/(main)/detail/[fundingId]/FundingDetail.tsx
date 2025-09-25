@@ -28,7 +28,7 @@ const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId, userId: propUs
     userId,
   });
 
-  console.log('FundingDetail - detailData:', detailData);
+  // console.log('FundingDetail - detailData:', detailData);
 
   // 로딩 상태
   if (isLoading) {

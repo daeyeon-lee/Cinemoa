@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -24,7 +24,7 @@ interface MyPageDetailProps {
 const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const filter = searchParams.get('filter') as FilterType || 'ALL';
+  const filter = (searchParams.get('filter') as FilterType) || 'ALL';
 
   // 사용자 정보 상태
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -48,8 +48,8 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
           filters: [
             { key: 'ALL', label: '전체' },
             { key: 'funding', label: '펀딩' },
-            { key: 'vote', label: '투표' }
-          ]
+            { key: 'vote', label: '투표' },
+          ],
         };
       case 'participated':
         return {
@@ -57,8 +57,8 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
           filters: [
             { key: 'ALL', label: '전체' },
             { key: 'ON_PROGRESS', label: '진행중' },
-            { key: 'CLOSE', label: '진행 완료' }
-          ]
+            { key: 'CLOSE', label: '진행 완료' },
+          ],
         };
       case 'liked':
         return {
@@ -66,13 +66,13 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
           filters: [
             { key: 'ALL', label: '전체' },
             { key: 'funding', label: '펀딩' },
-            { key: 'vote', label: '투표' }
-          ]
+            { key: 'vote', label: '투표' },
+          ],
         };
       default:
         return {
           title: '',
-          filters: []
+          filters: [],
         };
     }
   };
@@ -89,7 +89,7 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
         if (!isLoggedIn() || !user?.userId) {
           setUserInfo({
             nickname: '사용자',
-            profileImgUrl: 'https://placehold.co/72x72'
+            profileImgUrl: 'https://placehold.co/72x72',
           });
           return;
         }
@@ -104,7 +104,7 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
         console.error('사용자 정보 조회 오류:', err);
         setUserInfo({
           nickname: '사용자',
-          profileImgUrl: 'https://placehold.co/72x72'
+          profileImgUrl: 'https://placehold.co/72x72',
         });
       } finally {
         setIsLoading(false);
@@ -115,67 +115,69 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
   }, []);
 
   // 데이터 조회 함수
-  const fetchData = useCallback(async (cursor?: string, isLoadMore = false) => {
-    try {
-      if (isLoadMore) {
-        setIsLoadingMore(true);
-      } else {
-        setIsLoading(true);
-      }
+  const fetchData = useCallback(
+    async (cursor?: string, isLoadMore = false) => {
+      try {
+        if (isLoadMore) {
+          setIsLoadingMore(true);
+        } else {
+          setIsLoading(true);
+        }
 
-      const { user, isLoggedIn } = useAuthStore.getState();
-      if (!isLoggedIn() || !user?.userId) {
-        setData([]);
-        setHasNextPage(false);
-        return;
-      }
+        const { user, isLoggedIn } = useAuthStore.getState();
+        if (!isLoggedIn() || !user?.userId) {
+          setData([]);
+          setHasNextPage(false);
+          return;
+        }
 
-      let response;
-      if (section === 'proposals') {
-        // 제안한 상영회: cursor 파라미터로 전송
-        const type = filter === 'ALL' ? undefined : filter as 'funding' | 'vote';
-        response = await getFundingProposals(user.userId, type, cursor, 24, 'cursor');
-      } else if (section === 'participated') {
-        // 참여한 상영회: cursor 파라미터로 전송
-        const state = filter === 'ALL' ? undefined : filter as 'ON_PROGRESS' | 'CLOSE';
-        response = await getParticipatedFunding(user.userId, state, cursor, 24, 'cursor');
-      } else {
-        // 보고 싶은 상영회: cursor 파라미터로 전송
-        const type = filter === 'ALL' ? undefined : filter as 'funding' | 'vote';
-        response = await getLikedFunding(user.userId, type, cursor, 24, 'cursor');
-      }
+        let response;
+        if (section === 'proposals') {
+          // 제안한 상영회: cursor 파라미터로 전송
+          const type = filter === 'ALL' ? undefined : (filter as 'funding' | 'vote');
+          response = await getFundingProposals(user.userId, type, cursor, 24, 'cursor');
+        } else if (section === 'participated') {
+          // 참여한 상영회: cursor 파라미터로 전송
+          const state = filter === 'ALL' ? undefined : (filter as 'ON_PROGRESS' | 'CLOSE');
+          response = await getParticipatedFunding(user.userId, state, cursor, 24, 'cursor');
+        } else {
+          // 보고 싶은 상영회: cursor 파라미터로 전송
+          const type = filter === 'ALL' ? undefined : (filter as 'funding' | 'vote');
+          response = await getLikedFunding(user.userId, type, cursor, 24, 'cursor');
+        }
 
-      const newData = response.data.content || [];
-      
-      if (isLoadMore) {
-        setData(prev => {
-          // 중복 제거: fundingId 기준으로 중복 체크
-          const existingIds = new Set(prev.map(item => item.funding?.fundingId));
-          const uniqueNewData = newData.filter(item => !existingIds.has(item.funding?.fundingId));
-          
-          return [...prev, ...uniqueNewData];
-          // 성능 개선을 위해 중복 제거 없이 바로 추가
-          // 중복 제거 했었으나, 오류 발생. react에서 2번 요청을 보낸 것이 원인인 듯함
-          // return [...prev, ...newData];
-        });
-      } else {
-        setData(newData);
-      }
+        const newData = response.data.content || [];
 
-      setHasNextPage(response.data.hasNextPage);
-      setNextCursor(response.data.nextCursor || null);
-      
-    } catch (err) {
-      console.error('데이터 조회 오류:', err);
-      if (!isLoadMore) {
-        setData([]);
-        setHasNextPage(false);
+        if (isLoadMore) {
+          setData((prev) => {
+            // 중복 제거: fundingId 기준으로 중복 체크
+            const existingIds = new Set(prev.map((item) => item.funding?.fundingId));
+            const uniqueNewData = newData.filter((item) => !existingIds.has(item.funding?.fundingId));
+
+            return [...prev, ...uniqueNewData];
+            // 성능 개선을 위해 중복 제거 없이 바로 추가
+            // 중복 제거 했었으나, 오류 발생. react에서 2번 요청을 보낸 것이 원인인 듯함
+            // return [...prev, ...newData];
+          });
+        } else {
+          setData(newData);
+        }
+
+        setHasNextPage(response.data.hasNextPage);
+        setNextCursor(response.data.nextCursor || null);
+      } catch (err) {
+        console.error('데이터 조회 오류:', err);
+        if (!isLoadMore) {
+          setData([]);
+          setHasNextPage(false);
+        }
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
       }
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  }, [section, filter]);
+    },
+    [section, filter],
+  );
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -196,7 +198,6 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     const documentHeight = document.documentElement.scrollHeight;
 
     if (scrollTop + windowHeight >= documentHeight - 100) {
-      
       if (nextCursor) {
         fetchData(nextCursor, true);
       }
@@ -229,10 +230,10 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     }
 
     // 현재 좋아요 상태 찾기
-    const currentItem = data.find(item => item.funding.fundingId === fundingId);
+    const currentItem = data.find((item) => item.funding.fundingId === fundingId);
     const currentIsLiked = currentItem?.funding?.isLiked || false;
 
-    console.log('❤️ [MyPageDetail] 좋아요 토글:', { fundingId, currentIsLiked });
+    // console.log('❤️ [MyPageDetail] 좋아요 토글:', { fundingId, currentIsLiked });
 
     // React Query mutation 실행
     likeMutation.mutate({
@@ -242,22 +243,20 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     });
 
     // 마이페이지 디테일 데이터 직접 업데이트
-    setData(prevData => 
-      prevData.map(item => {
+    setData((prevData) =>
+      prevData.map((item) => {
         if (item.funding.fundingId === fundingId) {
           return {
             ...item,
             funding: {
               ...item.funding,
               isLiked: !currentIsLiked,
-              favoriteCount: currentIsLiked 
-                ? (item.funding.favoriteCount || 0) - 1 
-                : (item.funding.favoriteCount || 0) + 1,
-            }
+              favoriteCount: currentIsLiked ? (item.funding.favoriteCount || 0) - 1 : (item.funding.favoriteCount || 0) + 1,
+            },
           };
         }
         return item;
-      })
+      }),
     );
   };
 
@@ -344,34 +343,20 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     const routes = {
       proposals: '/create',
       participated: '/',
-      liked: '/category'
+      liked: '/category',
     };
     router.push(routes[section]);
   };
 
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
-      <DetailHeader 
-        title={config.title}
-        userNickname={userInfo?.nickname}
-        isLoading={isLoading}
-      />
+      <DetailHeader title={config.title} userNickname={userInfo?.nickname} isLoading={isLoading} />
 
-      <FilterButtons 
-        filters={config.filters as FilterOption[]}
-        currentFilter={filter}
-        onFilterChange={handleFilterChange}
-      />
+      <FilterButtons filters={config.filters as FilterOption[]} currentFilter={filter} onFilterChange={handleFilterChange} />
 
       <InitialLoading isLoading={isLoading} />
 
-      {!isLoading && data.length === 0 && (
-        <EmptyState 
-          title={config.title}
-          section={section}
-          onActionClick={handleActionClick}
-        />
-      )}
+      {!isLoading && data.length === 0 && <EmptyState title={config.title} section={section} onActionClick={handleActionClick} />}
 
       {!isLoading && data.length > 0 && (
         <ResponsiveCardList

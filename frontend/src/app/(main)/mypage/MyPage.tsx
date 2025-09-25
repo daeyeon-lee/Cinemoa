@@ -42,7 +42,7 @@ export default function MyPage() {
 
   // 카드 클릭 핸들러 - 상세페이지로 이동
   const handleCardClick = (fundingId: number) => {
-    console.log('카드 클릭:', fundingId);
+    // console.log('카드 클릭:', fundingId);
     router.push(`/detail/${fundingId}`);
   };
 
@@ -56,26 +56,26 @@ export default function MyPage() {
 
     // 현재 좋아요 상태 찾기
     let currentIsLiked = false;
-    
+
     // 내가 제안한 상영회에서 찾기
-    const proposalItem = myProposals.find(item => item.funding.fundingId === fundingId);
+    const proposalItem = myProposals.find((item) => item.funding.fundingId === fundingId);
     if (proposalItem) {
       currentIsLiked = proposalItem.funding.isLiked || false;
     }
-    
+
     // 내가 참여한 상영회에서 찾기
-    const participatedItem = myParticipated.find(item => item.funding.fundingId === fundingId);
+    const participatedItem = myParticipated.find((item) => item.funding.fundingId === fundingId);
     if (participatedItem) {
       currentIsLiked = participatedItem.funding.isLiked || false;
     }
-    
+
     // 내가 보고싶어요 한 상영회에서 찾기
-    const likedItem = myLiked.find(item => item.funding.fundingId === fundingId);
+    const likedItem = myLiked.find((item) => item.funding.fundingId === fundingId);
     if (likedItem) {
       currentIsLiked = likedItem.funding.isLiked || false;
     }
 
-    console.log('❤️ [MyPage] 좋아요 토글:', { fundingId, currentIsLiked });
+    // console.log('❤️ [MyPage] 좋아요 토글:', { fundingId, currentIsLiked });
 
     // React Query mutation 실행
     likeMutation.mutate({
@@ -86,17 +86,15 @@ export default function MyPage() {
 
     // 마이페이지 데이터 직접 업데이트
     const updateLikeStatus = (items: any[], setItems: (items: any[]) => void) => {
-      const updatedItems = items.map(item => {
+      const updatedItems = items.map((item) => {
         if (item.funding.fundingId === fundingId) {
           return {
             ...item,
             funding: {
               ...item.funding,
               isLiked: !currentIsLiked,
-              favoriteCount: currentIsLiked 
-                ? (item.funding.favoriteCount || 0) - 1 
-                : (item.funding.favoriteCount || 0) + 1,
-            }
+              favoriteCount: currentIsLiked ? (item.funding.favoriteCount || 0) - 1 : (item.funding.favoriteCount || 0) + 1,
+            },
           };
         }
         return item;
@@ -190,7 +188,7 @@ export default function MyPage() {
         const response = await getUserInfo(user.userId);
         // response.data 예시: { nickname: '펀딩 테스트 유저', profile_img_url: 'https://picsum.photos/id/1/200' }
         // const { nickname, profile_img_url } = response.data as any; // 서버 응답 키가 스네이크 케이스로 내려온다고 보았는데
-        console.log('response.data:', response.data);
+        // console.log('response.data:', response.data);
         const { nickname, profileImgUrl } = response.data as any; // 서버 응답 키 카멜 케이스로 내려옴
         setUserInfo({
           nickname,

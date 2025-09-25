@@ -36,7 +36,7 @@ import SearchIcon from '@/component/icon/searchIcon';
  * ListShell을 기반으로 필터링과 정렬 기능을 제공합니다.
  */
 export default function Search() {
-  console.log('🔍 [Search] 컴포넌트 렌더링');
+  // console.log('🔍 [Search] 컴포넌트 렌더링');
 
   const urlSearchParams = useSearchParams();
   const router = useRouter();
@@ -158,7 +158,7 @@ export default function Search() {
       params.isClosed = showClosed;
     }
 
-    console.log('📤 [Search] API 파라미터 (선택된 것만):', params);
+    // console.log('📤 [Search] API 파라미터 (선택된 것만):', params);
     return params;
   }, [searchQuery, sortBy, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
@@ -167,7 +167,7 @@ export default function Search() {
 
   const items = data?.content || [];
 
-  console.log('📊 [Search] 현재 데이터 상태:', {
+  // console.log('📊 [Search] 현재 데이터 상태:', {
     itemsCount: items.length,
     hasNextPage,
     isFetchingNextPage,
@@ -297,14 +297,14 @@ export default function Search() {
 
   // 🔄 재시도 핸들러
   const handleRetry = useCallback(() => {
-    console.log('🔄 [Search] 재시도 버튼 클릭');
+    // console.log('🔄 [Search] 재시도 버튼 클릭');
     refetch();
   }, [refetch]);
 
   // 🔄 무한 스크롤 핸들러
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
-      console.log('📋 [Search] 다음 페이지 로드');
+      // console.log('📋 [Search] 다음 페이지 로드');
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -312,7 +312,7 @@ export default function Search() {
   // 🖱️ 카드 클릭 핸들러
   const handleCardClick = useCallback(
     (id: number) => {
-      console.log('🔍 [Search] 카드 클릭:', id);
+      // console.log('🔍 [Search] 카드 클릭:', id);
       router.push(`/detail/${id}`);
     },
     [router],
@@ -323,7 +323,7 @@ export default function Search() {
     (fundingId: number) => {
       if (!user?.userId) {
         // 비로그인 처리 (로그인 유도 등)
-        console.log('🔐 로그인 필요');
+        // console.log('🔐 로그인 필요');
         return;
       }
 
@@ -358,7 +358,7 @@ export default function Search() {
       // 2) 못 찾았으면 보수적으로 false로 간주 (또는 상세 캐시 확인)
       const safeIsLiked = currentIsLiked ?? false;
 
-      console.log('❤️ [Search] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
+      // console.log('❤️ [Search] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
 
       // 3) 토글 실행 (공통 훅: 목록/상세 모두 같은 낙관적 업데이트 로직 공유)
       toggleLike({
@@ -379,7 +379,7 @@ export default function Search() {
     const documentHeight = document.documentElement.scrollHeight;
 
     if (scrollTop + windowHeight >= documentHeight - 100) {
-      console.log('[Search] 스크롤 감지 - 다음 페이지 로드');
+      // console.log('[Search] 스크롤 감지 - 다음 페이지 로드');
       fetchNextPage();
     }
   }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
@@ -395,7 +395,7 @@ export default function Search() {
     const handlePageShow = (e: PageTransitionEvent) => {
       // e.persisted === true 이면 bfcache에서 복원된 것
       if (e.persisted) {
-        console.log('🔄 [Search] bfcache 복원 감지 - 쿼리 무효화');
+        // console.log('🔄 [Search] bfcache 복원 감지 - 쿼리 무효화');
         // 🔄 검색/홈 쿼리 무효화 → refetch 트리거
         queryClient.invalidateQueries({ queryKey: ['search'] }); // 'search' 키 전체
         queryClient.invalidateQueries({ queryKey: ['home'] }); // 홈 섹션도 쓰면 같이
@@ -405,7 +405,7 @@ export default function Search() {
     // 탭 비활성 → 활성 전환 시도도 안전망으로 갱신
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        console.log('👁️ [Search] 탭 활성화 감지 - 쿼리 무효화');
+        // console.log('👁️ [Search] 탭 활성화 감지 - 쿼리 무효화');
         queryClient.invalidateQueries({ queryKey: ['search'] });
       }
     };

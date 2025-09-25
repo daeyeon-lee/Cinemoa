@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import BaseModal from './BaseModal';
 
-
 // 은행 목록
 const banks = [
   {
@@ -86,19 +85,18 @@ const banks = [
 ];
 
 interface RefundAccountModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-  }  
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose }) => {
-
   const { user } = useAuthStore();
 
   // 각 입력 필드의 상태를 관리합니다.
   const [bank, setBank] = useState<string>('');
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [authCode, setAuthCode] = useState<string>('');
-  
+
   // 상태 관리
   const [isVerificationRequested, setIsVerificationRequested] = useState(false);
   const [verificationCodeError, setVerificationCodeError] = useState('');
@@ -163,7 +161,7 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
 
       setIsEmailSent(true);
       setIsVerificationRequested(true);
-      console.log('이메일 전송 완료');
+      // console.log('이메일 전송 완료');
     } catch (error: any) {
       console.error('이메일 전송 실패:', error);
       setEmailError(error.message || '이메일 전송에 실패했습니다.');
@@ -275,134 +273,102 @@ const RefundAccountModal: React.FC<RefundAccountModalProps> = ({ isOpen, onClose
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title="환불 계좌 관리">
+      {/* 결제 은행 선택 */}
+      <div className="self-stretch flex flex-col justify-start items-start gap-3">
+        <Label className="self-stretch text-white text-base font-medium leading-normal">결제 은행</Label>
+        <Select value={bank} onValueChange={setBank}>
+          <SelectTrigger
+            className="w-full h-8 px-3 py-1.5 bg-slate-800 rounded-lg text-slate-500 text-xs font-medium focus:bg-slate-900 focus:outline focus:outline-1 focus:outline-slate-600 focus:outline-offset-[-1px]"
+            style={{ outline: '1px solid #7C7F88', outlineOffset: '-1px' }}
+          >
+            <SelectValue placeholder="은행을 선택하세요" />
+          </SelectTrigger>
+          <SelectContent className="bg-slate-800 border-zinc-500">
+            {banks.map((bankOption) => (
+              <SelectItem key={bankOption.bankCode} value={bankOption.bankName} className="text-slate-300 hover:bg-slate-700">
+                {bankOption.bankName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* 결제 은행 선택 */}
-        <div className="self-stretch flex flex-col justify-start items-start gap-3">
-          <Label className="self-stretch text-white text-base font-medium leading-normal">
-            결제 은행
-          </Label>
-          <Select value={bank} onValueChange={setBank}>
-            <SelectTrigger 
-              className="w-full h-8 px-3 py-1.5 bg-slate-800 rounded-lg text-slate-500 text-xs font-medium focus:bg-slate-900 focus:outline focus:outline-1 focus:outline-slate-600 focus:outline-offset-[-1px]"
-              style={{ outline: '1px solid #7C7F88', outlineOffset: '-1px' }}
-            >
-              <SelectValue placeholder="은행을 선택하세요" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-zinc-500">
-              {banks.map((bankOption) => (
-                <SelectItem 
-                  key={bankOption.bankCode} 
-                  value={bankOption.bankName}
-                  className="text-slate-300 hover:bg-slate-700"
-                >
-                  {bankOption.bankName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* 계좌 번호 입력 */}
+      <div className="self-stretch flex flex-col justify-start items-start gap-3">
+        <Label className="self-stretch text-white text-base font-medium leading-normal">계좌 번호</Label>
+        <div className="w-80 inline-flex justify-start items-center gap-2.5">
+          <Input
+            type="text"
+            value={accountNumber}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              setAccountNumber(value);
+              validateAccountNumber(value);
+              // 계좌번호가 변경되면 이메일 전송 상태 초기화
+              if (isEmailSent) {
+                setIsEmailSent(false);
+                setIsVerificationRequested(false);
+                setIsVerificationSuccess(false);
+              }
+              if (emailError) {
+                setEmailError('');
+              }
+            }}
+            placeholder="계좌번호 16자리를 -없이 입력하세요"
+            maxLength={16}
+            className="flex-1 h-8 px-3 py-1.5 bg-slate-800 rounded-lg text-white text-xs font-medium placeholder-slate-500 focus:bg-slate-900 focus:outline focus:outline-1 focus:outline-slate-600 focus:outline-offset-[-1px]"
+            style={{ outline: '1px solid #7C7F88', outlineOffset: '-1px' }}
+          />
+          <Button onClick={handleEmailSend} disabled={!isAccountNumberValid} variant={isEmailSent ? 'outline' : 'tertiary'} size="sm" className="h-8 px-4 text-sm font-semibold">
+            {isEmailSent ? '전송 완료' : '인증 요청'}
+          </Button>
         </div>
+        {accountNumberError && <p className="text-red-400 text-xs mt-1">{accountNumberError}</p>}
+        {isEmailSent && <p className="text-green-400 text-xs mt-1">인증 번호를 이메일에서 확인해주세요.</p>}
+        {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
+      </div>
 
-        {/* 계좌 번호 입력 */}
-        <div className="self-stretch flex flex-col justify-start items-start gap-3">
-          <Label className="self-stretch text-white text-base font-medium leading-normal">
-            계좌 번호
-          </Label>
-          <div className="w-80 inline-flex justify-start items-center gap-2.5">
-            <Input
-              type="text"
-              value={accountNumber}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                setAccountNumber(value);
-                validateAccountNumber(value);
-                // 계좌번호가 변경되면 이메일 전송 상태 초기화
-                if (isEmailSent) {
-                  setIsEmailSent(false);
-                  setIsVerificationRequested(false);
-                  setIsVerificationSuccess(false);
-                }
-                if (emailError) {
-                  setEmailError('');
-                }
-              }}
-              placeholder="계좌번호 16자리를 -없이 입력하세요"
-              maxLength={16}
-              className="flex-1 h-8 px-3 py-1.5 bg-slate-800 rounded-lg text-white text-xs font-medium placeholder-slate-500 focus:bg-slate-900 focus:outline focus:outline-1 focus:outline-slate-600 focus:outline-offset-[-1px]"
-              style={{ outline: '1px solid #7C7F88', outlineOffset: '-1px' }}
-            />
-            <Button
-              onClick={handleEmailSend}
-              disabled={!isAccountNumberValid}
-              variant={isEmailSent ? "outline" : "tertiary"}
-              size="sm"
-              className="h-8 px-4 text-sm font-semibold"
-            >
-              {isEmailSent ? '전송 완료' : '인증 요청'}
-            </Button>
-          </div>
-          {accountNumberError && <p className="text-red-400 text-xs mt-1">{accountNumberError}</p>}
-          {isEmailSent && <p className="text-green-400 text-xs mt-1">인증 번호를 이메일에서 확인해주세요.</p>}
-          {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
+      {/* 인증하기 */}
+      <div className="self-stretch flex flex-col justify-start items-start gap-3">
+        <Label className="self-stretch text-white text-base font-medium leading-normal">인증하기</Label>
+        <div className="w-80 inline-flex justify-start items-center gap-2.5">
+          <Input
+            type="text"
+            value={authCode}
+            onChange={(e) => {
+              const value = e.target.value;
+              setAuthCode(value);
+              // 사용자가 인증번호를 입력하기 시작하면 에러 메시지 초기화
+              if (verificationCodeError) {
+                setVerificationCodeError('');
+              }
+              // 인증번호가 변경되면 인증 상태 초기화
+              if (isVerificationSent) {
+                setIsVerificationSent(false);
+                setIsVerificationSuccess(false);
+                setSecretKey('');
+              }
+            }}
+            placeholder="인증번호 4자리를 입력해주세요"
+            maxLength={4}
+            disabled={!isVerificationRequested}
+            className={`flex-1 h-8 px-3 py-1.5 bg-slate-800 rounded-lg text-white text-xs font-medium placeholder-slate-500 focus:bg-slate-900 focus:outline focus:outline-1 focus:outline-slate-600 focus:outline-offset-[-1px] ${
+              !isVerificationRequested ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            style={{ outline: '1px solid #7C7F88', outlineOffset: '-1px' }}
+          />
+          <Button onClick={handleAuthRequest} disabled={!isVerificationRequested} variant={isVerificationSent ? 'outline' : 'tertiary'} size="sm" className="h-8 px-4 text-sm font-semibold">
+            {isVerificationSent ? '확인 완료' : '코드 확인'}
+          </Button>
         </div>
+        {verificationCodeError && !isVerificationSuccess && <p className="text-red-400 text-xs mt-1">{verificationCodeError}</p>}
+        {isVerificationSuccess && !verificationCodeError && <p className="text-green-400 text-xs mt-1">인증이 완료되었습니다.</p>}
+      </div>
 
-        {/* 인증하기 */}
-        <div className="self-stretch flex flex-col justify-start items-start gap-3">
-          <Label className="self-stretch text-white text-base font-medium leading-normal">
-            인증하기
-          </Label>
-          <div className="w-80 inline-flex justify-start items-center gap-2.5">
-            <Input
-              type="text"
-              value={authCode}
-              onChange={(e) => {
-                const value = e.target.value;
-                setAuthCode(value);
-                // 사용자가 인증번호를 입력하기 시작하면 에러 메시지 초기화
-                if (verificationCodeError) {
-                  setVerificationCodeError('');
-                }
-                // 인증번호가 변경되면 인증 상태 초기화
-                if (isVerificationSent) {
-                  setIsVerificationSent(false);
-                  setIsVerificationSuccess(false);
-                  setSecretKey('');
-                }
-              }}
-              placeholder="인증번호 4자리를 입력해주세요"
-              maxLength={4}
-              disabled={!isVerificationRequested}
-              className={`flex-1 h-8 px-3 py-1.5 bg-slate-800 rounded-lg text-white text-xs font-medium placeholder-slate-500 focus:bg-slate-900 focus:outline focus:outline-1 focus:outline-slate-600 focus:outline-offset-[-1px] ${
-                !isVerificationRequested ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              style={{ outline: '1px solid #7C7F88', outlineOffset: '-1px' }}
-            />
-            <Button
-              onClick={handleAuthRequest}
-              disabled={!isVerificationRequested}
-              variant={isVerificationSent ? "outline" : "tertiary"}
-              size="sm"
-              className="h-8 px-4 text-sm font-semibold"
-            >
-              {isVerificationSent ? '확인 완료' : '코드 확인'}
-            </Button>
-          </div>
-          {verificationCodeError && !isVerificationSuccess && (
-            <p className="text-red-400 text-xs mt-1">{verificationCodeError}</p>
-          )}
-          {isVerificationSuccess && !verificationCodeError && (
-            <p className="text-green-400 text-xs mt-1">인증이 완료되었습니다.</p>
-          )}
-        </div>
-
-        {/* 수정 버튼 */}
-        <Button
-          onClick={handleSubmit}
-          variant={bank && isAccountNumberValid && isVerificationSuccess ? "brand1" : "secondary"}
-          size="lg"
-          className="self-stretch py-3 text-lg font-bold"
-        >
-          수정
-        </Button>
+      {/* 수정 버튼 */}
+      <Button onClick={handleSubmit} variant={bank && isAccountNumberValid && isVerificationSuccess ? 'brand1' : 'secondary'} size="lg" className="self-stretch py-3 text-lg font-bold">
+        수정
+      </Button>
     </BaseModal>
   );
 };

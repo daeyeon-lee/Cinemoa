@@ -28,7 +28,7 @@ const VoteDetail: React.FC<VoteDetailProps> = ({ fundingId, userId: propUserId }
     userId,
   });
 
-  console.log('수요조사(투표) - detailData:', detailData);
+  // console.log('수요조사(투표) - detailData:', detailData);
 
   // 로딩 상태
   if (isLoading) {

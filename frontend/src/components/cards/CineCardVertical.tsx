@@ -56,7 +56,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
 
     // ✅ 중복 클릭 방지: 이미 처리 중이면 무시
     if (likeMutation.isPending) {
-      console.log('🚫 좋아요 처리 중 - 중복 클릭 방지');
+      // console.log('🚫 좋아요 처리 중 - 중복 클릭 방지');
       return;
     }
 

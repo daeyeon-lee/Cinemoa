@@ -45,18 +45,18 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
   // 마감 여부 판단 로직
   const isExpired = useMemo(() => {
     if (!detailData) return false;
-    
+
     const endDate = new Date(detailData.funding.fundingEndsOn);
     const today = new Date();
-    
+
     // 시간을 제거하고 날짜만 비교 (오늘까지 포함)
     today.setHours(0, 0, 0, 0);
     endDate.setHours(0, 0, 0, 0);
-    
+
     return endDate < today;
   }, [detailData]);
 
-  console.log('DetailPageWrapper - detailData:', detailData);
+  // console.log('DetailPageWrapper - detailData:', detailData);
 
   // 로딩 상태
   if (isLoading) {
@@ -113,10 +113,8 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
       {isExpired && (
         <div className="bg-slate-700 p-4 mx-4 mb-5 rounded-xl">
           <div className="flex items-center">
-            <InfoIcon stroke='#CBD5E1'/>
-            <p className="text-sm text-primary font-medium ml-3">
-              이미 마감된 {detailData.type === 'FUNDING' ? '펀딩' : '투표'}입니다.
-            </p>
+            <InfoIcon stroke="#CBD5E1" />
+            <p className="text-sm text-primary font-medium ml-3">이미 마감된 {detailData.type === 'FUNDING' ? '펀딩' : '투표'}입니다.</p>
           </div>
         </div>
       )}
@@ -124,14 +122,10 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
       {/* 메인 컨텐츠 */}
       <div className={isExpired ? 'relative' : ''}>
         {/* Dimmed 오버레이 - 마감시 모든 클릭 차단 */}
-        {isExpired && (
-          <div className="absolute inset-0 bg-slate-900 bg-opacity-50 z-10 cursor-not-allowed" />
-        )}
-        
+        {isExpired && <div className="absolute inset-0 bg-slate-900 bg-opacity-50 z-10 cursor-not-allowed" />}
+
         {/* 실제 컨텐츠 */}
-        <div className={isExpired ? 'opacity-70 pointer-events-none' : ''}>
-          {renderDetailContent()}
-        </div>
+        <div className={isExpired ? 'opacity-70 pointer-events-none' : ''}>{renderDetailContent()}</div>
       </div>
     </div>
   );

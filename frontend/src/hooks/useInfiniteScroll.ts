@@ -31,12 +31,7 @@ import { useEffect, useRef } from 'react';
  * );
  * ```
  */
-export const useInfiniteScroll = (
-  callback: () => void,
-  hasNextPage: boolean,
-  isLoading: boolean,
-  threshold: number = 0.1
-) => {
+export const useInfiniteScroll = (callback: () => void, hasNextPage: boolean, isLoading: boolean, threshold: number = 0.1) => {
   const observerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,13 +43,13 @@ export const useInfiniteScroll = (
       ([entry]) => {
         // 감시 중인 요소가 화면에 보이면 (threshold 만큼)
         if (entry.isIntersecting) {
-          console.log('📋 [useInfiniteScroll] 사용자가 하단에 도달 - 다음 페이지 로드 시작');
+          // console.log('📋 [useInfiniteScroll] 사용자가 하단에 도달 - 다음 페이지 로드 시작');
           callback(); // 다음 페이지 로드 함수 실행
         }
       },
       {
-        threshold // 요소가 얼마나 보여야 트리거할지 (0.1 = 10%)
-      }
+        threshold, // 요소가 얼마나 보여야 트리거할지 (0.1 = 10%)
+      },
     );
 
     // 실제 DOM 요소 감시 시작

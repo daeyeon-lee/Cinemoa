@@ -37,20 +37,20 @@ export default function Home() {
 
   // 🐛 디버깅: 컴포넌트에서 authStore 상태 확인
   useEffect(() => {
-    console.log('[DEBUG Home] useAuthStore 상태:', user);
-    console.log('[DEBUG Home] authStore 전체 상태:', useAuthStore.getState());
-    console.log('[DEBUG Home] 로그인 여부:', user ? '로그인됨' : '비로그인');
+    // console.log('[DEBUG Home] useAuthStore 상태:', user);
+    // console.log('[DEBUG Home] authStore 전체 상태:', useAuthStore.getState());
+    // console.log('[DEBUG Home] 로그인 여부:', user ? '로그인됨' : '비로그인');
 
     // localStorage 직접 확인
     const storedAuth = localStorage.getItem('auth-storage');
-    console.log('[DEBUG Home] localStorage auth-storage:', storedAuth);
+    // console.log('[DEBUG Home] localStorage auth-storage:', storedAuth);
 
     // 쿠키 확인
-    console.log('[DEBUG Home] 현재 쿠키들:', document.cookie);
+    // console.log('[DEBUG Home] 현재 쿠키들:', document.cookie);
 
     // 세션 쿠키 체크
     const hasSessionCookie = document.cookie.includes('JSESSIONID');
-    console.log('[DEBUG Home] JSESSIONID 쿠키 존재:', hasSessionCookie);
+    // console.log('[DEBUG Home] JSESSIONID 쿠키 존재:', hasSessionCookie);
   }, [user]);
 
   // React Query 훅들 - authStore에서 자동으로 userId 가져옴
@@ -94,7 +94,7 @@ export default function Home() {
     (fundingId: number) => {
       if (!user?.userId) {
         // 비로그인 처리 (로그인 유도 등)
-        console.log('🔐 로그인 필요');
+        // console.log('🔐 로그인 필요');
         return;
       }
 
@@ -140,7 +140,7 @@ export default function Home() {
       // 2) 못 찾았으면 보수적으로 false로 간주
       const safeIsLiked = currentIsLiked ?? false;
 
-      console.log('❤️ [Home] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
+      // console.log('❤️ [Home] 좋아요 토글:', { fundingId, currentIsLiked: safeIsLiked });
 
       // 3) 토글 실행 (공통 훅: 목록/상세 모두 같은 낙관적 업데이트 로직 공유)
       toggleLike({
@@ -158,7 +158,7 @@ export default function Home() {
     const handlePageShow = (e: PageTransitionEvent) => {
       // e.persisted === true 이면 bfcache에서 복원된 것
       if (e.persisted) {
-        console.log('🔄 [Home] bfcache 복원 감지 - 쿼리 무효화');
+        // console.log('🔄 [Home] bfcache 복원 감지 - 쿼리 무효화');
         // 🔄 홈/검색 쿼리 무효화 → refetch 트리거
         queryClient.invalidateQueries({ queryKey: ['home'] }); // 홈 섹션들
         queryClient.invalidateQueries({ queryKey: ['search'] }); // 검색 쿼리들
@@ -168,7 +168,7 @@ export default function Home() {
     // 탭 비활성 → 활성 전환 시도도 안전망으로 갱신
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        console.log('👁️ [Home] 탭 활성화 감지 - 쿼리 무효화');
+        // console.log('👁️ [Home] 탭 활성화 감지 - 쿼리 무효화');
         queryClient.invalidateQueries({ queryKey: ['home'] });
         queryClient.invalidateQueries({ queryKey: ['search'] });
       }

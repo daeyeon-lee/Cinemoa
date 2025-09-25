@@ -29,7 +29,7 @@ export default function Ticket({ onClose }: TicketProps) {
         setLoading(true);
         const response = await getSuccessFunding(userId, 3); // 성공한 상영회만
         setSuccessFunding(response.data.content);
-        console.log('성공한 상영회 데이터', response.data.content);
+        // console.log('성공한 상영회 데이터', response.data.content);
       } catch (error) {
         console.error('성공한 상영회 데이터 가져오기 실패:', error);
         setSuccessFunding([]);

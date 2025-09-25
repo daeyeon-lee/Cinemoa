@@ -16,7 +16,7 @@ export const navigateToCategory = (params: CategoryNavigationParams = {}) => {
   // categoryId가 있으면 localStorage에 저장해서 전달
   if (params.categoryId) {
     localStorage.setItem('selectedCategoryId', params.categoryId.toString());
-    console.log('🎯 [navigateToCategory] categoryId 저장:', params.categoryId);
+    // console.log('🎯 [navigateToCategory] categoryId 저장:', params.categoryId);
   }
 
   // URL 파라미터 없이 바로 이동

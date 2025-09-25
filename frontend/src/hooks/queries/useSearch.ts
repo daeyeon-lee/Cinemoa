@@ -34,7 +34,7 @@ const getNextPageParam = (lastPage: ApiSearchResponse, _: ApiSearchResponse[], l
 
   if (hasNextPage && nextCursor) {
     // 서버 페이지네이션: nextCursor 사용
-    console.log('[useSearch] 다음 서버 페이지:', nextCursor);
+    // console.log('[useSearch] 다음 서버 페이지:', nextCursor);
     return nextCursor;
   }
 
@@ -45,12 +45,12 @@ const getNextPageParam = (lastPage: ApiSearchResponse, _: ApiSearchResponse[], l
     const hasMoreItems = nextStartIndex < content.length;
 
     if (hasMoreItems) {
-      console.log('[useSearch] 다음 클라이언트 페이지:', currentPage + 1);
+      // console.log('[useSearch] 다음 클라이언트 페이지:', currentPage + 1);
       return currentPage + 1;
     }
   }
 
-  console.log('[useSearch] 더 이상 페이지 없음');
+  // console.log('[useSearch] 더 이상 페이지 없음');
   return undefined;
 };
 
@@ -69,7 +69,7 @@ const selectData = (data: InfiniteData<ApiSearchResponse, string | number>) => {
     // 서버 페이지네이션: 모든 페이지 평탄화
     const content = data.pages.filter(isValidResponse).flatMap((page) => page.data?.content || []);
 
-    console.log(`[useSearch] 서버 페이징 - 총 ${content.length}개 아이템`);
+    // console.log(`[useSearch] 서버 페이징 - 총 ${content.length}개 아이템`);
     return { ...data, content };
   }
 
@@ -77,7 +77,7 @@ const selectData = (data: InfiniteData<ApiSearchResponse, string | number>) => {
   const visiblePageCount = data.pages.length;
   const visibleItems = allItems.slice(0, visiblePageCount * PAGE_SIZE);
 
-  console.log(`[useSearch] 클라이언트 페이징 - ${visibleItems.length}/${allItems.length}개 표시`);
+  // console.log(`[useSearch] 클라이언트 페이징 - ${visibleItems.length}/${allItems.length}개 표시`);
   return { ...data, content: visibleItems };
 };
 
@@ -87,7 +87,7 @@ const selectData = (data: InfiniteData<ApiSearchResponse, string | number>) => {
 export function useSearch(params: UseSearchParams = {}) {
   const { ...queryParams } = params;
 
-  console.log('[useSearch] 호출:', { params: queryParams });
+  // console.log('[useSearch] 호출:', { params: queryParams });
 
   return useInfiniteQuery({
     queryKey: ['search', queryParams],
@@ -98,11 +98,11 @@ export function useSearch(params: UseSearchParams = {}) {
         ...(pageParam !== 0 ? { cursor: pageParam } : {}),
       };
 
-      console.log('[useSearch] API 요청:', requestParams);
+      // console.log('[useSearch] API 요청:', requestParams);
 
       const response = await searchItems(requestParams);
 
-      console.log('[useSearch] 응답:', {
+      // console.log('[useSearch] 응답:', {
         itemCount: response.data?.content?.length || 0,
         hasNextPage: response.data?.hasNextPage,
         nextCursor: response.data?.nextCursor,

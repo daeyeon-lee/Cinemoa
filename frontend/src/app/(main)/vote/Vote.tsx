@@ -33,7 +33,7 @@ import type { SearchParams, SortBy } from '@/types/searchApi';
  * ListShell을 기반으로 필터링과 정렬 기능을 제공하며, brand2 컬러를 사용합니다.
  */
 export default function Vote() {
-  console.log('🎯 [Vote] 컴포넌트 렌더링');
+  // console.log('🎯 [Vote] 컴포넌트 렌더링');
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -137,7 +137,7 @@ export default function Vote() {
       params.isClosed = showClosed;
     }
 
-    console.log('📤 [Vote] API 파라미터 (선택된 것만):', params);
+    // console.log('📤 [Vote] API 파라미터 (선택된 것만):', params);
     return params;
   }, [sortBy, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
@@ -145,7 +145,7 @@ export default function Vote() {
 
   const items = data?.content || [];
 
-  console.log('📊 [Vote] 현재 데이터 상태:', {
+  // console.log('📊 [Vote] 현재 데이터 상태:', {
     itemsCount: items.length,
     hasNextPage,
     isFetchingNextPage,
@@ -257,14 +257,14 @@ export default function Vote() {
 
   // 🔄 재시도 핸들러
   const handleRetry = useCallback(() => {
-    console.log('🔄 [Vote] 재시도 버튼 클릭');
+    // console.log('🔄 [Vote] 재시도 버튼 클릭');
     refetch();
   }, [refetch]);
 
   // 🔄 무한 스크롤 핸들러
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
-      console.log('📋 [Vote] 다음 페이지 로드');
+      // console.log('📋 [Vote] 다음 페이지 로드');
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -272,7 +272,7 @@ export default function Vote() {
   // 🖱️ 카드 클릭 핸들러
   const handleCardClick = useCallback(
     (id: number) => {
-      console.log('🎯 [Vote] 투표 카드 클릭:', id);
+      // console.log('🎯 [Vote] 투표 카드 클릭:', id);
       router.push(`/detail/${id}`);
     },
     [router],
@@ -280,7 +280,7 @@ export default function Vote() {
 
   // ❤️ 투표 클릭 핸들러
   const handleVoteClick = useCallback((id: number) => {
-    console.log('❤️ [Vote] 투표 버튼 클릭:', id);
+    // console.log('❤️ [Vote] 투표 버튼 클릭:', id);
     // TODO: 투표 토글 로직 구현
   }, []);
 
@@ -293,7 +293,7 @@ export default function Vote() {
     const documentHeight = document.documentElement.scrollHeight;
 
     if (scrollTop + windowHeight >= documentHeight - 100) {
-      console.log('[Vote] 스크롤 감지 - 다음 페이지 로드');
+      // console.log('[Vote] 스크롤 감지 - 다음 페이지 로드');
       fetchNextPage();
     }
   }, [isFetchingNextPage, hasNextPage, fetchNextPage]);

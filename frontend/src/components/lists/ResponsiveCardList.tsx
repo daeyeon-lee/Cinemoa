@@ -92,7 +92,7 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   const observerRef = useInfiniteScroll(
     () => {
       // 디버깅용 로그
-      console.log('🔍 [ResponsiveCardList] 무한스크롤 트리거:', {
+      // console.log('🔍 [ResponsiveCardList] 무한스크롤 트리거:', {
         hasOnLoadMore: !!onLoadMore,
         hasNextPage,
         isFetchingNextPage,
@@ -101,10 +101,10 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
 
       // onLoadMore 함수가 있고, 다음 페이지가 있으며, 현재 로딩 중이 아닐 때만 실행
       if (onLoadMore && hasNextPage && !isFetchingNextPage) {
-        console.log('✅ [ResponsiveCardList] onLoadMore 실행');
+        // console.log('✅ [ResponsiveCardList] onLoadMore 실행');
         onLoadMore();
       } else {
-        console.log('❌ [ResponsiveCardList] onLoadMore 실행 조건 불충족');
+        // console.log('❌ [ResponsiveCardList] onLoadMore 실행 조건 불충족');
       }
     },
     hasNextPage, // 다음 페이지가 있는지

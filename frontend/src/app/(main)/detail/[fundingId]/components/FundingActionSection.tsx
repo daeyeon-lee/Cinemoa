@@ -41,7 +41,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
     userId,
   });
 
-  console.log('ActionSection userId', userId);
+  // console.log('ActionSection userId', userId);
 
   let currentIsLiked = false; // 현재 좋아요 여부
   let currentLikeCount = 0; // 현재 좋아요 수
@@ -115,16 +115,10 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
         {!isParticipated ? (
           // 참여하지 않은 경우: 정원 체크 후 결제 모달 또는 참여 불가 모달
           <>
-            <Button 
-              variant="brand1" 
-              size="lg" 
-              textSize="lg" 
-              className="w-full"
-              onClick={handleParticipateClick}
-            >
+            <Button variant="brand1" size="lg" textSize="lg" className="w-full" onClick={handleParticipateClick}>
               참여하기
             </Button>
-            
+
             {/* 결제 모달 */}
             <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
               <Payment
@@ -148,7 +142,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
                 onClose={() => setPaymentDialogOpen(false)}
               />
             </Dialog>
-            
+
             {/* 참여 불가 모달 (정원 초과) */}
             {fullCapacityDialogOpen && (
               <AlertDialog

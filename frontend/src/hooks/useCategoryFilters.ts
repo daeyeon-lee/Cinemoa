@@ -38,7 +38,7 @@ export const useCategoryFilters = () => {
 
     if (savedCategoryId) {
       const categoryId = parseInt(savedCategoryId, 10);
-      console.log('🎯 [useCategoryFilters] localStorage에서 categoryId 감지:', categoryId);
+      // console.log('🎯 [useCategoryFilters] localStorage에서 categoryId 감지:', categoryId);
 
       // 1차 카테고리 선택 (ex: categoryId=1이면 영화 전체 선택)
       // ID 1=영화, 2=시리즈, 3=공연, 4=스포츠중계
@@ -46,7 +46,7 @@ export const useCategoryFilters = () => {
       setSelectedUiCategoryId(categoryId);
       setSelectedSubCategoryId(categoryId);
 
-      console.log('✅ [useCategoryFilters] 카테고리 초기화 완료:', {
+      // console.log('✅ [useCategoryFilters] 카테고리 초기화 완료:', {
         selectedMainCategoryId: categoryId,
         selectedUiCategoryId: categoryId,
         selectedSubCategoryId: categoryId,
@@ -124,7 +124,7 @@ export const useCategoryFilters = () => {
    * API 재시도 핸들러
    */
   const handleRetry = useCallback(() => {
-    console.log('🔄 [useCategoryFilters] 재시도 버튼 클릭');
+    // console.log('🔄 [useCategoryFilters] 재시도 버튼 클릭');
     refetch();
   }, [refetch]);
 
@@ -133,7 +133,7 @@ export const useCategoryFilters = () => {
    */
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
-      console.log('📋 [useCategoryFilters] 다음 페이지 로드');
+      // console.log('📋 [useCategoryFilters] 다음 페이지 로드');
       fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -143,7 +143,7 @@ export const useCategoryFilters = () => {
    */
   const handleCardClick = useCallback(
     (id: number) => {
-      console.log('🎯 [useCategoryFilters] 펀딩 카드 클릭:', id);
+      // console.log('🎯 [useCategoryFilters] 펀딩 카드 클릭:', id);
       router.push(`/detail/${id}`);
     },
     [router],
@@ -153,7 +153,7 @@ export const useCategoryFilters = () => {
    * 좋아요(하트) 버튼 클릭 핸들러
    */
   const handleVoteClick = useCallback((id: number) => {
-    console.log('❤️ [useCategoryFilters] 좋아요 버튼 클릭:', id);
+    // console.log('❤️ [useCategoryFilters] 좋아요 버튼 클릭:', id);
     // TODO: 좋아요 토글 로직 구현
   }, []);
 
@@ -161,7 +161,7 @@ export const useCategoryFilters = () => {
    * 바텀시트 필터 적용 핸들러
    */
   const handleFilterApply = useCallback(() => {
-    console.log('🔄 [useCategoryFilters] 필터 적용');
+    // console.log('🔄 [useCategoryFilters] 필터 적용');
     // 필터가 적용되면 searchParams가 변경되어 자동으로 데이터 리패치됨
   }, []);
 
