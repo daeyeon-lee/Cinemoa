@@ -52,7 +52,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
               <div key={item.funding.fundingId || index} className="w-full flex items-start">
                 <div className="text-Brand2-Primary text-2xl font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0">{index + 1}</div>
                 <div className="flex-1">
-                  <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+                  <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} backgroundColor="bg-BG-0" />
                 </div>
               </div>
             ))}
@@ -70,7 +70,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
                     <div key={item.funding.fundingId || index} className="flex items-center gap-2">
                       <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 1}</div>
                       <div className="flex-1 min-w-0">
-                        <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+                        <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} backgroundColor="bg-BG-0" />
                       </div>
                     </div>
                   ))}
@@ -85,7 +85,7 @@ export function PopularSection({ title, items, loading = false, onMoreClick, onC
                       <div key={item.funding.fundingId || index} className="flex items-center gap-2">
                         <div className="text-Brand2-Primary text-base font-normal font-['LED_Counter_7'] leading-loose flex-shrink-0 w-4 text-center">{index + 4}</div>
                         <div className="flex-1 min-w-0">
-                          <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+                          <CineCardHorizontal data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} backgroundColor="bg-BG-0" />
                         </div>
                       </div>
                     ))}

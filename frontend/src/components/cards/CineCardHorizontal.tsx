@@ -14,9 +14,19 @@ type CineCardProps = {
   showStateTag?: boolean;
   stateTagClassName?: string;
   getStateBadgeInfo?: (state: FundingState, fundingType: FundingType) => { text: string; className: string };
+  backgroundColor?: 'bg-BG-0' | 'bg-BG-1';
 };
 
-const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
+const CineCardHorizontal: React.FC<CineCardProps> = ({
+  data,
+  loadingState = 'ready',
+  onVoteClick,
+  onCardClick,
+  showStateTag = false,
+  stateTagClassName = '',
+  getStateBadgeInfo,
+  backgroundColor = 'bg-BG-1',
+}) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
   // 좋아요 토글을 위한 상태 관리
@@ -73,8 +83,13 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
     }
   };
 
+  // 펀딩 타입별 종료 상태 확인
+  const isEnded = isFunding
+    ? ['SUCCESS', 'FAILED'].includes(data.funding.state) // 펀딩: 성공, 실패
+    : data.funding.state === 'WAITING'; // 투표: 오픈대기
+
   return (
-    <div className="w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02] min-w-[300px]" onClick={handleCardClick}>
+    <div className={`w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02] min-w-[300px] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
       {/* 왼쪽(이미지+영화제목+지역+상영일+프로젝트제목) */}
       <HorizontalLeft
         data={data}
@@ -86,6 +101,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
         onVoteClick={handleVoteClick}
         showStateTag={showStateTag}
         getStateBadgeInfo={getStateBadgeInfo}
+        backgroundColor={backgroundColor}
       />
       {/* 경계선 */}
       <div className="self-stretch w-[1px] py-2">
@@ -93,7 +109,15 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
       </div>
       {/* 오른쪽(가격+달성률+현재인원/목표인원+-일남음+진행률바) */}
       {/* 투표면 좋아요수+버튼 */}
-      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={likeMutation.isPending} />
+      <HorizontalRight
+        data={data}
+        loadingState={loadingState}
+        onVoteClick={onVoteClick}
+        currentIsLiked={currentIsLiked}
+        currentLikeCount={currentLikeCount}
+        isLoading={likeMutation.isPending}
+        backgroundColor={backgroundColor}
+      />
     </div>
   );
 };
