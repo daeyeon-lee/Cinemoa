@@ -65,7 +65,7 @@ export function RecommendedSection({ title, items, loading = false, onMoreClick,
       {/* Mobile/Tablet: 1줄 가로 스크롤 (lg 미만) */}
       <div className="lg:hidden">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2" style={{ width: `${items.length * 180}px` }}>
+          <div className="flex gap-2 h-[410px]" style={{ width: `${items.length * 180}px` }}>
             {items.map((item, index) => (
               <div key={item.funding.fundingId || index} className="w-[172px] flex-shrink-0">
                 <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />

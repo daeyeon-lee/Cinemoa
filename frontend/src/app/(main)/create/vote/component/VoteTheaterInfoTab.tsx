@@ -67,7 +67,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
 
       // 성공 alert 표시 후 홈으로 이동
       alert('투표가 성공적으로 생성되었습니다!');
-      router.push('/');
+      router.push('/mypage');
     } catch (error) {
       alert('투표 생성에 실패했습니다. 다시 시도해주세요.');
     }
@@ -229,7 +229,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
           이전
         </Button>
         <Button type="button" variant="brand2" size="lg" className="w-[138px] max-lg:w-full" onClick={handleNext}>
-          다음
+          투표 생성하기
         </Button>
       </div>
     </div>
