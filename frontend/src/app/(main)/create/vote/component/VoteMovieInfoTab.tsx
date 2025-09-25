@@ -12,6 +12,7 @@ import ConcertIcon from '@/component/icon/concertIcon';
 import SportsIcon from '@/component/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
 import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
+import { getDetailSummary } from '@/api/funding';
 import { useState, useRef, useEffect } from 'react';
 import { useGetCategories } from '@/api/hooks/useCategoryQueries';
 import { CategoryResponse } from '@/types/category';
@@ -41,6 +42,11 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const [titleError, setTitleError] = useState<string>('');
   const [descriptionError, setDescriptionError] = useState<string>('');
   const [imageError, setImageError] = useState<string>('');
+  const [isAiSummaryModalOpen, setIsAiSummaryModalOpen] = useState(false); // AI 요약 모달 상태
+  const [aiSummary, setAiSummary] = useState<string>(''); // AI 요약 내용
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false); // AI 요약 생성 중 상태
+  const [displayedAiSummary, setDisplayedAiSummary] = useState<string>(''); // 타이핑 애니메이션용 AI 요약
+  const [revealedChars, setRevealedChars] = useState<boolean[]>([]);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -49,6 +55,57 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
       setCategories(getCategories);
     }
   }, [getCategories]);
+
+  // AI 요약 생성 함수
+  const handleGenerateAiSummary = async () => {
+    setIsGeneratingSummary(true);
+    setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
+    setRevealedChars([]); // 글자 애니메이션 상태 초기화
+
+    try {
+      // 선택된 영화가 없으면 에러
+      if (!selectedMovie) {
+        throw new Error('영화를 먼저 선택해주세요.');
+      }
+
+      // 영화 설명이 없으면 에러
+      const videoContent = movieDescription.trim();
+      if (!videoContent) {
+        throw new Error('영화 설명을 먼저 입력해주세요.');
+      }
+
+      // getDetailSummary API 호출
+      const summaryResponse = await getDetailSummary(videoContent);
+      // API 응답에서 요약 텍스트 추출
+      const aiGeneratedSummary = summaryResponse.data?.processedVideoContent || '요약을 생성할 수 없습니다.';
+
+      setAiSummary(aiGeneratedSummary);
+      setDisplayedAiSummary(aiGeneratedSummary);
+      setIsGeneratingSummary(false);
+
+      // 대각선 순차 애니메이션 시작
+      const chars = Array.from(aiGeneratedSummary);
+      const newRevealedChars = new Array(chars.length).fill(false);
+      setRevealedChars(newRevealedChars);
+
+      chars.forEach((_, index) => {
+        setTimeout(() => {
+          setRevealedChars((prev) => {
+            const updated = [...prev];
+            updated[index] = true;
+            return updated;
+          });
+        }, index * 18);
+      });
+    } catch (error) {
+      console.error('AI 요약 생성 오류:', error);
+      setIsGeneratingSummary(false);
+      // 에러 발생 시 기본 메시지 표시
+      const errorMessage = 'AI 요약 생성에 실패했습니다. 다시 시도해주세요.';
+      setAiSummary(errorMessage);
+      setDisplayedAiSummary(errorMessage);
+    }
+  };
 
   const handleCategorySelect = (categoryId: string) => {
     // 카테고리 에러 메시지 초기화
@@ -446,17 +503,33 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               </h4>
               <p className="p3 text-tertiary">상영물에 대한 소개를 입력해주세요.</p>
             </div>
-            <Textarea
-              placeholder="상영물에 대한 소개를 입력해주세요."
-              value={movieDescription}
-              onChange={(e) => {
-                setMovieDescription(e.target.value);
-                setDescriptionError(''); // 상영물 소개 에러 메시지 초기화
-              }}
-              className="min-h-[135px] resize-none"
-            />
-            {/* 상영물 소개 에러 메시지 */}
-            {descriptionError && <div className="text-Brand1-Primary p3 mt-2">{descriptionError}</div>}
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Textarea
+                  placeholder="상영물에 대한 소개를 입력해주세요."
+                  value={movieDescription}
+                  onChange={(e) => {
+                    setMovieDescription(e.target.value);
+                    setDescriptionError(''); // 상영물 소개 에러 메시지 초기화
+                  }}
+                  className="flex-1 min-h-[135px] resize-none"
+                />
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => {
+                    setAiSummary(''); // AI 요약 초기화
+                    setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
+                    setRevealedChars([]); // 글자 애니메이션 상태 초기화
+                    setIsAiSummaryModalOpen(true);
+                  }}
+                >
+                  AI 요약
+                </Button>
+              </div>
+              {/* 상영물 소개 에러 메시지 */}
+              {descriptionError && <div className="text-Brand1-Primary p3 mt-2">{descriptionError}</div>}
+            </div>
           </div>
         </div>
 
@@ -533,6 +606,131 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
           다음
         </Button>
       </div>
+
+      {/* AI 요약 모달 */}
+      {/* AI 요약 모달 */}
+      <Dialog open={isAiSummaryModalOpen} onOpenChange={setIsAiSummaryModalOpen}>
+        <DialogContent className="max-w-2xl overflow-y-auto">
+          <DialogHeader className="self-stretch">
+            <DialogTitle className="h4-b text-primary mb-2">AI 요약</DialogTitle>
+            <DialogDescription></DialogDescription>
+          </DialogHeader>
+
+          <div className="w-full space-y-6">
+            {selectedMovie ? (
+              <>
+                {/* 현재 상세 정보 섹션 */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-stroke-3 rounded-full"></div>
+                    <h4 className="h6-b text-primary">현재 상세 정보</h4>
+                  </div>
+                  <div className="group cursor-pointer transition-all duration-200">
+                    <div className="bg-BG-1 border border-stroke-3 rounded-lg p-4 transition-all duration-200 hover:shadow-sm">
+                      <div className="bg-BG-1 p-1 max-h-[120px] overflow-y-auto scrollbar-hide">
+                        <p className="p1 max-lg:text-p2 text-secondary">{movieDescription || selectedMovie.overview || '상세 정보가 없습니다.'}</p>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="p3-b text-tertiary">{(movieDescription || selectedMovie.overview || '').length}자</span>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsAiSummaryModalOpen(false);
+                          }}
+                        >
+                          현재 내용 사용하기
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI 요약 섹션 */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${aiSummary ? 'bg-Brand1-Primary' : 'bg-stroke-4'}`}></div>
+                    <h4 className="h6-b text-primary">AI 요약</h4>
+                  </div>
+
+                  {!aiSummary ? (
+                    <div className="bg-BG-2 rounded-lg p-8 text-center">
+                      <p className="p2-b text-tertiary mb-4">AI가 핵심 내용을 요약해드립니다</p>
+                      <Button onClick={handleGenerateAiSummary} disabled={isGeneratingSummary} size="sm" className="bg-Brand1-Primary hover:bg-Brand1-Secondary text-primary">
+                        {isGeneratingSummary ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            생성 중...
+                          </div>
+                        ) : (
+                          'AI 요약 생성'
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="group cursor-pointer transition-all duration-200">
+                      <div className="bg-BG-1 border border-stroke-3 rounded-lg p-4 transition-all duration-200 ">
+                        <div className="p-1 max-h-[120px] overflow-y-auto scrollbar-hide">
+                          <div className="p1 max-lg:text-p2 text-secondary !leading-[1.5] !tracking-tight whitespace-pre-wrap">
+                            {Array.from(displayedAiSummary).map((char, index) => {
+                              const delayMs = index * 10;
+                              const style: React.CSSProperties = {
+                                opacity: revealedChars[index] ? 1 : 0,
+                                transform: revealedChars[index] ? 'translate(0,0)' : 'translate(10px,10px)',
+                                transitionProperty: 'opacity, transform',
+                                transitionDuration: '200ms',
+                                transitionTimingFunction: 'cubic-bezier(0.22,1,0.36,1)',
+                                transitionDelay: `${delayMs}ms`,
+                              };
+                              return (
+                                <span key={`c-${index}`} style={style}>
+                                  {char === ' ' ? '\u00A0' : char}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="p3-b text-tertiary">{aiSummary.length}자</span>
+                          </div>
+                          <Button
+                            variant="brand1"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMovieDescription(aiSummary);
+                              setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
+                              setRevealedChars([]); // 글자 애니메이션 상태 초기화
+                              setIsAiSummaryModalOpen(false);
+                            }}
+                          >
+                            AI 요약 사용하기
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="p1-b text-tertiary mb-4">먼저 영화를 검색하고 선택해주세요.</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAiSummaryModalOpen(false);
+                    setIsModalOpen(true);
+                  }}
+                >
+                  영화 검색하기
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
