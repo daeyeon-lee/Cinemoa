@@ -130,7 +130,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
     setSelectedTheater(value);
     setSelectedCinemaId(Number(value)); // 선택된 영화관 ID 저장
 
-    // 투표 기능에서는 상영관 선택이 없으므로 날짜만 초기화
+    // 영화관 변경 시 날짜 초기화
     setSelectedStartDate(''); // 시작 날짜 초기화
     setSelectedEndDate(''); // 종료 날짜 초기화
   };
@@ -196,35 +196,22 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData 
                   value={selectedStartDate}
                   onChange={(date) => {
                     setSelectedStartDate(date);
-
-                    if (date) {
-                      // 시작일로부터 5일 후 계산
-                      const startDate = new Date(date.split(' ')[0]); // "2024-01-15 (월)" -> "2024-01-15"
-                      const endDate = new Date(startDate);
-                      endDate.setDate(startDate.getDate() + 5);
-
-                      const year = endDate.getFullYear();
-                      const month = String(endDate.getMonth() + 1).padStart(2, '0');
-                      const day = String(endDate.getDate()).padStart(2, '0');
-                      const dayOfWeek = endDate.toLocaleDateString('ko-KR', { weekday: 'short' });
-
-                      setSelectedEndDate(`${year}-${month}-${day} (${dayOfWeek})`);
-                    } else {
-                      setSelectedEndDate('');
-                    }
                   }}
                   disabled={!selectedTheater}
                   min={new Date().toISOString().split('T')[0]} // 오늘 이후 날짜만 선택 가능
-                  placeholder={!selectedTheater ? '상영관을 먼저 선택해주세요' : '시작일을 선택해주세요'}
+                  placeholder={!selectedTheater ? '영화관을 먼저 선택해주세요' : '시작일을 선택해주세요'}
                 />
               </div>
 
               <div className="flex-1 min-w-0">
                 <CalendarDemo
                   value={selectedEndDate}
-                  onChange={() => {}} // 종료일은 자동 설정되므로 변경 불가
-                  disabled={true} // 항상 비활성화 (읽기 전용)
-                  placeholder={!selectedStartDate ? '시작일 선택 시 자동 설정됩니다' : '종료일 (시작일 + 5일)'}
+                  onChange={(date) => {
+                    setSelectedEndDate(date);
+                  }}
+                  disabled={!selectedTheater}
+                  min={selectedStartDate ? selectedStartDate.split(' ')[0] : new Date().toISOString().split('T')[0]} // 시작일 이후 날짜만 선택 가능
+                  placeholder={!selectedTheater ? '영화관을 먼저 선택해주세요' : '종료일을 선택해주세요'}
                 />
               </div>
             </div>
