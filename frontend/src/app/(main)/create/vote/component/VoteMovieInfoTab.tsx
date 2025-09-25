@@ -497,39 +497,37 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
           {/* 상영물 상세 소개 */}
           <div className="space-y-3">
-            <div className="space-y-1">
-              <h4 className="h5-b text-primary">
-                상영물 소개 <span className="text-Brand1-Primary">*</span>
-              </h4>
-              <p className="p3 text-tertiary">상영물에 대한 소개를 입력해주세요.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="상영물에 대한 소개를 입력해주세요."
-                  value={movieDescription}
-                  onChange={(e) => {
-                    setMovieDescription(e.target.value);
-                    setDescriptionError(''); // 상영물 소개 에러 메시지 초기화
-                  }}
-                  className="flex-1 min-h-[135px] resize-none"
-                />
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={() => {
-                    setAiSummary(''); // AI 요약 초기화
-                    setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
-                    setRevealedChars([]); // 글자 애니메이션 상태 초기화
-                    setIsAiSummaryModalOpen(true);
-                  }}
-                >
-                  AI 요약
-                </Button>
+            <div className="flex items-center justify-between gap-2">
+              <div className="space-y-1">
+                <h4 className="h5-b text-primary">
+                  상영물 소개 <span className="text-Brand1-Primary">*</span>
+                </h4>
+                <p className="p3 text-tertiary">상영물에 대한 소개를 입력해주세요.</p>
               </div>
-              {/* 상영물 소개 에러 메시지 */}
-              {descriptionError && <div className="text-Brand1-Primary p3 mt-2">{descriptionError}</div>}
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => {
+                  setAiSummary(''); // AI 요약 초기화
+                  setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
+                  setRevealedChars([]); // 글자 애니메이션 상태 초기화
+                  setIsAiSummaryModalOpen(true);
+                }}
+              >
+                AI 요약
+              </Button>
             </div>
+            <Textarea
+              placeholder="상영물에 대한 소개를 입력해주세요."
+              value={movieDescription}
+              onChange={(e) => {
+                setMovieDescription(e.target.value);
+                setDescriptionError(''); // 상영물 소개 에러 메시지 초기화
+              }}
+              className="min-h-[135px] resize-none"
+            />
+            {/* 상영물 소개 에러 메시지 */}
+            {descriptionError && <div className="text-Brand1-Primary p3 mt-2">{descriptionError}</div>}
           </div>
         </div>
 
