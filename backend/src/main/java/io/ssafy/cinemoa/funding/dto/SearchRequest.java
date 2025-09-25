@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.funding.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ssafy.cinemoa.cinema.enums.CinemaFeature;
 import io.ssafy.cinemoa.funding.enums.FundingSortOrder;
 import io.ssafy.cinemoa.funding.enums.FundingType;
@@ -20,6 +21,7 @@ public class SearchRequest {
     private Long category;
     private List<String> region;
     private Set<CinemaFeature> theaterType;
+    @JsonProperty("isClosed")
     private Boolean isClosed;
     private String nextCursor;
 }

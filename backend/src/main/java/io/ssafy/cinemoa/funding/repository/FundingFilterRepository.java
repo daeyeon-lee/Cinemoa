@@ -255,7 +255,7 @@ public class FundingFilterRepository {
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ?
-                    WHERE 1=1
+                    WHERE 1=1 AND f.state == 'ON_PROGRESS'
                     """);
 
             // userId를 첫 번째 파라미터로 추가
@@ -339,9 +339,7 @@ public class FundingFilterRepository {
 
         public void addClosedFilter(Boolean isClosed) {
             if (isClosed) {
-                sql.append(" AND f.state != 'CLOSED'");
-            } else {
-                sql.append(" AND f.state = 'CLOSED'");
+                sql.append(" AND (f.state == 'FAILED' OR f.state != 'SUCCESS')");
             }
         }
 
