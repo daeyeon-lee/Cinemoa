@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button'; // 버튼 컴포넌트
-import { Dialog, DialogTrigger } from '@/components/ui/dialog'; // 결제 모달용
+import { Dialog } from '@/components/ui/dialog'; // 결제 모달용
 import Payment from '@/app/(main)/payment/Payment'; // 결제 모달 내용
 import RefundConfirm from '@/app/(main)/refund/RefundConfirm'; // 환불 확인 모달
+import AlertDialog from '@/components/ui/alert-dialog'; // 참여 불가 모달
 import { HeartIcon } from '@/component/icon/heartIcon'; // 하트 아이콘
 import { ShareButton } from '@/components/share/ShareButton'; // 공유 버튼 컴포넌트
+import InfoIcon from '@/component/icon/infoIcon'; // 정보 아이콘
 
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요)
 
@@ -28,6 +30,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
   // Dialog 상태 관리
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [fullCapacityDialogOpen, setFullCapacityDialogOpen] = useState(false);
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
@@ -43,15 +46,20 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
   let currentIsLiked = false; // 현재 좋아요 여부
   let currentLikeCount = 0; // 현재 좋아요 수
   let isParticipated = false; // 현재 참여 여부
+  let progressRate = 0; // 달성률
 
   if (detailData?.type === 'FUNDING') {
     currentIsLiked = detailData.stat.isLiked;
     currentLikeCount = detailData.stat.likeCount;
     isParticipated = detailData.stat.isParticipated ?? false;
+    progressRate = detailData.funding.progressRate;
   }
 
   // Context에서 price 가져오기
   const price = contextData.funding.price;
+
+  // 달성률 100% 체크
+  const isFullCapacity = progressRate >= 100;
 
   // ✅ 좋아요 버튼 클릭: 미로그인 방지 + 낙관적 업데이트
   const handleLikeClick = () => {
@@ -65,6 +73,16 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
       userId, // 필수: 서버 API 요구
       isLiked: currentIsLiked, // 현재값 기반 토글
     });
+  };
+
+  // 🚫 참여하기 버튼 클릭: 정원 초과 체크
+  const handleParticipateClick = () => {
+    if (isFullCapacity) {
+      setFullCapacityDialogOpen(true);
+      return;
+    }
+    // 정원에 여유가 있으면 결제 모달 열기
+    setPaymentDialogOpen(true);
   };
 
   return (
@@ -95,34 +113,60 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
 
         {/* 조건부 버튼: 참여하기(결제) 또는 참여취소(환불) */}
         {!isParticipated ? (
-          // 참여하지 않은 경우: 결제 모달
-          <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="brand1" size="lg" textSize="lg" className="w-full">
-                참여하기
-              </Button>
-            </DialogTrigger>
-            <Payment
-              fundingId={fundingId}
-              userId={userId}
-              amount={price}
-              title={contextData.funding.title}
-              videoName={contextData.screening.videoName}
-              fundingEndsOn={contextData.funding.fundingEndsOn}
-              screenStartsOn={contextData.screening.screenStartsOn}
-              screenEndsOn={contextData.screening.screenEndsOn}
-              cinemaName={contextData.cinema.cinemaName}
-              screenName={contextData.screen?.screenName}
-              screenFeatures={{
-                isDolby: contextData.screen?.isDolby,
-                isImax: contextData.screen?.isImax,
-                isScreenx: contextData.screen?.isScreenx,
-                is4dx: contextData.screen?.is4dx,
-                isRecliner: contextData.screen?.isRecliner,
-              }}
-              onClose={() => setPaymentDialogOpen(false)}
-            />
-          </Dialog>
+          // 참여하지 않은 경우: 정원 체크 후 결제 모달 또는 참여 불가 모달
+          <>
+            <Button 
+              variant="brand1" 
+              size="lg" 
+              textSize="lg" 
+              className="w-full"
+              onClick={handleParticipateClick}
+            >
+              참여하기
+            </Button>
+            
+            {/* 결제 모달 */}
+            <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+              <Payment
+                fundingId={fundingId}
+                userId={userId}
+                amount={price}
+                title={contextData.funding.title}
+                videoName={contextData.screening.videoName}
+                fundingEndsOn={contextData.funding.fundingEndsOn}
+                screenStartsOn={contextData.screening.screenStartsOn}
+                screenEndsOn={contextData.screening.screenEndsOn}
+                cinemaName={contextData.cinema.cinemaName}
+                screenName={contextData.screen?.screenName}
+                screenFeatures={{
+                  isDolby: contextData.screen?.isDolby,
+                  isImax: contextData.screen?.isImax,
+                  isScreenx: contextData.screen?.isScreenx,
+                  is4dx: contextData.screen?.is4dx,
+                  isRecliner: contextData.screen?.isRecliner,
+                }}
+                onClose={() => setPaymentDialogOpen(false)}
+              />
+            </Dialog>
+            
+            {/* 참여 불가 모달 (정원 초과) */}
+            {fullCapacityDialogOpen && (
+              <AlertDialog
+                title="참여 불가"
+                content="참여 인원이 가득 찼습니다"
+                // content={`현재 펀딩의 참여 인원이 가득 차서\n참여할 수 없습니다.`}
+                info="현재 펀딩의 참여 인원이 가득 차서 참여할 수 없습니다"
+                icon={<InfoIcon stroke="#FF5768" size={48} />}
+                btnLabel="확인"
+                subBtnLabel="다른 펀딩 보기"
+                onBtnLabel={() => setFullCapacityDialogOpen(false)}
+                onSubBtnLabel={() => {
+                  setFullCapacityDialogOpen(false);
+                  window.location.href = '/category';
+                }}
+              />
+            )}
+          </>
         ) : (
           // 이미 참여한 경우: 환불 확인 모달
           <>

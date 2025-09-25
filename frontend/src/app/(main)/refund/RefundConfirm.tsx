@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useFundingRefund } from '@/hooks/queries/useFunding';
 import InfoIcon from '@/component/icon/infoIcon';
 
@@ -59,7 +59,7 @@ export default function RefundConfirm({
       subTitle="정말로 참여를 취소하시겠습니까?"
       content={contentText}
       info={infoText}
-      icon={<InfoIcon stroke="#FF5768" size={48} />}
+      icon={<InfoIcon stroke="#FF5768" size={52} />}
       negLabel="아니오"
       posLabel="참여 취소하기"
       onNegative={() => onClose?.()}
