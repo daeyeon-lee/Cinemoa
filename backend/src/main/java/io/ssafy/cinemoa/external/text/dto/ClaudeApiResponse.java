@@ -1,12 +1,11 @@
 package io.ssafy.cinemoa.external.text.dto;
 
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 /**
  * Claude API 응답 DTO
- * 
+ *
  * Claude API로부터 받는 응답 형식
  */
 @Data
@@ -45,22 +44,22 @@ public class ClaudeApiResponse {
 
     /**
      * 응답에서 요약된 텍스트 추출
-     * 
+     *
      * @return 요약된 텍스트 (첫 번째 content의 text)
      */
     public String getSummaryText() {
         if (content != null && !content.isEmpty() && content.get(0) != null) {
             return content.get(0).getText();
         }
-        return null;
+        return "";
     }
 
     /**
-     * 성공 여부 확인
-     * 
-     * @return 성공 시 true, 실패 시 false
+     * 응답에 유효한 콘텐츠가 있는지 확인
+     *
+     * @return 유효한 콘텐츠가 있으면 true, 없으면 false
      */
-    public boolean isSuccess() {
-        return id != null && content != null && !content.isEmpty();
+    public boolean hasValidContent() {
+        return content != null && !content.isEmpty() && content.get(0).getText() != null;
     }
 }

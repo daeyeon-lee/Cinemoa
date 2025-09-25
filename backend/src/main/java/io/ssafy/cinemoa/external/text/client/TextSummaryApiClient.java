@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -54,7 +53,7 @@ public class TextSummaryApiClient {
             HttpHeaders headers = createHeaders();
 
             // 3. 요청 본문 설정
-            ResponseEntity<ClaudeApiResponse> response = new ResponseEntity<>(null, HttpStatus.OK);
+            ResponseEntity<ClaudeApiResponse> response = null;
 
             // 4. 디버깅을 위한 요청 내용 로그
             try {
@@ -72,13 +71,10 @@ public class TextSummaryApiClient {
                 log.warn("요청 내용 로깅 실패: {}", e.getMessage());
             }
 
-            ClaudeApiResponse result = response.getBody();
-
             // 6. 응답 처리
-            log.debug("Claude API 응답 상태코드: {}", response.getStatusCode());
-
-            if (result != null) {
-
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.debug("Claude API 응답 성공 - 상태코드: {}", response.getStatusCode());
+                ClaudeApiResponse result = response.getBody();
                 long processingTime = System.currentTimeMillis() - startTime;
 
                 // 응답 내용 로깅
@@ -89,28 +85,23 @@ public class TextSummaryApiClient {
                     log.warn("응답 내용 로깅 실패: {}", e.getMessage());
                 }
 
-                if (result.isSuccess()) {
-                    String summaryText = result.getSummaryText();
-                    if (summaryText != null) {
-                        summaryText = summaryText.replace("\"", "");
-                    }
-
-                    log.info("■■■■■■■■ Claude API 요약 성공 - 원본길이: {}, 요약길이: {}, 처리시간: {}ms, " +
-                    // 입력토큰: {}, 출력토큰: {}
-                            "■■■■■■■■",
-                            request.getVideoContent() != null ? request.getVideoContent().length() : 0,
-                            summaryText != null ? summaryText.length() : 0,
-                            processingTime
-                    // result.getUsage() != null ? result.getUsage().getInputTokens() : 0,
-                    // result.getUsage() != null ? result.getUsage().getOutputTokens() : 0
-                    );
-
-                    return summaryText;
-                } else {
-                    log.warn("Claude API 응답이 성공하지 않음 - ID: {}, StopReason: {}",
-                            result.getId(), result.getStopReason());
-                    return createErrorResponse("API 응답이 성공하지 않음");
+                // 응답에 유효한 콘텐츠가 있는지 확인
+                if (!result.hasValidContent()) {
+                    log.warn("Claude API 응답에 유효한 콘텐츠가 없음 - ID: {}, StopReason: {}", result.getId(),
+                            result.getStopReason());
+                    return createErrorResponse("API 응답에 유효한 콘텐츠가 없음");
                 }
+
+                String summaryText = result.getSummaryText().replace("\"", "");
+
+                log.info("■■■■■■■■ Claude API 요약 성공 - 원본길이: {}, 요약길이: {}, 처리시간: {}ms, 입력토큰: {}, 출력토큰: {} ■■■■■■■■",
+                        request.getVideoContent() != null ? request.getVideoContent().length() : 0,
+                        summaryText != null ? summaryText.length() : 0,
+                        processingTime,
+                        result.getUsage() != null ? result.getUsage().getInputTokens() : 0,
+                        result.getUsage() != null ? result.getUsage().getOutputTokens() : 0);
+
+                return summaryText;
             } else {
                 log.warn("Claude API 응답 실패 - 상태코드: {}", response.getStatusCode());
 
