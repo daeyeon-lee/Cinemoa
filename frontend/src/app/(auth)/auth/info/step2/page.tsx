@@ -437,7 +437,7 @@ export default function Step2Page() {
               disabled={!isAccountNumberValid}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
-              {isEmailSent ? '전송 완료' : '인증 번호 요청'}
+              {isEmailSent ? '인증번호 재전송' : '계좌 인증하기'}
             </Button>
           </div>
           {(form.formState.errors.accountNumber || accountNumberError) && <p className="text-Brand1-Primary p2 mt-1">{form.formState.errors.accountNumber?.message || accountNumberError}</p>}
@@ -476,10 +476,10 @@ export default function Step2Page() {
               type="button"
               onClick={handleVerificationRequest}
               variant={isVerificationSent ? 'outline' : 'tertiary'}
-              disabled={!isVerificationRequested}
+              disabled={!isVerificationRequested || isVerificationSent}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
-              {isVerificationSent ? '인증 완료' : '인증 요청'}
+              {isVerificationSent ? '인증 완료' : '확인'}
             </Button>
           </div>
           {(form.formState.errors.verificationCode || verificationCodeError) && !isVerificationSuccess && (

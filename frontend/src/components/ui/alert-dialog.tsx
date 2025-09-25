@@ -8,9 +8,9 @@ interface AlertDialogProps {
   info?: string;           // 추가 정보 (선택사항)
   icon?: React.ReactNode;  // 아이콘 (기본 크기 48px, size prop으로 조절 가능)
   btnLabel: string;        // 오른쪽 버튼 
-  subBtnLabel: string;        // 왼쪽 버튼 (필요시 사용)
+  subBtnLabel?: string;        // 왼쪽 버튼 (필요시 사용)
   onBtnLabel: () => void;  // 오른쪽 버튼 클릭
-  onSubBtnLabel: () => void;  // 왼쪽 버튼 클릭
+  onSubBtnLabel?: () => void;  // 왼쪽 버튼 클릭
   isLoading?: boolean;     // 로딩 상태
 }
 
@@ -81,7 +81,7 @@ export default function AlertDialog({
         {/* 버튼 */}
         <div className="flex gap-3">
           <Button 
-            variant="secondary" 
+            variant="brand1" 
             size="lg" 
             textSize="lg"
             className="flex-1"
@@ -91,8 +91,9 @@ export default function AlertDialog({
             {btnLabel}
           </Button>
           {/* 서브 버튼 */}
-          <Button 
-            variant="brand1" 
+          {subBtnLabel && (
+            <Button 
+            variant="secondary" 
             size="lg" 
             textSize="lg"
             className="flex-1"
@@ -100,7 +101,8 @@ export default function AlertDialog({
             disabled={isLoading}
           >
             {subBtnLabel}
-          </Button>
+            </Button>
+          )}
         </div>
       </div>
     </div>
