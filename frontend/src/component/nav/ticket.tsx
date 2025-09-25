@@ -229,8 +229,11 @@ export default function Ticket({ onClose }: TicketProps) {
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-pink-500/10 rounded-3xl"></div>
               <div className="h-full flex flex-col p-6 gap-3 relative z-10">
                 {/* 브랜딩 헤더 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <img src="/cinemoa_logo_long.png" alt="Cinemoa" className="w-31 h-8 object-cover" />
+                  <button onClick={onClose} className="text-primary h4 p-1">
+                    ✕
+                  </button>
                 </div>
 
                 {/* 포스터 이미지 */}
