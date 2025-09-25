@@ -59,8 +59,6 @@ public class TextSummaryApiClient {
             try {
                 String requestBody = objectMapper.writeValueAsString(claudeRequest);
                 log.info("Claude API 요청 내용: {}", requestBody);
-                log.info("요청 헤더: x-api-key={}, anthropic-version={}",
-                        headers.getFirst("x-api-key"), headers.getFirst("anthropic-version"));
 
                 // 5. API 호출
                 response = restTemplate.postForEntity(

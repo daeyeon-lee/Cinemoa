@@ -1,5 +1,6 @@
 package io.ssafy.cinemoa.external.text.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Data;
 
@@ -28,7 +29,9 @@ public class ClaudeApiResponse {
 
     @Data
     public static class Usage {
+        @JsonProperty("input_tokens")
         private Integer inputTokens;
+        @JsonProperty("output_tokens")
         private Integer outputTokens;
         private Integer cacheCreationInputTokens;
         private Integer cacheReadInputTokens;
