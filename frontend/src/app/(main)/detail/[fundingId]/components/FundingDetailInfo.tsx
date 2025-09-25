@@ -81,7 +81,7 @@ export default function FundingDetailInfo() {
           <CardContent>
             {/* 서버에서 내려주는 소개문(없으면 기본 안내) */}
             <p className="p">
-              {screening?.videoContent ? screening.videoContent : '같이 영화 보실 분들 구합니다! 보고 싶은 영화를 상영관 대관으로 함께 즐겨요. 펀딩 성공을 위해 많은 참여 부탁드립니다.'}
+              {funding?.content ? funding.content : '같이 영화 보실 분들 구합니다! 보고 싶은 영화를 상영관 대관으로 함께 즐겨요. 펀딩 성공을 위해 많은 참여 부탁드립니다.'}
             </p>
           </CardContent>
         </Card>
