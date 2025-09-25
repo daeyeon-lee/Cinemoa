@@ -430,7 +430,7 @@ export default function Category() {
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenCategoryBottomSheet}
                   className={`${getCategoryDisplayText() === '카테고리' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
@@ -439,7 +439,7 @@ export default function Category() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenRegionBottomSheet}
                   className={`${getRegionDisplayText() === '지역' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
@@ -448,7 +448,7 @@ export default function Category() {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenTheaterBottomSheet}
                   className={`${getTheaterTypeDisplayText() === '상영관 종류' ? 'flex-1' : 'flex-shrink-0'} relative flex items-center justify-center pl-3 pr-8 whitespace-nowrap`}
                 >
