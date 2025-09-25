@@ -10,9 +10,10 @@ type HorizontalRightProps = {
   currentIsLiked?: boolean;
   currentLikeCount?: number;
   isLoading?: boolean;
+  backgroundColor?: 'bg-BG-0' | 'bg-BG-1';
 };
 
-const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 'ready', onVoteClick, currentIsLiked = false, currentLikeCount = 0, isLoading = false }) => {
+const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 'ready', onVoteClick, currentIsLiked = false, currentLikeCount = 0, isLoading = false, backgroundColor = 'bg-BG-1' }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
   const calculateDaysLeft = (endDate: string): number => {
@@ -33,7 +34,7 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
   };
 
   return (
-    <div className="w-[114px] bg-BG-1 rounded-xl self-stretch p-3 inline-flex flex-col justify-between items-start">
+    <div className={`w-[114px] ${backgroundColor} rounded-xl self-stretch p-3 inline-flex flex-col justify-between items-start`}>
       {/* 펀딩 OR 투표 */}
       {isFunding ? (
         <div className="w-full flex flex-col justify-between h-full">

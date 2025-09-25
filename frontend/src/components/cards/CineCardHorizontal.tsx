@@ -14,9 +14,10 @@ type CineCardProps = {
   showStateTag?: boolean;
   stateTagClassName?: string;
   getStateBadgeInfo?: (state: FundingState, fundingType: FundingType) => { text: string; className: string };
+  backgroundColor?: 'bg-BG-0' | 'bg-BG-1';
 };
 
-const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo }) => {
+const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'ready', onVoteClick, onCardClick, showStateTag = false, stateTagClassName = '', getStateBadgeInfo, backgroundColor = 'bg-BG-1' }) => {
   const isFunding = data.funding.fundingType === 'FUNDING';
 
   // 좋아요 토글을 위한 상태 관리
@@ -103,6 +104,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
         onVoteClick={handleVoteClick}
         showStateTag={showStateTag}
         getStateBadgeInfo={getStateBadgeInfo}
+        backgroundColor={backgroundColor}
       />
       {/* 경계선 */}
       <div className="self-stretch w-[1px] py-2">
@@ -110,7 +112,7 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
       </div>
       {/* 오른쪽(가격+달성률+현재인원/목표인원+-일남음+진행률바) */}
       {/* 투표면 좋아요수+버튼 */}
-      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={isLoading} />
+      <HorizontalRight data={data} loadingState={loadingState} onVoteClick={onVoteClick} currentIsLiked={currentIsLiked} currentLikeCount={currentLikeCount} isLoading={isLoading} backgroundColor={backgroundColor} />
     </div>
   );
 };

@@ -13,11 +13,12 @@ type HorizontalLeftProps = {
   onVoteClick: (e: React.MouseEvent) => void;
   showStateTag?: boolean;
   getStateBadgeInfo?: (state: FundingState, fundingType: FundingType) => { text: string; className: string };
+  backgroundColor?: 'bg-BG-0' | 'bg-BG-1';
 };
 
-const HorizontalLeft: React.FC<HorizontalLeftProps> = ({ data, loadingState = 'ready', formatDate, isFunding, currentIsLiked, isLoading, onVoteClick, showStateTag = false, getStateBadgeInfo }) => {
+const HorizontalLeft: React.FC<HorizontalLeftProps> = ({ data, loadingState = 'ready', formatDate, isFunding, currentIsLiked, isLoading, onVoteClick, showStateTag = false, getStateBadgeInfo, backgroundColor = 'bg-BG-1' }) => {
   return (
-    <div className="bg-BG-1 flex-1 min-w-0 p-3 flex justify-start items-center gap-3 rounded-xl">
+    <div className={`${backgroundColor} flex-1 min-w-0 p-3 flex justify-start items-center gap-3 rounded-xl`}>
       <div className="w-16 relative rounded overflow-hidden">
         <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" height={96} rounded={false} loadingState={loadingState} />
 
