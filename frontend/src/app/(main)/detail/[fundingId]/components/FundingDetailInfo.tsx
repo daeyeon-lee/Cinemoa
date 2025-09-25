@@ -17,6 +17,8 @@ type TabId = 'funding-info' | 'movie-info' | 'theater-info' | 'refund-info';
 export default function FundingDetailInfo() {
   // Context에서 데이터 가져오기
   const { data } = useFundingDetail();
+  const { funding, screening, cinema, screen } = data || {};
+  
   // ✅ 상단 버튼(active 상태) 관리
   const [activeButton, setActiveButton] = useState('funding-info');
 
@@ -27,17 +29,15 @@ export default function FundingDetailInfo() {
     document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // ✅ data 구조 분해: 사용되는 필드만 추출
-  const { funding, screening, cinema, screen } = data || {};
 
   // ✅ 상영일(예시로 fundingEndsOn 사용) + 상영 시간 문자열 구성
-  const screeningDateText = formatKoreanDate(funding?.fundingEndsOn);
+  const screeningDateText = formatKoreanDate(funding?.screenDate);
   const screeningTimeText = screening?.screenStartsOn != null && screening?.screenEndsOn != null ? `${formatTime(screening.screenStartsOn)} ~ ${formatTime(screening.screenEndsOn)}` : '-';
 
   return (
     <section className="px-4">
-      {/* ✅ 네비게이션 버튼 행: 펀딩 소개 / 상영물 정보 / 영화관 정보 / 환불 및 위약 정보 */}
       <div className="flex flex-col gap-12 mt-12">
+        {/* 네비게이션 버튼 */}
         <div className="flex flex-nowrap w-full gap-2 overflow-x-auto scrollbar-hide">
           <Button
             variant={activeButton === 'funding-info' ? 'brand1' : 'tertiary'} // ✅ 현재 탭과 일치하면 강조
@@ -166,7 +166,7 @@ export default function FundingDetailInfo() {
                     <LocationIcon />
                     <div>
                       <p className="p2 text-tertiary">영화관 주소</p>
-                      <p className="p1 text-primary">{cinema?.address}</p>
+                      <p className="p1 text-primary">{cinema.city} {cinema?.address}</p>
                     </div>
                   </div>
                 </div>

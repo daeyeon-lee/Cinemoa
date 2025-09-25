@@ -14,19 +14,14 @@ import { formatKoreanDate } from '@/utils/dateUtils';
 export default function VoteDetailInfo() {
   // Context에서 데이터 가져오기
   const { data } = useVoteDetail();
-
-  // ✅ data 구조 분해: 사용되는 필드만 추출
   const { funding, screening, cinema } = data || {};
 
   // ✅ 상영일(예시로 fundingEndsOn 사용) + 상영 시간 문자열 구성
-  const screeningDateText = formatKoreanDate(funding?.fundingEndsOn);
+  const screeningStartDate = formatKoreanDate(funding?.screenMinDate);
+  const screeningEndDate = formatKoreanDate(funding?.screenMaxDate);
 
   // ✅ 영화관 이름 및 어드레스(간단 합성)
   const cinemaName = cinema ? cinema.cinemaName : "-";
-  const cinemaAddr =
-    cinema && cinema.city && cinema.district
-      ? `${cinema.city} ${cinema.district}`
-      : "-";
 
   return (
     <section className="px-4">
@@ -102,8 +97,10 @@ export default function VoteDetailInfo() {
                   <div className="flex items-center gap-4">
                     <CalendarIcon />
                     <div>
-                      <p className="p2 text-tertiary">상영일</p>
-                      <p className="p1 text-primary">{screeningDateText || "-"}</p>
+                      <p className="p2 text-tertiary">상영 예상일</p>
+                      <p className="p1 text-primary">
+                        {screeningStartDate || "-"}{"  ~  "}{screeningEndDate || "-"}
+                      </p>
                     </div>
                   </div>
 
@@ -111,8 +108,8 @@ export default function VoteDetailInfo() {
                   <div className="flex items-center gap-4">
                     <LocationIcon />
                     <div>
-                      <p className="p2 text-ter티ary">영화관 주소</p>
-                      <p className="p1 text-primary">{cinemaAddr}</p>
+                      <p className="p2 text-tertiary">영화관 주소</p>
+                      <p className="p1 text-primary">{cinema.city} {cinema.address}</p>
                     </div>
                   </div>
                 </div>

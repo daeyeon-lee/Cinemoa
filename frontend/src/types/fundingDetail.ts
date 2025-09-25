@@ -14,14 +14,15 @@ export type FundingDetailData = {
 
   // 기본 펀딩 정보
   funding: {
-    fundingId: number;
-    title: string;
     bannerUrl: string;
     content: string;
-    state: string;          // "ON_PROGRESS" 등
-    progressRate: number;   // 달성률
-    fundingEndsOn: string;  // 종료일 (ISO string)
+    fundingEndsOn: string;  // 종료일
+    fundingId: number;
     price: number;          // 티켓 가격
+    progressRate: number;   // 달성률
+    screenDate: string;     // 상영 예상일
+    state: string;          // "ON_PROGRESS" 등
+    title: string;
   };
 
   // 제안자 정보
@@ -93,6 +94,8 @@ export type VoteDetailData = {
     state: string;
     progressRate: number;   // 달성률
     fundingEndsOn: string;   // 종료일 (ISO string)
+    screenMinDate: string;   // 상영 시작일 (ISO string)
+    screenMaxDate: string;   // 상영 종료일 (ISO string)
     price: number;          // 티켓 가격
   };
 
@@ -128,6 +131,7 @@ export type VoteDetailData = {
 
   // 영화관 정보
   cinema: {
+    address: string;
     cinemaId: number;
     cinemaName: string;
     city: string;
