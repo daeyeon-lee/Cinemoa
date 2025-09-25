@@ -52,8 +52,7 @@ public class FundingFilterRepository {
         List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
-                queryBuilder.getParams().toArray()
-        );
+                queryBuilder.getParams().toArray());
 
         boolean hasNextPage = results.size() > limit;
 
@@ -82,13 +81,12 @@ public class FundingFilterRepository {
         List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
-                queryBuilder.getParams().toArray()
-        );
+                queryBuilder.getParams().toArray());
 
         return CursorResponse.<CardTypeFundingInfoDto>builder()
                 .content(results)
-                .nextCursor(null)      // Top 100이므로 커서 없음
-                .hasNextPage(false)    // 더 이상 데이터 없음
+                .nextCursor(null) // Top 100이므로 커서 없음
+                .hasNextPage(false) // 더 이상 데이터 없음
                 .build();
     }
 
@@ -103,8 +101,7 @@ public class FundingFilterRepository {
         List<CardTypeFundingInfoDto> results = jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToSearchResultDto,
-                queryBuilder.getParams().toArray()
-        );
+                queryBuilder.getParams().toArray());
 
         return CursorResponse.<CardTypeFundingInfoDto>builder()
                 .content(results)
@@ -112,7 +109,6 @@ public class FundingFilterRepository {
                 .hasNextPage(false)
                 .build();
     }
-
 
     // 공통 필터 적용 메서드
     private void addAllFiltersFromRequest(QueryBuilder queryBuilder, SearchRequest request) {
@@ -170,7 +166,7 @@ public class FundingFilterRepository {
         int progressRate = maxPeople > 0 ? (participantCount * 100 / maxPeople) : 0;
         int favoriteCount = rs.getInt("favorite_count");
         int price = rs.getInt("price");
-        Integer perPersonPrice = (maxPeople > 0) ? price / maxPeople : -1;
+        int perPersonPrice = (int) Math.ceil((double) price / maxPeople / 10) * 10;
         String fundingType = rs.getString("funding_type");
 
         // 좋아요 여부 추가
@@ -317,7 +313,7 @@ public class FundingFilterRepository {
                     case RECLINER -> conditions.add("s.is_recliner = true");
                     case NORMAL -> conditions.add("""
                             (s.is_imax = false AND s.is_screenx = false
-                             AND s.is_4dx = false AND s.is_dolby = false 
+                             AND s.is_4dx = false AND s.is_dolby = false
                              AND s.is_recliner = false)
                             """);
                 }

@@ -34,10 +34,9 @@ public class ExpiringFundingRepository {
         return jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToCardTypeFundingInfoDto,
-                queryBuilder.getParams().toArray()
-        );
+                queryBuilder.getParams().toArray());
     }
-
+    
     /**
      * 제안한 펀딩 아이템 DTO로 매핑합니다.
      */
@@ -47,7 +46,7 @@ public class ExpiringFundingRepository {
         int progressRate = maxPeople > 0 ? (participantCount * 100 / maxPeople) : 0;
         int favoriteCount = rs.getInt("favorite_count");
         int price = rs.getInt("price");
-        Integer perPersonPrice = (maxPeople > 0) ? price / maxPeople : -1;
+        int perPersonPrice = (int) Math.ceil((double) price / maxPeople / 10) * 10;
         String fundingType = rs.getString("funding_type");
 
         // 좋아요 여부
@@ -108,10 +107,10 @@ public class ExpiringFundingRepository {
                     WHERE f.funding_type = 'FUNDING' AND f.state = 'ON_PROGRESS'
                       AND (
                           f.ends_on <= DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY)
-                          OR 
+                          OR
                           fs.participant_count * 100 >= f.max_people * 95
                       )
-                    ORDER BY 
+                    ORDER BY
                         CASE WHEN fs.participant_count * 100 >= f.max_people * 95 THEN 1 ELSE 2 END,
                         f.ends_on ASC
                     LIMIT 10

@@ -44,8 +44,7 @@ public class RecommendedFundingRepository {
         return jdbcTemplate.query(
                 queryBuilder.getSql(),
                 this::mapToCardTypeFundingInfoDto,
-                queryBuilder.getParams().toArray()
-        );
+                queryBuilder.getParams().toArray());
     }
 
     /**
@@ -60,7 +59,7 @@ public class RecommendedFundingRepository {
         int favoriteCount = rs.getInt("favorite_count");
         int viewCount = rs.getInt("view_count");
         int price = rs.getInt("price");
-        Integer perPersonPrice = (maxPeople > 0) ? price / maxPeople : -1;
+        int perPersonPrice = (int) Math.ceil((double) price / maxPeople / 10) * 10;
 
         // 좋아요 여부
         boolean isLiked = rs.getBoolean("is_liked");
