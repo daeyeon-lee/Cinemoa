@@ -59,7 +59,7 @@ const KakaoMap = ({ location, width = '100%', height = '400px', className }: Kak
         var mapContainer = document.getElementById('map');
         // map 컨테이너 오류메시지
         if (!mapContainer) {
-          console.error('map 컨테이너를 찾을 수 없습니다');
+          // console.error('map 컨테이너를 찾을 수 없습니다');
           return;
         }
 
@@ -109,7 +109,7 @@ const KakaoMap = ({ location, width = '100%', height = '400px', className }: Kak
             map.setCenter(coords);
           } else {
             // 오류메시지
-            console.error('장소 검색 실패:', status);
+            // console.error('장소 검색 실패:', status);
           }
         });
       };
