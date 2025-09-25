@@ -168,13 +168,13 @@ export default function Search() {
   const items = data?.content || [];
 
   // console.log('📊 [Search] 현재 데이터 상태:', {
-    itemsCount: items.length,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error: !!error,
-    searchQuery,
-  });
+  //   itemsCount: items.length,
+  //   hasNextPage,
+  //   isFetchingNextPage,
+  //   isLoading,
+  //   error: !!error,
+  //   searchQuery,
+  // });
 
   // 검색 실행 핸들러
   const handleSearch = useCallback(() => {

@@ -146,12 +146,12 @@ export default function Vote() {
   const items = data?.content || [];
 
   // console.log('📊 [Vote] 현재 데이터 상태:', {
-    itemsCount: items.length,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error: !!error,
-  });
+  //   itemsCount: items.length,
+  //   hasNextPage,
+  //   isFetchingNextPage,
+  //   isLoading,
+  //   error: !!error,
+  // });
 
   // 필터 초기화 핸들러
   const handleResetFilters = () => {

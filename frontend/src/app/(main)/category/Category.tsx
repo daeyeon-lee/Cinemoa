@@ -86,10 +86,10 @@ export default function Category() {
       setSelectedSubCategoryId(categoryId);
 
       // console.log('✅ [Category] 카테고리 초기화 완료:', {
-        selectedMainCategoryId: categoryId,
-        selectedUiCategoryId: categoryId,
-        selectedSubCategoryId: categoryId,
-      });
+      //   selectedMainCategoryId: categoryId,
+      //   selectedUiCategoryId: categoryId,
+      //   selectedSubCategoryId: categoryId,
+      // });
 
       // 사용 후 localStorage 정리 (일회성 사용)
       localStorage.removeItem('selectedCategoryId');
@@ -186,11 +186,11 @@ export default function Category() {
 
   // 디버깅용 현재 상태 로깅
   // console.log('📊 [Category] 현재 데이터 상태:', {
-    data,
-    error: !!error,
-    searchParams,
-    dataPages: data?.pages?.length || 0,
-  });
+  //   data,
+  //   error: !!error,
+  //   searchParams,
+  //   dataPages: data?.pages?.length || 0,
+  // });
 
   // ========== 이벤트 핸들러들 ==========
 
