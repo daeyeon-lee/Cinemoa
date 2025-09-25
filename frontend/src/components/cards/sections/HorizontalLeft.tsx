@@ -17,7 +17,7 @@ type HorizontalLeftProps = {
 
 const HorizontalLeft: React.FC<HorizontalLeftProps> = ({ data, loadingState = 'ready', formatDate, isFunding, currentIsLiked, isLoading, onVoteClick, showStateTag = false, getStateBadgeInfo }) => {
   return (
-    <div className="flex-1 min-w-0 p-3 flex justify-start items-center gap-3 rounded-xl">
+    <div className="bg-BG-1 flex-1 min-w-0 p-3 flex justify-start items-center gap-3 rounded-xl">
       <div className="w-16 relative rounded overflow-hidden">
         <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" height={96} rounded={false} loadingState={loadingState} />
 
