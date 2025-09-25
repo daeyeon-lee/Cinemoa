@@ -49,7 +49,7 @@ export function ClosingSoonSection({ title, items, loading = false, onMoreClick,
       <HorizontalScroller>
         {items.map((item, index) => (
           <div key={item.funding.fundingId || index} className="w-[172px] h-[400px]">
-                <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+            <CineCardVertical data={item} loadingState={loading ? 'loading' : 'ready'} onCardClick={onCardClick} onVoteClick={onVoteClick} />
           </div>
         ))}
       </HorizontalScroller>
