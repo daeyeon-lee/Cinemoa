@@ -12,6 +12,7 @@ import ConcertIcon from '@/component/icon/concertIcon';
 import SportsIcon from '@/component/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
 import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
+import { getDetailSummary } from '@/api/funding';
 import { useState, useRef, useEffect } from 'react';
 import { useGetCategories } from '@/api/hooks/useCategoryQueries';
 import { CategoryResponse } from '@/types/category';
@@ -45,7 +46,58 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const [aiSummary, setAiSummary] = useState<string>(''); // AI 요약 내용
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false); // AI 요약 생성 중 상태
   const [displayedAiSummary, setDisplayedAiSummary] = useState<string>(''); // 타이핑 애니메이션용 AI 요약
-  const [revealedChars, setRevealedChars] = useState<boolean[]>([]); // 각 글자의 애니메이션 상태
+  const [revealedChars, setRevealedChars] = useState<boolean[]>([]);
+
+  // AI 요약 생성 함수
+  const handleGenerateAiSummary = async () => {
+    setIsGeneratingSummary(true);
+    setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
+    setRevealedChars([]); // 글자 애니메이션 상태 초기화
+
+    try {
+      // 현재 입력된 내용을 videoContent로 사용
+      const videoContent = movieDescription;
+      console.log('videoContent', videoContent);
+
+      // videoContent가 비어있으면 에러 처리
+      if (!videoContent || videoContent.trim() === '') {
+        throw new Error('요약할 내용이 없습니다. 상세 정보를 입력해주세요.');
+      }
+
+      // getDetailSummary API 호출
+      const summaryResponse = await getDetailSummary(videoContent);
+      // console.log('summaryResponse', summaryResponse);
+      // API 응답에서 요약 텍스트 추출
+      const aiGeneratedSummary = summaryResponse.data?.processedVideoContent || '요약을 생성할 수 없습니다.';
+
+      setAiSummary(aiGeneratedSummary);
+      setDisplayedAiSummary(aiGeneratedSummary);
+      setIsGeneratingSummary(false);
+
+      // 대각선 순차 애니메이션 시작
+      const chars = Array.from(aiGeneratedSummary);
+      const newRevealedChars = new Array(chars.length).fill(false);
+      setRevealedChars(newRevealedChars);
+
+      // 각 글자별로 순차적으로 나타나게 함
+      chars.forEach((_, index) => {
+        setTimeout(() => {
+          setRevealedChars((prev) => {
+            const updated = [...prev];
+            updated[index] = true;
+            return updated;
+          });
+        }, index * 18);
+      });
+    } catch (error) {
+      console.error('AI 요약 생성 오류:', error);
+      setIsGeneratingSummary(false);
+      // 에러 발생 시 기본 메시지 표시
+      const errorMessage = 'AI 요약 생성에 실패했습니다. 다시 시도해주세요.';
+      setAiSummary(errorMessage);
+      setDisplayedAiSummary(errorMessage);
+    }
+  }; // 각 글자의 애니메이션 상태
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 검색 디바운싱을 위한 타이머 ref
   const fileInputRef = useRef<HTMLInputElement>(null); // 파일 입력 요소에 대한 ref
 
@@ -598,60 +650,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   {!aiSummary ? (
                     <div className="bg-BG-2 rounded-lg p-8 text-center">
                       <p className="p2-b text-tertiary mb-4">AI가 핵심 내용을 요약해드립니다</p>
-                      <Button
-                        onClick={() => {
-                          setIsGeneratingSummary(true);
-                          setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
-                          setRevealedChars([]); // 글자 애니메이션 상태 초기화
-                          // TODO: 실제 AI API 호출
-                          setTimeout(() => {
-                            // 현재 입력된 내용 또는 영화 overview를 기반으로 AI 요약 생성
-                            const originalText = movieDescription || selectedMovie.overview || '';
-
-                            // 실제 AI 요약 시뮬레이션 - 더 자연스러운 요약 생성
-                            let aiGeneratedSummary = '';
-
-                            if (originalText.includes('영화') || originalText.includes('movie')) {
-                              aiGeneratedSummary = `${getMediaTitle(selectedMovie)}은(는) ${originalText
-                                .split(' ')
-                                .slice(0, 3)
-                                .join(' ')}을(를) 다루는 작품으로, 관객들에게 깊은 감동과 여운을 선사합니다. 뛰어난 연출력과 스토리텔링이 돋보이는 이 작품은 ${
-                                originalText.includes('사랑') ? '감정적 몰입' : '스토리의 완성도'
-                              }를 통해 시청자들을 사로잡습니다.`;
-                            } else {
-                              // 일반적인 요약 로직
-                              const words = originalText.split(' ');
-                              const firstHalf = words.slice(0, Math.floor(words.length / 2)).join(' ');
-                              const secondHalf = words.slice(Math.floor(words.length / 2)).join(' ');
-
-                              aiGeneratedSummary = `${firstHalf}을(를) 중심으로 한 이 작품은 ${secondHalf}을(를) 통해 관객들에게 강렬한 인상을 남깁니다. 탁월한 연출과 완성도 높은 스토리로 많은 사랑을 받고 있습니다.`;
-                            }
-
-                            setAiSummary(aiGeneratedSummary);
-                            setDisplayedAiSummary(aiGeneratedSummary);
-                            setIsGeneratingSummary(false);
-
-                            // 대각선 순차 애니메이션 시작
-                            const chars = Array.from(aiGeneratedSummary);
-                            const newRevealedChars = new Array(chars.length).fill(false);
-                            setRevealedChars(newRevealedChars);
-
-                            // 각 글자별로 순차적으로 나타나게 함
-                            chars.forEach((_, index) => {
-                              setTimeout(() => {
-                                setRevealedChars((prev) => {
-                                  const updated = [...prev];
-                                  updated[index] = true;
-                                  return updated;
-                                });
-                              }, index * 18);
-                            });
-                          }, 2000);
-                        }}
-                        disabled={isGeneratingSummary}
-                        size="sm"
-                        className="bg-Brand1-Primary hover:bg-Brand1-Secondary text-white"
-                      >
+                      <Button onClick={handleGenerateAiSummary} disabled={isGeneratingSummary} size="sm" className="bg-Brand1-Primary hover:bg-Brand1-Secondary text-primary">
                         {isGeneratingSummary ? (
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
