@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import CardManagement from '@/app/(main)/mypage/component/CardManagement';
 import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
 import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
+import { useFundingLike } from '@/hooks/queries/useFunding';
 
 // 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
 function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
@@ -43,6 +44,70 @@ export default function MyPage() {
   const handleCardClick = (fundingId: number) => {
     console.log('카드 클릭:', fundingId);
     router.push(`/detail/${fundingId}`);
+  };
+
+  // 좋아요 클릭 핸들러 - 마이페이지 데이터 직접 업데이트
+  const handleVoteClick = (fundingId: number) => {
+    const { user } = useAuthStore.getState();
+    if (!user?.userId) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+
+    // 현재 좋아요 상태 찾기
+    let currentIsLiked = false;
+    
+    // 내가 제안한 상영회에서 찾기
+    const proposalItem = myProposals.find(item => item.funding.fundingId === fundingId);
+    if (proposalItem) {
+      currentIsLiked = proposalItem.funding.isLiked || false;
+    }
+    
+    // 내가 참여한 상영회에서 찾기
+    const participatedItem = myParticipated.find(item => item.funding.fundingId === fundingId);
+    if (participatedItem) {
+      currentIsLiked = participatedItem.funding.isLiked || false;
+    }
+    
+    // 내가 보고싶어요 한 상영회에서 찾기
+    const likedItem = myLiked.find(item => item.funding.fundingId === fundingId);
+    if (likedItem) {
+      currentIsLiked = likedItem.funding.isLiked || false;
+    }
+
+    console.log('❤️ [MyPage] 좋아요 토글:', { fundingId, currentIsLiked });
+
+    // React Query mutation 실행
+    likeMutation.mutate({
+      fundingId,
+      userId: String(user.userId),
+      isLiked: currentIsLiked,
+    });
+
+    // 마이페이지 데이터 직접 업데이트
+    const updateLikeStatus = (items: any[], setItems: (items: any[]) => void) => {
+      const updatedItems = items.map(item => {
+        if (item.funding.fundingId === fundingId) {
+          return {
+            ...item,
+            funding: {
+              ...item.funding,
+              isLiked: !currentIsLiked,
+              favoriteCount: currentIsLiked 
+                ? (item.funding.favoriteCount || 0) - 1 
+                : (item.funding.favoriteCount || 0) + 1,
+            }
+          };
+        }
+        return item;
+      });
+      setItems(updatedItems);
+    };
+
+    // 각 섹션별로 업데이트
+    updateLikeStatus(myProposals, setMyProposals);
+    updateLikeStatus(myParticipated, setMyParticipated);
+    updateLikeStatus(myLiked, setMyLiked);
   };
 
   // 사용자 정보 상태
@@ -76,6 +141,9 @@ export default function MyPage() {
 
   // 프로필 수정 모달 상태
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+
+  // 좋아요 토글을 위한 훅
+  const likeMutation = useFundingLike();
 
   // const [imageurl,setImageurl] = useState<string>('');
 
@@ -522,7 +590,7 @@ export default function MyPage() {
                     <CineCardVertical
                       data={convertCardItemToApiSearchItem(convertToCardData(proposal))}
                       onCardClick={handleCardClick}
-                      onVoteClick={(id) => console.log('투표 클릭:', id)}
+                      onVoteClick={handleVoteClick}
                       showStateTag={true}
                       stateTagClassName="state state-active"
                       getStateBadgeInfo={getStateBadgeInfo}
@@ -594,7 +662,7 @@ export default function MyPage() {
                       <CineCardVertical
                         data={convertCardItemToApiSearchItem(convertParticipatedToCardData(participated))}
                         onCardClick={handleCardClick}
-                        onVoteClick={(id) => console.log('투표 클릭:', id)}
+                        onVoteClick={handleVoteClick}
                         showStateTag={true}
                         stateTagClassName="state state-active"
                         getStateBadgeInfo={getStateBadgeInfo}
@@ -668,7 +736,7 @@ export default function MyPage() {
                         <CineCardVertical
                           data={convertCardItemToApiSearchItem(convertLikedToCardData(liked))}
                           onCardClick={handleCardClick}
-                          onVoteClick={(id) => console.log('투표 클릭:', id)}
+                          onVoteClick={handleVoteClick}
                           showStateTag={true}
                           stateTagClassName="state state-active"
                           getStateBadgeInfo={getStateBadgeInfo}

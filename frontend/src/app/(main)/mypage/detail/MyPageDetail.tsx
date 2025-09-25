@@ -12,6 +12,7 @@ import FilterButtons, { type FilterOption } from './components/FilterButtons';
 import EmptyState from './components/EmptyState';
 import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 import { InitialLoading } from './components/LoadingStates';
+import { useFundingLike } from '@/hooks/queries/useFunding';
 
 type SectionType = 'proposals' | 'participated' | 'liked';
 type FilterType = 'funding' | 'vote' | 'ALL' | 'ON_PROGRESS' | 'CLOSE';
@@ -34,6 +35,9 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+
+  // 좋아요 토글을 위한 훅
+  const likeMutation = useFundingLike();
 
   // 섹션별 설정
   const getSectionConfig = () => {
@@ -216,6 +220,47 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
     router.push(`/detail/${fundingId}`);
   };
 
+  // 좋아요 클릭 핸들러 - 마이페이지 디테일 데이터 직접 업데이트
+  const handleVoteClick = (fundingId: number) => {
+    const { user } = useAuthStore.getState();
+    if (!user?.userId) {
+      alert('로그인 후 이용해주세요.');
+      return;
+    }
+
+    // 현재 좋아요 상태 찾기
+    const currentItem = data.find(item => item.funding.fundingId === fundingId);
+    const currentIsLiked = currentItem?.funding?.isLiked || false;
+
+    console.log('❤️ [MyPageDetail] 좋아요 토글:', { fundingId, currentIsLiked });
+
+    // React Query mutation 실행
+    likeMutation.mutate({
+      fundingId,
+      userId: String(user.userId),
+      isLiked: currentIsLiked,
+    });
+
+    // 마이페이지 디테일 데이터 직접 업데이트
+    setData(prevData => 
+      prevData.map(item => {
+        if (item.funding.fundingId === fundingId) {
+          return {
+            ...item,
+            funding: {
+              ...item.funding,
+              isLiked: !currentIsLiked,
+              favoriteCount: currentIsLiked 
+                ? (item.funding.favoriteCount || 0) - 1 
+                : (item.funding.favoriteCount || 0) + 1,
+            }
+          };
+        }
+        return item;
+      })
+    );
+  };
+
   // CardItem을 ApiSearchItem으로 변환하는 함수
   const convertCardItemToApiSearchItem = (cardItem: CardItem): ApiSearchItem => {
     return {
@@ -336,7 +381,7 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
           empty={false}
           error={false}
           onCardClick={handleCardClick}
-          onVoteClick={(id) => console.log('투표 클릭:', id)}
+          onVoteClick={handleVoteClick}
           onLoadMore={() => {
             if (nextCursor) {
               fetchData(nextCursor, true);

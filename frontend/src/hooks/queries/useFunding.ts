@@ -68,12 +68,14 @@ export function useFundingLike() {
       // 상세 페이지 캐시 취소
       await queryClient.cancelQueries({ queryKey: ['DETAIL', fundingId.toString(), userId] });
       
-      // 목록 페이지 캐시들도 취소 (홈, 카테고리, 검색 등)
+      // 목록 페이지 캐시들도 취소 (홈, 카테고리, 검색, 마이페이지 등)
       await queryClient.cancelQueries({ queryKey: ['home'] });
       await queryClient.cancelQueries({ queryKey: ['category'] });
       await queryClient.cancelQueries({ queryKey: ['search'] });
       await queryClient.cancelQueries({ queryKey: ['SEARCH'] });
       await queryClient.cancelQueries({ queryKey: ['recentlyViewed'] });
+      await queryClient.cancelQueries({ queryKey: ['mypage'] });
+      await queryClient.cancelQueries({ queryKey: ['user'] });
 
       const previousDetailData = queryClient.getQueryData(['DETAIL', fundingId.toString(), userId]);
       console.log('👉 기존 상세 캐시:', previousDetailData);
@@ -189,6 +191,8 @@ export function useFundingLike() {
       queryClient.invalidateQueries({ queryKey: ['search'] });
       queryClient.invalidateQueries({ queryKey: ['SEARCH'] });
       queryClient.invalidateQueries({ queryKey: ['recentlyViewed'] });
+      queryClient.invalidateQueries({ queryKey: ['mypage'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
     },
 
     onSuccess: (data, { fundingId }) => {
