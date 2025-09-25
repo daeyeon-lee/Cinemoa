@@ -105,7 +105,7 @@ public class ExpiringFundingRepository {
                     LEFT JOIN screens s ON f.screen_id = s.screen_id
                     LEFT JOIN funding_stats fs ON fs.funding_id = f.funding_id
                     LEFT JOIN user_favorites uf ON uf.funding_id = f.funding_id AND uf.user_id = ? AND ? IS NOT NULL
-                    WHERE f.funding_type = 'FUNDING'
+                    WHERE f.funding_type = 'FUNDING' AND f.state = 'ON_PROGRESS'
                       AND (
                           f.ends_on <= DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY)
                           OR 
