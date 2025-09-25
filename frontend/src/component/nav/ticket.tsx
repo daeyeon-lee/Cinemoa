@@ -121,7 +121,7 @@ export default function Ticket({ onClose }: TicketProps) {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="w-full max-w-sm mx-auto h-[650px] max-lg:h-[350px] flex items-center justify-center">
+      <div className="w-full max-w-sm mx-auto h-[650px] flex items-center justify-center">
         <div className="text-center text-white">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-purple-500/20 rounded-full animate-spin border-t-purple-500"></div>
@@ -139,7 +139,7 @@ export default function Ticket({ onClose }: TicketProps) {
   // 티켓이 없는 경우
   if (ticketList.length === 0) {
     return (
-      <div className="w-full max-w-sm mx-auto h-[650px] max-lg:h-[550px] flex items-center justify-center">
+      <div className="w-full max-w-sm mx-auto h-[650px] flex items-center justify-center">
         <div className="text-center text-primary">
           <h3 className="h4-b text-primary mb-3">상영예정인 상영회가 없습니다</h3>
           <p className="p2 text-secondary leading-relaxed">
@@ -164,9 +164,9 @@ export default function Ticket({ onClose }: TicketProps) {
   }
 
   return (
-    <div id="ticket-container" className="w-full max-w-sm mx-auto max-h-[100vh] overflow-hidden py-8" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+    <div id="ticket-container" className="w-full max-w-sm mx-auto max-h-[100vh] overflow-hidden py-4" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* 스택형 카드 컨테이너 */}
-      <div className="relative w-full h-[600px] max-lg:h-[500px]" style={{ perspective: '1200px' }}>
+      <div className="relative w-full h-[600px]" style={{ perspective: '1200px' }}>
         {/* 배경 티켓들 (스택 효과) - 항상 숨김 */}
         {false &&
           ticketList.map((ticket, index) => {
@@ -206,7 +206,7 @@ export default function Ticket({ onClose }: TicketProps) {
 
         {/* 현재 활성 티켓 (3D 플립 효과) */}
         <div
-          className="absolute inset-0 w-full h-full cursor-pointer"
+          className="absolute bottom-0 left-0 right-0 w-full h-full cursor-pointer"
           style={{
             zIndex: ticketList.length + 1,
             transformStyle: 'preserve-3d',
@@ -227,14 +227,14 @@ export default function Ticket({ onClose }: TicketProps) {
             <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl border border-purple-500/20 h-full relative ">
               {/* 네온 글로우 효과 */}
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-pink-500/10 rounded-3xl"></div>
-              <div className="h-full flex flex-col p-6 gap-3 max-lg:p-4 max-lg:gap-4 relative z-10">
+              <div className="h-full flex flex-col p-6 gap-3 relative z-10">
                 {/* 브랜딩 헤더 */}
                 <div className="flex items-center justify-between">
                   <img src="/cinemoa_logo_long.png" alt="Cinemoa" className="w-31 h-8 object-cover" />
                 </div>
 
                 {/* 포스터 이미지 */}
-                <div className="h-[520px] max-lg:h-[400px] rounded-2xl overflow-hidden relative group">
+                <div className="h-[520px] rounded-2xl overflow-hidden relative group">
                   {/* 동영상 없으면 이미지로 들어옴 */}
                   {ticket.funding.ticketBanner ? (
                     <video src={ticket.funding.ticketBanner} className="w-full h-full object-cover" autoPlay loop muted playsInline />
@@ -336,7 +336,7 @@ export default function Ticket({ onClose }: TicketProps) {
       </div>
 
       {/* 점 인디케이터 */}
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
+      <div className="absolute top-3 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
         {ticketList.map((_, index) => (
           <button
             key={index}
