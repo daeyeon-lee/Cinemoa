@@ -371,7 +371,8 @@ export default function Vote() {
             </div>
 
             {/* 정렬 바 */}
-            <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} />
+            <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={false} onIsClosedChange={() => {}} />
+            {/* <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} /> */}
 
             {/* 카드 목록 */}
             <ResponsiveCardList

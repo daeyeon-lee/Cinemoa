@@ -538,7 +538,8 @@ export default function Category() {
             </div>
 
             {/* 정렬 옵션 바 (최신순, 인기순, 마감임박순 + 마감된 펀딩 포함 체크박스) */}
-            <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} />
+            <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={false} onIsClosedChange={() => {}} />
+            {/* <SortBar sortBy={sortBy} onSortChange={setSortBy} isClosed={showClosed} onIsClosedChange={setShowClosed} /> */}
 
             {/* 펀딩 카드 목록 (무한스크롤 지원) */}
             <ResponsiveCardList
