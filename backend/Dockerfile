@@ -1,5 +1,5 @@
 # 빌드 단계
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM public.ecr.aws/docker/library/amazoncorretto:17-alpine AS build
 WORKDIR /workspace/app
 
 # 의존성 캐시 최적화를 위해 build.gradle, settings.gradle, gradlew 먼저 복사
@@ -17,7 +17,7 @@ RUN ls -l build/libs/
 RUN (cd build/dependency;jar -xf ../libs/*-SNAPSHOT.jar)
 
 # 실행 단계
-FROM eclipse-temurin:17-jdk-alpine
+FROM public.ecr.aws/docker/library/amazoncorretto:17-alpine
 VOLUME /tmp
 
 # 레이어별로 복사 (Spring Boot 공식 권장 방식)
