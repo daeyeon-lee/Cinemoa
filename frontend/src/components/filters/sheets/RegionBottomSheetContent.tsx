@@ -22,16 +22,17 @@ export const RegionBottomSheetContent: React.FC<RegionBottomSheetContentProps> =
   };
 
   return (
-    <div className="flex flex-wrap gap-x-1.5 gap-y-2.5">
+    <div className="flex flex-wrap gap-x-2 gap-y-2.5">
       {regions.map((region) => {
         const isSelected = value.includes(region);
         return (
           <Button
             key={region}
-            variant={isSelected ? variant : 'outline'}
+            variant={isSelected ? variant : 'tertiary'}
             size="sm"
             onClick={() => handleToggle(region)}
-            className={cn('justify-start text-left px-2 py-1 p3-b text-tertiary', isSelected && 'text-primary')}
+            className={cn('justify-start text-left px-2 py-1', isSelected && 'text-primary')}
+            textSize="sm"
           >
             {region}
           </Button>
