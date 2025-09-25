@@ -66,6 +66,8 @@ public class FundingListRepository {
                 ? rs.getInt("participant_count") * 100 / rs.getInt("max_people")
                 : 0;
 
+        int price = (int) Math.ceil((double) rs.getInt("price") / rs.getInt("max_people") / 10) * 10;
+
         // Funding 정보 매핑
         CardTypeFundingInfoDto.BriefFundingInfo fundingInfo = CardTypeFundingInfoDto.BriefFundingInfo.builder()
                 .fundingId(rs.getLong("funding_id"))
@@ -75,7 +77,7 @@ public class FundingListRepository {
                 .fundingEndsOn(rs.getDate("ends_on").toLocalDate())
                 .screenDate(screenDay == null ? null : screenDay.toLocalDate())
                 .videoName(rs.getString("video_name"))
-                .price(rs.getInt("price"))
+                .price(price)
                 .maxPeople(rs.getInt("max_people"))
                 .viewCount(rs.getInt("view_count"))
                 .participantCount(rs.getInt("participant_count"))
