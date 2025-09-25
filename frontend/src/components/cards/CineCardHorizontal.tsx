@@ -83,10 +83,15 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({
     }
   };
 
-  // 펀딩 타입별 종료 상태 확인
-  const isEnded = isFunding
-    ? ['SUCCESS', 'FAILED'].includes(data.funding.state) // 펀딩: 성공, 실패
-    : data.funding.state === 'WAITING'; // 투표: 오픈대기
+  // 종료 상태 확인 - fundingEndsOn 날짜 기준
+  const isEnded = (() => {
+    const endDate = new Date(data.funding.fundingEndsOn);
+    const now = new Date();
+    // 시간 부분 제거하고 날짜만 비교
+    endDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    return endDate < now; // 종료일이 오늘보다 이전이면 종료
+  })();
 
   return (
     <div className={`w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02] min-w-[300px] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
