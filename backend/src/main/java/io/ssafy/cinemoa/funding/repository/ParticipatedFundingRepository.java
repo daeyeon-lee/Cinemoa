@@ -191,7 +191,7 @@ public class ParticipatedFundingRepository {
                     WHERE f.funding_type = 'FUNDING'
                       AND EXISTS (
                         SELECT 1 FROM user_transactions t
-                        WHERE t.funding_id = f.funding_id AND t.user_id = ? AND t.state IN ('SUCCESS')
+                        WHERE t.funding_id = f.funding_id AND t.user_id = ? AND t.state = 'SUCCESS'
                       )
                     """);
 
