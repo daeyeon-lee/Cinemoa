@@ -11,11 +11,18 @@ import io.ssafy.cinemoa.user.repository.UserRepository;
 import io.ssafy.cinemoa.user.repository.entity.User;
 import io.ssafy.cinemoa.user.repository.entity.UserCategory;
 import io.ssafy.cinemoa.user.repository.entity.UserCategoryId;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +35,8 @@ public class UserAdditionalInfoService {
     private final UserCategoryRepository userCategoryRepository;
     private final CategoryRepository categoryRepository;
     private final WonAuthService wonAuthService;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional // 트랜잭션 처리 -> 모든 작업이 성공적으로 완료되거나 실패해야 함
     public void addAdditionalInfo(Long userId, UserAdditionalInfoRequest request) {
@@ -69,6 +78,22 @@ public class UserAdditionalInfoService {
                 })
                 .collect(java.util.stream.Collectors.toList());
         userCategoryRepository.saveAll(userCategories);
+
+        updateSecurityContext(user);
+    }
+
+    private void updateSecurityContext(User user) {
+        Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+
+        List<GrantedAuthority> updated = new ArrayList<>();
+
+        updated.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                currentAuth.getPrincipal(),
+                currentAuth.getCredentials(),
+                updated
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
     }
 
     private List<Category> validateCategories(List<Long> categoryIds) {
