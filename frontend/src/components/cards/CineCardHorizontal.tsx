@@ -85,8 +85,13 @@ const CineCardHorizontal: React.FC<CineCardProps> = ({ data, loadingState = 'rea
     }
   };
 
+  // 펀딩 타입별 종료 상태 확인
+  const isEnded = isFunding
+    ? ['SUCCESS', 'FAILED'].includes(data.funding.state) // 펀딩: 성공, 실패
+    : data.funding.state === 'WAITING'; // 투표: 오픈대기
+
   return (
-    <div className="w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02] min-w-[300px]" onClick={handleCardClick}>
+    <div className={`w-full flex items-start cursor-pointer hover:bg-slate-800/50 transition-color hover:scale-[1.02] min-w-[300px] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
       {/* 왼쪽(이미지+영화제목+지역+상영일+프로젝트제목) */}
       <HorizontalLeft
         data={data}

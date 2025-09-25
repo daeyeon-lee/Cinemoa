@@ -120,8 +120,13 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
     );
   }
 
+  // 펀딩 타입별 종료 상태 확인
+  const isEnded = isFunding
+    ? ['SUCCESS', 'FAILED'].includes(data.funding.state) // 펀딩: 성공, 실패
+    : data.funding.state === 'WAITING'; // 투표: 오픈대기
+
   return (
-    <div className="w-full cursor-pointer transition-transform hover:scale-[1.02]" onClick={handleCardClick}>
+    <div className={`w-full cursor-pointer transition-transform hover:scale-[1.02] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
       <div className="bg-BG-1 rounded-xl p-3 gap-3">
         {/* 이미지영역 */}
         <div className="flex gap-1.5 items-stretch">
