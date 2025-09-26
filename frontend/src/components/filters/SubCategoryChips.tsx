@@ -18,10 +18,10 @@ interface SubCategoryItem {
 interface SubCategoryChipsProps {
   /** 표시할 서브 카테고리 칩 목록 */
   items: SubCategoryItem[];
-  /** 현재 선택된 서브 카테고리의 categoryId (단일 선택) */
-  value: number | null;
+  /** 현재 선택된 서브 카테고리들의 categoryId 배열 (다중 선택) */
+  value: number[];
   /** 서브 카테고리 선택 변경 시 호출되는 콜백 함수 */
-  onChange: (value: number | null) => void;
+  onChange: (value: number[]) => void;
   /** 서브 카테고리 표시 여부 (전체 선택 시 숨김) */
   visible?: boolean;
   /** 색상 variant (brand1: 빨간색, brand2: 청록색) */
@@ -32,7 +32,7 @@ interface SubCategoryChipsProps {
  * SubCategoryChips 컴포넌트
  *
  * @description 2차 카테고리 선택을 위한 칩(chip) 그룹 컴포넌트입니다.
- * ListShell의 header 영역에서 사용되며, 단일 선택만 가능합니다.
+ * ListShell의 header 영역에서 사용되며, 다중 선택이 가능합니다.
  *
  * @example
  * ```tsx
@@ -56,19 +56,21 @@ interface SubCategoryChipsProps {
  */
 const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({ items, value, onChange, visible = true, variant = 'brand1' }) => {
   /**
-   * 칩 선택을 처리하는 핸들러 (단일 선택)
+   * 칩 선택을 처리하는 핸들러 (다중 선택)
    * @param itemValue - 선택할 아이템의 value (categoryId 문자열 또는 'all')
    */
   const handleSelect = (itemValue: string) => {
     if (itemValue === 'all') {
-      // '전체' 선택 시 선택 해제
-      onChange(null);
+      // '전체' 선택 시 모든 선택 해제
+      onChange([]);
       return;
     }
 
     const categoryId = parseInt(itemValue);
-    // 이미 선택된 경우 해제, 아니면 새로 선택
-    const newValue = value === categoryId ? null : categoryId;
+    // 이미 선택된 경우 배열에서 제거, 아니면 배열에 추가
+    const newValue = value.includes(categoryId)
+      ? value.filter(id => id !== categoryId)
+      : [...value, categoryId];
     onChange(newValue);
   };
 
@@ -83,8 +85,8 @@ const SubCategoryChips: React.FC<SubCategoryChipsProps> = ({ items, value, onCha
       {items.map((item) => {
         const isSelected =
           item.value === 'all'
-            ? value === null // '전체'는 아무것도 선택되지 않았을 때 활성화
-            : value === parseInt(item.value);
+            ? value.length === 0 // '전체'는 빈 배열일 때 활성화
+            : value.includes(parseInt(item.value));
 
         return (
           <Button

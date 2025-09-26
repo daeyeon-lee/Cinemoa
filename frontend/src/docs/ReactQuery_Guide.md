@@ -65,7 +65,7 @@ function FundingListPage() {
   } = useFundings({
     type: 'funding',
     category: '영화',
-    region: '서울시',
+    region: '중구',
     sortBy: 'latest',
     size: 20
   });

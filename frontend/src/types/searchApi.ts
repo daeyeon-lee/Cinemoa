@@ -27,9 +27,9 @@ export interface SearchParams {
   /** 정렬 기준 */
   sortBy?: SortBy;
   /** 카테고리 ID (단일 값) */
-  category?: number;
+  category?: number[];
   /** 지역 */
-  region?: string;
+  region?: string[];
   /** 상영관 타입 배열 */
   theaterType?: string[];
   /** 종료된 펀딩 포함 여부 */

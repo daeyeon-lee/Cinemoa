@@ -146,6 +146,7 @@ export default function MyPage() {
   // const [imageurl,setImageurl] = useState<string>('');
 
   // state에 따른 뱃지 색상과 문구 매핑
+  // 진행 중 배지 없애기, 진행 중, 완료는 카드 어두워진걸로 확인-오서로
   const getStateBadgeInfo = (state: string, fundingType: 'FUNDING' | 'VOTE') => {
     switch (state) {
       case 'SUCCESS':
@@ -556,7 +557,7 @@ export default function MyPage() {
               className={`p3-b rounded-[15px]  ${proposalType === 'funding' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
               onClick={() => setProposalType('funding')}
             >
-              펀딩
+              상영회
             </Button>
             <Button
               variant={proposalType === 'vote' ? 'brand1' : 'secondary'}
@@ -564,7 +565,7 @@ export default function MyPage() {
               className={`p3-b rounded-[15px]  ${proposalType === 'vote' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
               onClick={() => setProposalType('vote')}
             >
-              투표
+              수요조사
             </Button>
           </div>
           {/* 상영회 카드 */}
@@ -628,7 +629,7 @@ export default function MyPage() {
                 className={`p3-b rounded-[15px]  ${participatedState === 'ON_PROGRESS' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
                 onClick={() => setParticipatedState('ON_PROGRESS')}
               >
-                진행중
+                진행 중
               </Button>
               <Button
                 variant={participatedState === 'CLOSE' ? 'brand1' : 'secondary'}
@@ -649,7 +650,7 @@ export default function MyPage() {
                       <div className="text-slate-500 text-sm">상영회에 참여해보세요</div>
                     </div>
                     <Button onClick={() => router.push('/')} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                      상영회 둘러보기
+                      상영회 보러가기
                     </Button>
                   </div>
                 </div>
@@ -701,7 +702,7 @@ export default function MyPage() {
                 className={`p3-b rounded-[15px]  ${likedType === 'funding' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
                 onClick={() => setLikedType('funding')}
               >
-                펀딩
+                상영회
               </Button>
               <Button
                 variant={likedType === 'vote' ? 'brand1' : 'secondary'}
@@ -709,7 +710,7 @@ export default function MyPage() {
                 className={`p3-b rounded-[15px]  ${likedType === 'vote' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
                 onClick={() => setLikedType('vote')}
               >
-                투표
+                수요조사
               </Button>
             </div>
             {/* 상영회 카드 */}
@@ -722,7 +723,7 @@ export default function MyPage() {
                       <div className="text-slate-500 text-sm">보고 싶은 상영회를 저장해보세요</div>
                     </div>
                     <Button onClick={() => router.push('/category')} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                      둘러보기
+                      상영회 보러가기
                     </Button>
                   </div>
                 </div>

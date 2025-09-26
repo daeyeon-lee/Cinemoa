@@ -70,7 +70,7 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
             {/* 초기화 버튼 */}
             {onReset && (
               <div className="flex justify-end">
-                <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary flex items-center gap-1" disabled={resetDisabled}>
+                <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary flex items-center gap-1 pr-0" disabled={resetDisabled}>
                   <RefreshCw size={14} />
                   초기화
                 </Button>

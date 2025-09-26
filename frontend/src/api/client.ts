@@ -37,7 +37,7 @@ export const buildUrl = (endpoint: string, params: Record<string, any> = {}): st
   // BASE_URL과 endpoint를 결합하여 기본 URL 생성
   const url = new URL(endpoint, BASE_URL);
 
-  // console.log('🔧 [buildUrl] URL 생성 시작:', { endpoint, params });
+  console.log('🔧 [buildUrl] URL 생성 시작:', { endpoint, params });
 
   // 파라미터를 순회하며 쿼리스트링에 추가
   Object.entries(params).forEach(([key, value]) => {
@@ -46,11 +46,11 @@ export const buildUrl = (endpoint: string, params: Record<string, any> = {}): st
       if (Array.isArray(value)) {
         // 배열인 경우: 각 요소를 개별 파라미터로 추가
         // 예: category=[1,2] → ?category=1&category=2
-        // console.log(`📋 [buildUrl] 배열 파라미터 ${key}:`, value);
+        console.log(`📋 [buildUrl] 배열 파라미터 ${key}:`, value);
         value.forEach((item) => url.searchParams.append(key, item.toString()));
       } else {
         // 단일값인 경우: 해당 키에 값 설정
-        // console.log(`📝 [buildUrl] 단일 파라미터 ${key}:`, value);
+        console.log(`📝 [buildUrl] 단일 파라미터 ${key}:`, value);
         url.searchParams.set(key, value.toString());
       }
     } else {
@@ -59,7 +59,7 @@ export const buildUrl = (endpoint: string, params: Record<string, any> = {}): st
   });
 
   const finalUrl = url.toString();
-  // console.log('✅ [buildUrl] 최종 URL:', finalUrl);
+  console.log('✅ [buildUrl] 최종 URL:', finalUrl);
 
   return finalUrl;
 };
