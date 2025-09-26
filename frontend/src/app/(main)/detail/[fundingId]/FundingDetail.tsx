@@ -11,9 +11,10 @@ import { FundingDetailProvider } from '@/contexts/FundingDetailContext';
 interface FundingDetailProps {
   fundingId: string; // 🆕 URL에서 받은 fundingId
   userId?: string; // 🆕 URL에서 받은 userId
+  isExpired?: boolean; // 🆕 마감 여부
 }
 
-const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId, userId: propUserId }) => {
+const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId, userId: propUserId, isExpired }) => {
   const { user } = useAuthStore();
   const userId = propUserId || user?.userId?.toString();
 
@@ -77,6 +78,7 @@ const FundingDetail: React.FC<FundingDetailProps> = ({ fundingId, userId: propUs
         {/* 상단 카드 */}
         <FundingDetailCard
           fundingId={detailData.funding.fundingId} // 🆕 React Query용 ID 전달
+          isExpired={isExpired} // 🆕 마감 여부 전달
         />
 
         {/* 상세 정보 */}

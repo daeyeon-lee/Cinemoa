@@ -11,9 +11,10 @@ import { VoteDetailProvider } from '@/contexts/VoteDetailContext';
 interface VoteDetailProps {
   fundingId: string; // 🆕 URL에서 받은 fundingId
   userId?: string; // 🆕 URL에서 받은 userId
+  isExpired?: boolean; // 🆕 마감 여부 (투표에서는 사용하지 않지만 일관성을 위해 추가)
 }
 
-const VoteDetail: React.FC<VoteDetailProps> = ({ fundingId, userId: propUserId }) => {
+const VoteDetail: React.FC<VoteDetailProps> = ({ fundingId, userId: propUserId, isExpired }) => {
   const { user } = useAuthStore();
   const userId = propUserId || user?.userId?.toString();
 
@@ -77,6 +78,7 @@ const VoteDetail: React.FC<VoteDetailProps> = ({ fundingId, userId: propUserId }
         {/* 상단 카드 */}
         <VoteDetailCard
           fundingId={detailData.funding.fundingId} // 🆕 React Query용 ID 전달
+          isExpired={isExpired} // 🆕 마감 여부 전달
         />
 
         {/* 상세 정보 */}

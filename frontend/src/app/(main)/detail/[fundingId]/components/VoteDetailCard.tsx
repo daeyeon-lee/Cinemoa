@@ -7,11 +7,12 @@ import { useVoteDetail } from '@/contexts/VoteDetailContext';
 // 🟢 투표 상세 카드 Props 타입 정의
 type VoteDetailCardProps = {
   fundingId: number; // React Query 캐시 key용 ID
+  isExpired?: boolean; // 🆕 마감 여부
 };
 
-const VoteDetailCard: React.FC<VoteDetailCardProps> = ({ fundingId }) => {
+const VoteDetailCard: React.FC<VoteDetailCardProps> = ({ fundingId, isExpired }) => {
   // 🟢 Context에서 데이터 가져오기
-  const { data, userId } = useVoteDetail();
+  const { data } = useVoteDetail();
   const { funding, screening, category } = data;
 
   // console.log("VoteDetailCard props:", userId)
@@ -34,6 +35,7 @@ const VoteDetailCard: React.FC<VoteDetailCardProps> = ({ fundingId }) => {
           <div className="md:block hidden">
             <VoteActionSection
               fundingId={fundingId} // 자식이 캐시에서 likeCount, isLiked, isParticipated 조회
+              isExpired={isExpired} // 🆕 마감 여부 전달
             />
           </div>
         </div>
@@ -43,6 +45,7 @@ const VoteDetailCard: React.FC<VoteDetailCardProps> = ({ fundingId }) => {
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-800 px-5 pb-5 md:hidden">
         <VoteActionSection
           fundingId={fundingId} // 자식이 캐시에서 상태 조회
+          isExpired={isExpired} // 🆕 마감 여부 전달
         />
       </div>
     </>

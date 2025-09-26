@@ -93,9 +93,9 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
   // 🎯 타입에 따른 분기 처리 + 마감 처리
   const renderDetailContent = () => {
     if (detailData.type === 'FUNDING') {
-      return <FundingDetail fundingId={fundingId} userId={userId} />;
+      return <FundingDetail fundingId={fundingId} userId={userId} isExpired={isExpired} />;
     } else if (detailData.type === 'VOTE') {
-      return <VoteDetail fundingId={fundingId} userId={userId} />;
+      return <VoteDetail fundingId={fundingId} userId={userId} isExpired={isExpired} />;
     }
 
     // 알 수 없는 타입
@@ -114,18 +114,15 @@ export const DetailRenderer: React.FC<DetailRendererProps> = ({ fundingId, userI
         <div className="bg-slate-700 p-4 mx-4 mb-5 rounded-xl">
           <div className="flex items-center">
             <InfoIcon stroke="#CBD5E1" />
-            <p className="text-sm text-primary font-medium ml-3">이미 마감된 {detailData.type === 'FUNDING' ? '펀딩' : '투표'}입니다.</p>
+            <p className="text-sm text-primary font-medium ml-3">이미 마감된 {detailData.type === 'FUNDING' ? '상영회' : '수요조사'}입니다.</p>
           </div>
         </div>
       )}
 
       {/* 메인 컨텐츠 */}
-      <div className={isExpired ? 'relative' : ''}>
-        {/* Dimmed 오버레이 - 마감시 모든 클릭 차단 */}
-        {isExpired && <div className="absolute inset-0 bg-slate-900 bg-opacity-50 z-10 cursor-not-allowed" />}
-
-        {/* 실제 컨텐츠 */}
-        <div className={isExpired ? 'opacity-70 pointer-events-none' : ''}>{renderDetailContent()}</div>
+      <div>
+        {/* 실제 컨텐츠 - 마감시에도 dimmed 처리 없이 렌더링 */}
+        {renderDetailContent()}
       </div>
     </div>
   );
