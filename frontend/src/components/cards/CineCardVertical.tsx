@@ -110,73 +110,78 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
   })();
 
   return (
-    <div className={`w-full cursor-pointer transition-transform hover:scale-[1.02] ${isEnded ? 'opacity-30' : ''}`} onClick={handleCardClick}>
-      <div className="bg-BG-1 rounded-xl p-3 gap-3">
-        {/* 이미지영역 */}
-        <div className="flex gap-1.5 items-stretch">
-          <div className="flex-1 relative">
-            <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" loadingState={loadingState} className="h-full w-full" />
-            {/* 상태 태그 오버레이 */}
-            {showStateTag &&
-              (() => {
-                const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '대기중', className: 'bg-amber-300 text-secondary' };
+    <div className="w-full relative hover:scale-[1.02]">
 
-                return (
-                  <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] rounded-md ${badgeInfo.className}`}>
-                    <div className="p3-b">{badgeInfo.text}</div>
+
+
+      <div className={`w-full cursor-pointer transition-transform`} onClick={handleCardClick}>
+        <div className="bg-BG-1 rounded-xl p-3 gap-3">
+          {/* 이미지영역 */}
+          <div className="flex gap-1.5 items-stretch">
+            <div className="flex-1 relative flex items-center justify-center">
+              <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" loadingState={loadingState} className={`h-full w-full ${isEnded ? 'opacity-30' : ''}`} />
+              {isEnded && <div className="absolute text-white p2-b">마감되었습니다</div>}
+              {/* 상태 태그 - 카드 외부에 absolute로 배치 */}
+              {showStateTag && data.funding.state !== 'ON_PROGRESS' &&
+                (() => {
+                  const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '대기중', className: 'bg-amber-300 text-secondary' };
+                  return (
+                    <div className={`absolute top-[6px] left-[6px] px-1.5 py-[3px] rounded-md ${badgeInfo.className}`}>
+                      <div className="p3-b">{badgeInfo.text}</div>
+                    </div>
+                  );
+                })()}
+            </div>
+            {/* 이미지 오른쪽 바코드 */}
+            <div className="w-6 flex flex-col items-center justify-between gap-2">
+              {isFunding ? (
+                <>
+                  {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
+                  <button onClick={handleVoteClick} className="p-0 rounded-full transition-transform hover:scale-110" disabled={likeMutation.isPending}>
+                    <HeartIcon filled={currentIsLiked} size={24} />
+                  </button>
+                  {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
+                  <div className="flex-1 min-h-0">
+                    <BarcodeDecor height="full" className="flex-1" />
                   </div>
-                );
-              })()}
+                </>
+              ) : (
+                /* 투표 카드: 바코드만 전체 높이 채움 */
+                <BarcodeDecor height="full" className="flex-1" />
+              )}
+            </div>
           </div>
-          {/* 이미지 오른쪽 바코드 */}
-          <div className="w-6 flex flex-col items-center justify-between gap-2">
-            {isFunding ? (
-              <>
-                {/* 펀딩 카드: 보고싶어요 하트 버튼 */}
-                <button onClick={handleVoteClick} className="p-0 rounded-full transition-transform hover:scale-110" disabled={likeMutation.isPending}>
-                  <HeartIcon filled={currentIsLiked} size={24} />
-                </button>
-                {/* 바코드 - 하트 버튼이 있어서 남은 공간만 사용 */}
-                <div className="flex-1 min-h-0">
-                  <BarcodeDecor height="full" className="flex-1" />
-                </div>
-              </>
-            ) : (
-              /* 투표 카드: 바코드만 전체 높이 채움 */
-              <BarcodeDecor height="full" className="flex-1" />
-            )}
+          {/* 영화 정보 */}
+          <div className="space-y-2 mt-3">
+            {/* 영화 제목 */}
+            <h3 className="text-p2-b h-[2.5rem] line-clamp-2 block break-all">{data.funding.videoName}</h3>
+            {/* 배지 영역(지역+상영날짜) */}
+            <div className="flex gap-1 flex-wrap ">
+              <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{data.cinema.district}</span>
+              <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
+                {isFunding ? formatDate(data.funding.screenDate) : formatDate(data.funding.fundingEndsOn)}
+              </span>
+            </div>
+            {/* 프로젝트 제목 */}
+            <h4 className="text-p3 line-clamp-1 truncate">{data.funding.title}</h4>
           </div>
         </div>
-        {/* 영화 정보 */}
-        <div className="space-y-2 mt-3">
-          {/* 영화 제목 */}
-          <h3 className="text-p2-b h-[2.5rem] line-clamp-2 block break-all">{data.funding.videoName}</h3>
-          {/* 배지 영역(지역+상영날짜) */}
-          <div className="flex gap-1 flex-wrap ">
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">{data.cinema.district}</span>
-            <span className="px-[6px] py-[3px] bg-slate-600 text-slate-300 text-[10px] font-semibold rounded">
-              {isFunding ? formatDate(data.funding.screenDate) : formatDate(data.funding.fundingEndsOn)}
-            </span>
-          </div>
-          {/* 프로젝트 제목 */}
-          <h4 className="text-p3 line-clamp-1 truncate">{data.funding.title}</h4>
+        <PerforationLine />
+        {/* 카드 하단 */}
+        <div className="flex-1 flex flex-col justify-end bg-BG-1 rounded-xl p-3 pb-4">
+          {isFunding ? (
+            <FundingInfo
+              price={data.funding.price}
+              progressRate={data.funding.progressRate}
+              participantCount={data.funding.participantCount}
+              maxPeople={data.funding.maxPeople}
+              fundingEndsOn={data.funding.fundingEndsOn}
+              loadingState={loadingState}
+            />
+          ) : (
+            <VoteInfo likeCount={currentLikeCount} isLiked={currentIsLiked} loadingState={loadingState} disabled={likeMutation.isPending} onClick={handleVoteClick} />
+          )}
         </div>
-      </div>
-      <PerforationLine />
-      {/* 카드 하단 */}
-      <div className="flex-1 flex flex-col justify-end bg-BG-1 rounded-xl p-3 pb-4">
-        {isFunding ? (
-          <FundingInfo
-            price={data.funding.price}
-            progressRate={data.funding.progressRate}
-            participantCount={data.funding.participantCount}
-            maxPeople={data.funding.maxPeople}
-            fundingEndsOn={data.funding.fundingEndsOn}
-            loadingState={loadingState}
-          />
-        ) : (
-          <VoteInfo likeCount={currentLikeCount} isLiked={currentIsLiked} loadingState={loadingState} disabled={likeMutation.isPending} onClick={handleVoteClick} />
-        )}
       </div>
     </div>
   );

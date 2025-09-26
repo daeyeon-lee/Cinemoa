@@ -29,9 +29,9 @@ const VoteInfo: React.FC<VoteInfoProps> = ({ likeCount, isLiked = false, ctaLabe
       <Button variant="outline" size="sm" disabled={disabled} onClick={(e) => {
         e.stopPropagation();
         if (onClick) onClick(e);
-      }} className={`w-full gap-1 ${isLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}>
+      }} className={`w-full gap-1 ${isLiked ? 'text-slate-400 border-stroke-4' : 'text-Brand2-Primary border-Brand2-Tertiary'}`}>
         <span className="text-lg">{isLiked ? '♥' : '♡'}</span>
-        {ctaLabel}
+        {isLiked ? `${ctaLabel} 취소` : `${ctaLabel}`}
       </Button>
     </div>
   );

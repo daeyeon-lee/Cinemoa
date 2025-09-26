@@ -47,16 +47,21 @@ const FundingInfo: React.FC<FundingInfoProps> = ({ price, progressRate, particip
       {/* 메타 정보 현재인원/최대인원 */}
       <div className="flex justify-between items-center text-xs font-semibold">
         <div className="flex gap-1">
-          <span className="text-red-400 text-P3-b leading-none">{Math.round(progressRate)}%</span>
+          <span className={`text-p3-b  ${daysLeft > 0 ? 'text-Brand1-Strong' : 'text-subtle'} leading-3`}>{Math.round(progressRate)}%</span>
           <span className="text-slate-400 text-caption2 font-normal leading-3">
             {formatNumber(participantCount)}/{formatNumber(maxPeople)}
           </span>
         </div>
+        {daysLeft > 0 && (
         <div className="text-slate-50 text-caption1-b leading-none">{daysLeft}일 남음</div>
+        )}
+        {daysLeft <= 0 && (
+          <div className="text-slate-50 text-caption1-b leading-none">마감</div>
+        )}
       </div>
 
       {/* 진행률 바 */}
-      <Progress value={progressRate} height={4} />
+      <Progress value={progressRate} height={4} isExpired={daysLeft <= 0} />
     </div>
   );
 };

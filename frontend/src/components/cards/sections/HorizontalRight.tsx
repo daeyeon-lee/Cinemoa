@@ -44,13 +44,18 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
             {/* 진행률, 현재인원/목표인원 */}
             <div className="inline-flex justify-start items-center gap-1">
-              <div className="text-Brand1-Strong text-p3-b leading-none">{data.funding.progressRate} %</div>
+              <div className={`p3-b leading-none ${daysLeft > 0 ? 'text-Brand1-Strong' : 'text-subtle'}`}>{data.funding.progressRate} %</div>
               <div className="text-secondary text-caption2 leading-3">
                 {data.funding.participantCount} / {data.funding.maxPeople}
               </div>
             </div>
+            {daysLeft > 0 && (
             <div className="text-slate-50 text-caption1-b leading-none">{daysLeft}일 남음</div>
-            <Progress value={data.funding.progressRate} height={4} />
+            )}
+            {daysLeft <= 0 && (
+              <div className="text-slate-50 text-caption1-b leading-none">마감</div>
+            )}
+            <Progress value={data.funding.progressRate} height={4} isExpired={daysLeft <= 0} />
             <div className="self-stretch  gap-1">{/* 몇일 남았는지 */}</div>
             {/* 진행바 */}
           </div>
@@ -72,7 +77,7 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
               disabled={isLoading}
               className={`w-full gap-1 ${currentIsLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}
             >
-              <span className="text-lg">{currentIsLiked ? '♥' : '♡'}</span>
+              <span className="text-lg">{currentIsLiked ? '♡' : '♥'}</span>
               보고싶어요
             </Button>
           </div>

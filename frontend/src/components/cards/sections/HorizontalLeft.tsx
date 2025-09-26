@@ -16,6 +16,8 @@ type HorizontalLeftProps = {
   backgroundColor?: 'bg-BG-0' | 'bg-BG-1';
 };
 
+
+
 const HorizontalLeft: React.FC<HorizontalLeftProps> = ({
   data,
   loadingState = 'ready',
@@ -28,11 +30,20 @@ const HorizontalLeft: React.FC<HorizontalLeftProps> = ({
   getStateBadgeInfo,
   backgroundColor = 'bg-BG-1',
 }) => {
+  // 종료 상태 확인 - fundingEndsOn 날짜 기준
+  const isEnded = (() => {
+    const endDate = new Date(data.funding.fundingEndsOn);
+    const now = new Date();
+    // 시간 부분 제거하고 날짜만 비교
+    endDate.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+    return endDate < now; // 종료일이 오늘보다 이전이면 종료
+  })();
   return (
     <div className={`${backgroundColor} flex-1 min-w-0 p-3 flex justify-start items-center gap-3 rounded-xl hover:rounded-xl`}>
-      <div className="w-16 relative rounded overflow-hidden">
-        <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" height={96} rounded={false} loadingState={loadingState} />
-
+      <div className="w-16 relative rounded overflow-hidden flex items-center justify-center">
+        <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" height={96} rounded={false} loadingState={loadingState} className={`${isEnded ? 'opacity-30' : ''}`} />
+        {isEnded && <div className="absolute text-white caption1-b text-center">마감<br/>되었습니다</div>}
         {/* 상태 태그 오버레이 */}
         {showStateTag &&
           (() => {
