@@ -10,9 +10,10 @@ import { useVoteDetail as useVoteDetailContext } from '@/contexts/VoteDetailCont
 // ✅ 투표 전용 액션 섹션 Props
 type VoteActionSectionProps = {
   fundingId: number;
+  isExpired?: boolean; // 🆕 마감 여부
 };
 
-const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId }) => {
+const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId, isExpired }) => {
   // Context에서 데이터 가져오기
   const { data: contextData, userId: contextUserId } = useVoteDetailContext();
   const { funding } = contextData;
@@ -59,6 +60,7 @@ const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId }) => {
     if (!userId) {
       // 로그인 필요 체크
       alert('로그인 후 이용해주세요.');
+      window.location.href = '/auth';
       return;
     }
     likeMutation.mutate({
@@ -68,16 +70,29 @@ const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId }) => {
     });
   };
 
+  // 🆕 상영회 전환 버튼 클릭 (임시 함수)
+  const handleConvertToFunding = () => {
+    if (!userId) {
+      // 로그인 필요 체크
+      alert('로그인 후 이용해주세요.');
+      window.location.href = '/auth';
+      return;
+    }
+    // TODO: 실제 상영회 전환 API 호출
+    console.log('상영회로 전환 요청:', { fundingId, userId });
+    alert('상영회 전환 기능이 곧 추가될 예정입니다.');
+  };
+
   return (
     <section>
       <div className="flex flex-col pt-5 border-t border-slate-600 gap-4">
         {/* 참여자수 + 남은시간 */}
         <div className="w-full min-w-0 flex items-center justify-between mt-1.5">
           <div className="min-w-0">
-            <StatItem icon="people" fill="#2CD8CE" text={`${currentLikeCount}명이 보고 싶어해요`} />
+            <StatItem icon="people" fill={isExpired ? "#94A3B8" : "#2CD8CE"} text={`${currentLikeCount}명이 보고 싶어해요`} />
           </div>
           <div className="min-w-0">
-            <StatItem icon="time" fill="#2CD8CE" text={`${daysLeft}일 후 종료`} />
+            <StatItem icon="time" fill={isExpired ? "#94A3B8" : "#2CD8CE"} text={isExpired ? "마감" : `${daysLeft}일 후 종료`} />
           </div>
         </div>
         {/* 🔘 액션 버튼 영역: 좋아요 + 참여하기(결제) */}
@@ -85,16 +100,16 @@ const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId }) => {
           {/* 링크 공유 */}
           <ShareButton isActive={currentIsLiked} />
 
-          {/* ❤️ 좋아요 버튼: 낙관적 업데이트로 즉시 반영 */}
+          {/* ❤️ 좋아요/상영회 전환 버튼 */}
           <Button
-            variant={currentIsLiked ? 'tertiary' : 'brand2'} // 좋아요 상태에 따라 variant 변경
+            variant={isExpired ? 'brand2' : (currentIsLiked ? 'tertiary' : 'brand2')} // 마감시 brand2, 아니면 좋아요 상태에 따라 variant 변경
             size="lg" // 라지 사이즈
             textSize="lg" // 라지 폰트 (커스텀 prop 가정)
             className="w-full h5-b gap-1" // 공통 스타일만 유지
-            onClick={handleLikeClick} // 클릭 핸들러
+            onClick={isExpired ? handleConvertToFunding : handleLikeClick} // 마감시 상영회 전환, 아니면 좋아요 핸들러
             disabled={likeMutation.isPending} // 중복 클릭 방지
           >
-            {currentIsLiked ? '보고 싶어요 취소' : '나도 보고 싶어요'}
+            {isExpired ? '상영회로 전환하기' : (currentIsLiked ? '보고 싶어요 취소' : '나도 보고 싶어요')}
           </Button>
         </div>
       </div>

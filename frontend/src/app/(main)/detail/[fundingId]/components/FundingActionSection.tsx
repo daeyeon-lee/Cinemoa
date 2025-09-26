@@ -4,7 +4,7 @@ import { Dialog } from '@/components/ui/dialog'; // 결제 모달용
 import Payment from '@/app/(main)/payment/Payment'; // 결제 모달 내용
 import RefundConfirm from '@/app/(main)/refund/RefundConfirm'; // 환불 확인 모달
 import AlertDialog from '@/components/ui/alert-dialog'; // 참여 불가 모달
-import ConfirmDialog from '@/components/ui/confirm-dialog'; // 환불 완료 모달
+// import ConfirmDialog from '@/components/ui/confirm-dialog'; // 환불 완료 모달 - 사용하지 않음
 import { HeartIcon } from '@/component/icon/heartIcon'; // 하트 아이콘
 import { ShareButton } from '@/components/share/ShareButton'; // 공유 버튼 컴포넌트
 import InfoIcon from '@/component/icon/infoIcon'; // 정보 아이콘
@@ -17,9 +17,10 @@ import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingD
 // ✅ 펀딩 전용 액션 섹션 Props: 최소한의 정보만 전달
 type FundingActionSectionProps = {
   fundingId: number; // 필수: 어떤 펀딩인지 식별 (캐시 Key)
+  isExpired?: boolean; // 🆕 마감 여부
 };
 
-const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }) => {
+const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, isExpired }) => {
   // Context에서 데이터 가져오기
   const { data: contextData, userId: contextUserId } = useFundingDetailContext();
   const { user } = useAuthStore();
@@ -68,6 +69,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
     if (!userId) {
       // 로그인 필요 체크
       alert('로그인 후 이용해주세요.');
+      window.location.href = '/auth';
       return;
     }
     likeMutation.mutate({
@@ -77,8 +79,12 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
     });
   };
 
-  // 🚫 참여하기 버튼 클릭: 정원 초과 체크
+  // 🚫 참여하기 버튼 클릭: 마감 및 정원 초과 체크
   const handleParticipateClick = () => {
+    // 마감된 경우 클릭 방지
+    if (isExpired) {
+      return;
+    }
     if (isFullCapacity) {
       setFullCapacityDialogOpen(true);
       return;
@@ -89,16 +95,12 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
 
   // 환불 완료 핸들러
   const handleRefundComplete = () => {
-    console.log('환불 완료 핸들러 호출됨');
     setRefundDialogOpen(false); // RefundConfirm 모달 닫기
     setRefundCompleteDialogOpen(true); // 완료 모달 열기
-    console.log('refundCompleteDialogOpen을 true로 설정함');
   };
 
   // 환불 완료 모달이 떠있을 때는 기본 UI 숨기기
-  console.log('FundingActionSection 렌더링, refundCompleteDialogOpen:', refundCompleteDialogOpen);
   if (refundCompleteDialogOpen) {
-    console.log('환불 완료 AlertDialog 렌더링 중');
     return (
       <AlertDialog
         title="참여 취소 완료"
@@ -108,7 +110,6 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
         btnLabel="확인"
         subBtnLabel=""
         onBtnLabel={() => {
-          console.log('환불 완료 모달 확인 버튼 클릭됨');
           setRefundCompleteDialogOpen(false);
           // 확인 버튼 클릭 시 페이지 새로고침으로 최신 상태 반영
           window.location.href = `/detail/${fundingId}`;
@@ -146,10 +147,17 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId }
 
         {/* 조건부 버튼: 참여하기(결제) 또는 참여취소(환불) */}
         {!isParticipated ? (
-          // 참여하지 않은 경우: 정원 체크 후 결제 모달 또는 참여 불가 모달
+          // 참여하지 않은 경우: 마감, 정원 체크 후 결제 모달 또는 참여 불가 모달
           <>
-            <Button variant="brand1" size="lg" textSize="lg" className="w-full" onClick={handleParticipateClick}>
-              참여하기
+            <Button 
+              variant={isExpired ? "secondary" : "brand1"} 
+              size="lg" 
+              textSize="lg" 
+              className="w-full" 
+              onClick={handleParticipateClick}
+              disabled={isExpired}
+            >
+              {isExpired ? "마감되었습니다" : "참여하기"}
             </Button>
 
             {/* 결제 모달 */}

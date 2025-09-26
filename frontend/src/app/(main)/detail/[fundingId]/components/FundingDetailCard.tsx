@@ -8,11 +8,12 @@ import { useFundingDetail } from '@/contexts/FundingDetailContext';
 // 🟢 펀딩 상세 카드 Props 타입 정의
 type FundingDetailCardProps = {
   fundingId: number; // React Query 캐시 key용 ID
+  isExpired?: boolean; // 🆕 마감 여부
 };
 
-const FundingDetailCard: React.FC<FundingDetailCardProps> = ({ fundingId }) => {
+const FundingDetailCard: React.FC<FundingDetailCardProps> = ({ fundingId, isExpired }) => {
   // 🟢 Context에서 데이터 가져오기
-  const { data, userId } = useFundingDetail();
+  const { data } = useFundingDetail();
   const { funding } = data;
 
   // console.log("FundingDetailCard props:", userId)
@@ -33,12 +34,13 @@ const FundingDetailCard: React.FC<FundingDetailCardProps> = ({ fundingId }) => {
 
           {/* 진행 현황 + 액션 버튼 */}
           <div className="flex flex-col gap-4">
-            <ProgressInfoSection />
+            <ProgressInfoSection isExpired={isExpired} />
 
             {/* 데스크톱 전용 액션 버튼 */}
             <div className="md:block hidden">
               <FundingActionSection
                 fundingId={fundingId} // 자식이 캐시에서 likeCount, isLiked, isParticipated 조회
+                isExpired={isExpired} // 🆕 마감 여부 전달
               />
             </div>
           </div>
@@ -49,6 +51,7 @@ const FundingDetailCard: React.FC<FundingDetailCardProps> = ({ fundingId }) => {
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-800 px-5 pb-5 md:hidden">
         <FundingActionSection
           fundingId={fundingId} // 자식이 캐시에서 상태 조회
+          isExpired={isExpired} // 🆕 마감 여부 전달
         />
       </div>
     </>
