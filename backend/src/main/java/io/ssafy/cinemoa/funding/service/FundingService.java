@@ -7,7 +7,6 @@ import io.ssafy.cinemoa.cinema.repository.ScreenRepository;
 import io.ssafy.cinemoa.cinema.repository.ScreenUnavailableTImeBatchRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
-import io.ssafy.cinemoa.external.text.client.GPTApiClient;
 import io.ssafy.cinemoa.external.text.client.TextSummaryApiClient;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
@@ -131,7 +130,6 @@ public class FundingService {
     private final ApplicationEventPublisher eventPublisher;
 
     private final TextSummaryApiClient textSummaryApiClient;
-    private final GPTApiClient openAiApiClient;
 
     @Transactional
     public FundingCreationResult createFunding(MultipartFile image, FundingCreateRequest request) {
@@ -495,14 +493,11 @@ public class FundingService {
 
         try {
             // 상영물 상세내용 요약 실행 (GMS API 호출)
-            // String apiResponse = textSummaryApiClient.summarizeText(request);
-
-            // 상영물 상세내용 요약 실행 (OpenAI API 호출)
-            String apiResponse = openAiApiClient.summarizeText(request);
+            String apiResponse = textSummaryApiClient.summarizeText(request);
             return new VideoContentResult(apiResponse);
 
         } catch (Exception e) {
-            log.error("상영물 상세내용 요약 작업 중 오류 발생 - 오류: {}", e.getMessage(), e);
+            log.error("상영물 상세내용 중 오류 발생 - 오류: {}", e.getMessage(), e);
             throw InternalServerException.ofSummarize();
         }
     }
