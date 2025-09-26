@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -273,28 +275,22 @@ public class FundingFilterRepository {
             params.addAll(regions);
         }
 
-        public void addCategoryFilter(Long categoryId, CategoryRepository categoryRepository) {
-            boolean isParent = categoryRepository.isParent(categoryId);
-
-            if (isParent) {
-                List<Long> childIds = categoryRepository.findSubCategoryIdsByParentId(categoryId);
-
-                if (!childIds.isEmpty()) {
-                    StringBuilder sb = new StringBuilder();
-                    for (int idx = 0; idx < childIds.size(); ++idx) {
-                        if (idx > 0) {
-                            sb.append(",");
-                        }
-                        sb.append("?");
-                    }
-                    sql.append(" AND f.category_id IN(").append(sb).append(")");
-                    params.addAll(childIds);
-                }
+        public void addCategoryFilter(Set<Long> categoryIds, CategoryRepository categoryRepository) {
+            if (categoryIds == null || categoryIds.isEmpty()) {
                 return;
             }
 
-            sql.append(" AND f.category_id = ?");
-            params.add(categoryId);
+            Set<Long> allCategoryIds = new HashSet<>(categoryIds.size() * 2);
+
+            List<Long> childIds = categoryRepository.findSubCategoryIdsByParentIds(categoryIds);
+
+            allCategoryIds.addAll(categoryIds);
+            allCategoryIds.addAll(childIds);
+
+            sql.append(" AND f.category_id IN (");
+            sql.append(String.join(",", Collections.nCopies(allCategoryIds.size(), "?")));
+            sql.append(")");
+            params.addAll(allCategoryIds);
         }
 
         public void addTheaterTypeFilter(Set<CinemaFeature> theaterTypes) {
