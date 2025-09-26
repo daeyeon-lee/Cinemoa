@@ -9,7 +9,7 @@
 - [주요 기능](#주요-기능)
 - [기술 스택](#기술-스택)
 - [아키텍처 구성](#아키텍처-구성)
-- [폴더 구조](#폴더-구조)
+- [폴더 구조](#-폴더-구조)
 - [팀원 소개](#팀원-소개)
 
 
@@ -83,7 +83,16 @@
 ![시스템 아키텍처](images/architecture.png)
 
 
-
+# 📂 폴더 구조
+```
+📂 backend
+    ㄴ Spring boot project
+    ㄴ 🐳 Dockerfile
+📂 frontend
+    ㄴ Next.js project
+    ㄴ 🐳 Dockerfile
+📃 Jenkinsfile
+```
 
 
 
