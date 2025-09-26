@@ -46,7 +46,7 @@ export default function FundingPage() {
           const response = await getFundingDetail(urlFundingId, urlUserId);
           if (response.data) {
             setExistingFundingData(response.data);
-            console.log('기존 투표 정보 조회 성공:', response.data);
+            // console.log('기존 투표 정보 조회 성공:', response.data);
             
             // 기존 정보를 폼 데이터로 변환
             if (response.data.type === 'VOTE') {
@@ -142,7 +142,13 @@ export default function FundingPage() {
       case 'movie-info':
         return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} existingData={movieData} />;
       case 'theater-info':
-        return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} fundingData={fundingData || undefined} movieData={movieData || undefined} />;
+        return <TheaterInfoTab 
+          onNext={handleTheaterData} 
+          onPrev={handlePrevTheater} 
+          fundingData={fundingData || undefined} 
+          movieData={movieData || undefined}
+          existingData={existingFundingData}
+        />;
       case 'payment':
         return <PaymentTab onNext={handlePaymentData} onPrev={handlePrevPayment} fundingId={fundingId} amount={perPersonAmount || undefined} />;
       default:

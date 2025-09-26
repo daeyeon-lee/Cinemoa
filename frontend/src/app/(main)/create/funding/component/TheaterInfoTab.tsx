@@ -10,6 +10,7 @@ import InformationIcon from '@/component/icon/infomrationIcon';
 import { useGetCinemas, useGetCinemaDetail, useGetReservationTime } from '@/api/hooks/useCinemaQueries';
 import { CinemaResponse } from '@/types/cinema';
 import { createFunding } from '@/api/funding';
+import { convertVotes } from '@/api/convertVotes';
 import { CalendarDemo } from '@/components/calenderdemo';
 import { theaterinfo, fundinginfo, movieinfo, CreateFundingParams } from '@/types/funding';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,9 +24,10 @@ interface TheaterInfoTabProps {
   theaterData?: theaterinfo;
   fundingId?: number;
   amount?: number;
+  existingData?: any; // 기존 투표 데이터
 }
 
-export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData, theaterData, fundingId, amount }: TheaterInfoTabProps) {
+export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData, theaterData, fundingId, amount, existingData }: TheaterInfoTabProps) {
   // 상태 관리
   const { user } = useAuthStore();
   const [selectedDistrict, setSelectedDistrict] = useState<string>(''); // 선택된 구 (예: '강남구', '서초구')
@@ -77,8 +79,30 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
     };
     const posterUrl = movieData?.posterUrl;
 
+    
     try {
-      const result = await createFunding(completeData, posterUrl || '');
+      let result;
+      
+      if (existingData && existingData.type === 'VOTE') {
+        // 투표에서 온 경우: convertVotes API 호출
+        const convertData = {
+          userId: user?.userId || 0,
+          title: completeData.title || '',
+          content: completeData.content || '',
+          categoryId: completeData.categoryId || 0,
+          cinemaId: completeData.cinemaId || 0,
+          screenId: completeData.screenId || 0,
+          screenDay: completeData.screenDay || '',
+          screenStartsOn: completeData.screenStartsOn || 0,
+          screenEndsOn: completeData.screenEndsOn || 0,
+          maxPeople: completeData.maxPeople || 0,
+        };
+        result = await convertVotes(existingData.funding.fundingId, convertData);
+      } else {
+        // 새로 생성하는 경우: createFunding API 호출
+        result = await createFunding(completeData, posterUrl || '');
+      }
+      
       const fundingId = result.data.fundingId;
       await holdSeats(fundingId, user?.userId || 0);
       alert('펀딩이 성공적으로 생성되었습니다!');

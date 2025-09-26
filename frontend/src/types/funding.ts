@@ -52,6 +52,20 @@ export interface CreateFundingResponse {
   };
 }
 
+// 투표를 펀딩으로 전환하는 요청 타입 (파일 업로드 없음)
+export interface ConvertVotesParams {
+  userId: number;
+  title: string;
+  content: string;
+  categoryId: number;
+  cinemaId: number;
+  screenId: number;
+  screenDay: string;
+  screenStartsOn: number;
+  screenEndsOn: number;
+  maxPeople: number;
+}
+
 // 상세 내역 조회
 export interface DetailSummaryResponse {
   state: string;
