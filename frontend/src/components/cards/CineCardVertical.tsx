@@ -163,12 +163,12 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               </span>
             </div>
             {/* 프로젝트 제목 */}
-            <h4 className="text-p3 line-clamp-1 truncate">{data.funding.title}</h4>
+            <h4 className="text-p3 text-secondary line-clamp-1 truncate">{data.funding.title}</h4>
           </div>
         </div>
         <PerforationLine />
         {/* 카드 하단 */}
-        <div className="flex-1 flex flex-col justify-end bg-BG-1 rounded-xl p-3 pb-4">
+        <div className="flex-1 flex flex-col justify-end bg-BG-1 rounded-xl p-3">
           {isFunding ? (
             <FundingInfo
               price={data.funding.price}
