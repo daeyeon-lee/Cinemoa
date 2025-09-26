@@ -134,7 +134,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "https://j13a110.p.ssafy.io"));
+        config.setAllowedOrigins(
+                List.of("http://localhost:3000", "https://j13a110.p.ssafy.io", "https://cinemoa.shop"));
         config.setAllowedMethods(Arrays.stream(HttpMethod.values()).map(HttpMethod::toString).toList());
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowedHeaders(List.of("*"));

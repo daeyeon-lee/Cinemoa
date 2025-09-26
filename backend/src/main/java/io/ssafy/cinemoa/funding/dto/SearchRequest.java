@@ -18,7 +18,7 @@ public class SearchRequest {
     private Long userId;
     private FundingSortOrder sortBy;
     private FundingType fundingType;
-    private Long category;
+    private Set<Long> category;
     private List<String> region;
     private Set<CinemaFeature> theaterType;
     @JsonProperty("isClosed")
