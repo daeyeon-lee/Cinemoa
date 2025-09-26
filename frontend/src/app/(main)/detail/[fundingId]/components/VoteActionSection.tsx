@@ -16,7 +16,7 @@ type VoteActionSectionProps = {
 const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId, isExpired }) => {
   // Context에서 데이터 가져오기
   const { data: contextData, userId: contextUserId } = useVoteDetailContext();
-  const { funding } = contextData;
+  const { funding, proposer } = contextData;
 
   // 로그인 사용자 정보
   const { user } = useAuthStore();
@@ -35,6 +35,9 @@ const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId, isExpi
   };
 
   const daysLeft = calculateDaysLeft(funding.fundingEndsOn);
+
+  // 🆕 제안자 권한 체크: proposerId와 현재 userId가 같은지 확인
+  const isProposer = proposer?.proposerId?.toString() === userId;
 
   // 좋아요 토글 mutation
   const likeMutation = useFundingLike();
@@ -100,16 +103,30 @@ const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId, isExpi
           {/* 링크 공유 */}
           <ShareButton isActive={currentIsLiked} />
 
-          {/* ❤️ 좋아요/상영회 전환 버튼 */}
+          {/* ❤️ 좋아요/상영회 전환/마감 버튼 */}
           <Button
-            variant={isExpired ? 'brand2' : (currentIsLiked ? 'tertiary' : 'brand2')} // 마감시 brand2, 아니면 좋아요 상태에 따라 variant 변경
+            variant={
+              isExpired 
+                ? (isProposer ? 'brand2' : 'secondary') // 마감시: 제안자면 brand2, 아니면 secondary(회색)
+                : (currentIsLiked ? 'tertiary' : 'brand2') // 진행중: 좋아요 상태에 따라
+            }
             size="lg" // 라지 사이즈
             textSize="lg" // 라지 폰트 (커스텀 prop 가정)
             className="w-full h5-b gap-1" // 공통 스타일만 유지
-            onClick={isExpired ? handleConvertToFunding : handleLikeClick} // 마감시 상영회 전환, 아니면 좋아요 핸들러
-            disabled={likeMutation.isPending} // 중복 클릭 방지
+            onClick={
+              isExpired 
+                ? (isProposer ? handleConvertToFunding : undefined) // 마감시: 제안자만 클릭 가능
+                : handleLikeClick // 진행중: 좋아요 핸들러
+            }
+            disabled={
+              likeMutation.isPending || // 좋아요 요청 중이거나
+              (isExpired && !isProposer) // 마감됐는데 제안자가 아닌 경우
+            }
           >
-            {isExpired ? '상영회로 전환하기' : (currentIsLiked ? '보고 싶어요 취소' : '나도 보고 싶어요')}
+            {isExpired 
+              ? (isProposer ? '상영회로 전환하기' : '마감되었습니다') // 마감시: 제안자 여부에 따라
+              : (currentIsLiked ? '보고 싶어요 취소' : '나도 보고 싶어요') // 진행중: 좋아요 상태에 따라
+            }
           </Button>
         </div>
       </div>
