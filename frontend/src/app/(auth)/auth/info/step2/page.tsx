@@ -513,7 +513,10 @@ export default function Step2Page() {
             </Button>
           </div>
           {(form.formState.errors.verificationCode || verificationCodeError) && !isVerificationSuccess && (
-            <p className="text-Brand1-Primary p2 mt-1">{form.formState.errors.verificationCode?.message || verificationCodeError}</p>
+            <p className="text-Brand1-Primary p2 mt-1">
+              인증 번호가 올바르지 않습니다.
+              {/* {form.formState.errors.verificationCode?.message || verificationCodeError} */}
+            </p>
           )}
           {isVerificationSuccess && !verificationCodeError && <p className="text-Brand2-Primary p2 mt-1">인증이 완료되었습니다.</p>}
         </div>
@@ -527,7 +530,7 @@ export default function Step2Page() {
           </Button>
         </Link>
         <Button onClick={form.handleSubmit(onSubmit)} disabled={!isVerificationSuccess} size="lg" variant={isVerificationSuccess ? 'brand1' : 'tertiary'} className="w-full sm:flex-1 h-12 sm:h-14">
-          회원가입 완료
+          회원가입 완료하기
         </Button>
       </div>
     </div>
