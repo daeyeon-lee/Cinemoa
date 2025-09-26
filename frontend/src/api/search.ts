@@ -8,7 +8,7 @@ export const searchItems = async (params: SearchParams = {}): Promise<ApiSearchR
     const searchParams = cursor ? { ...otherParams, nextCursor: cursor } : otherParams;
 
     const url = buildUrl('search', searchParams);
-    // console.log('[Search API] 요청:', url);
+    console.log('[Search API] 요청:', url);
 
     const response = await fetch(url, {
       method: 'GET',

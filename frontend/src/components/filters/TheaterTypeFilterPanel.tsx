@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
+import { RotateCcw } from 'lucide-react';
 
 /**
  * 상영관 타입 아이템 인터페이스
@@ -72,7 +73,8 @@ const TheaterTypeFilterPanel: React.FC<TheaterTypeFilterPanelProps> = ({ types, 
       <div className="flex items-center justify-between border-b border-stroke-3 pb-2">
         <h3 className="text-h4-b">상영관</h3>
         {/* 초기화 버튼 */}
-        <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary" disabled={value.length === 0}>
+        <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary flex items-center gap-1 pr-0" disabled={value.length === 0}>
+          <RotateCcw size={14} />
           초기화
         </Button>
       </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { RotateCcw } from 'lucide-react';
 
 /**
  * RegionFilterPanel 컴포넌트의 props 타입
@@ -42,13 +43,7 @@ interface RegionFilterPanelProps {
  * @param props.onChange - 지역 선택 변경 핸들러
  * @param props.onReset - 필터 초기화 핸들러
  */
-const RegionFilterPanel: React.FC<RegionFilterPanelProps> = ({
-  regions,
-  value,
-  onChange,
-  onReset,
-  variant = 'brand1',
-}) => {
+const RegionFilterPanel: React.FC<RegionFilterPanelProps> = ({ regions, value, onChange, onReset, variant = 'brand1' }) => {
   /**
    * 지역 선택/해제를 토글하는 핸들러
    * @param region - 토글할 지역명
@@ -66,7 +61,8 @@ const RegionFilterPanel: React.FC<RegionFilterPanelProps> = ({
       <div className="flex items-center justify-between border-b border-stroke-3 pb-2">
         <h3 className="text-h4-b">지역</h3>
         {/* 초기화 버튼 */}
-        <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary" disabled={value.length === 0}>
+        <Button size="sm" onClick={onReset} className="text-p2-b bg-bg-0 text-tertiary flex items-center gap-1 pr-0" disabled={value.length === 0}>
+          <RotateCcw size={14} />
           초기화
         </Button>
       </div>

@@ -8,8 +8,8 @@ interface CategorySelectSectionProps {
   categories: Category[];
   selectedCategory: CategoryValue | null;
   onCategoryChange: (value: CategoryValue | null) => void;
-  selectedSubCategory: number | null;
-  onSubCategoryChange: (value: number | null) => void;
+  selectedSubCategory: number[];
+  onSubCategoryChange: (value: number[]) => void;
   variant?: 'brand1' | 'brand2';
 }
 
@@ -36,7 +36,7 @@ const CategorySelectSection: React.FC<CategorySelectSectionProps> = ({ categorie
 
   const handleCategoryChange = (newCategory: CategoryValue) => {
     onCategoryChange(newCategory);
-    onSubCategoryChange(null); // 2차 카테고리 초기화
+    onSubCategoryChange([]); // 2차 카테고리 초기화 (빈 배열)
   };
 
   return (

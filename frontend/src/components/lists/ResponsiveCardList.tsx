@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { ApiSearchItem } from '@/types/searchApi';
 import { LoadingIndicator, NoMoreData } from '@/app/(main)/mypage/detail/components/LoadingStates';
+import { RotateCcw } from 'lucide-react';
 
 /**
  * 카드 아이템 타입
@@ -201,9 +202,10 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   // 빈 목록 상태
   if (empty || items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
+      <div className="flex flex-col items-center justify-center p-32 text-center">
         <p className="mb-4">조건을 만족하는 데이터가 없습니다</p>
-        <Button variant="outline" onClick={onResetFilters}>
+        <Button variant="brand1" onClick={onResetFilters} className="flex items-center gap-2">
+          <RotateCcw size={16} />
           필터 초기화
         </Button>
       </div>

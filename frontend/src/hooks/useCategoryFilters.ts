@@ -16,10 +16,10 @@ export const useCategoryFilters = () => {
   const { user } = useAuthStore();
 
   // ========== 필터 상태 관리 ==========
-  // 카테고리 관련 상태들 (3개의 상태로 분리하여 정확한 추적)
+  // 카테고리 관련 상태들 (1차: 단일 선택, 2차: 다중 선택)
   const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number | null>(null); // 선택된 1차 카테고리 ID (1=영화, 2=시리즈, 3=공연, 4=스포츠중계)
-  const [selectedUiCategoryId, setSelectedUiCategoryId] = useState<number | null>(null); // UI 표시용 카테고리 ID (null=전체, 1=영화, 2=시리즈, etc.)
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number | null>(null); // 선택된 세부카테고리 ID (2차 카테고리)
+  const [selectedUiCategoryId, setSelectedUiCategoryId] = useState<number | null>(null); // UI 표시용 카테고리 ID (null=전체 카테고리, 1=영화 전체, 2=시리즈 전체, etc.)
+  const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState<number[]>([]); // 선택된 2차 카테고리 ID들 (다중 선택)
 
   // 지역 및 상영관 필터 상태들
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]); // 선택된 지역 배열 (현재는 단일 선택)
@@ -44,7 +44,7 @@ export const useCategoryFilters = () => {
       // ID 1=영화, 2=시리즈, 3=공연, 4=스포츠중계
       setSelectedMainCategoryId(categoryId);
       setSelectedUiCategoryId(categoryId);
-      setSelectedSubCategoryId(categoryId);
+      setSelectedSubCategoryIds([]); // 2차 카테고리는 빈 배열로 초기화
 
       // console.log('✅ [useCategoryFilters] 카테고리 초기화 완료:', {
       //   selectedMainCategoryId: categoryId,
@@ -72,18 +72,18 @@ export const useCategoryFilters = () => {
     // ========== 카테고리 필터링 로직 ==========
     if (selectedUiCategoryId === null) {
       // "전체" 선택: category 파라미터를 전달하지 않음 → 모든 카테고리 조회
-    } else if (selectedSubCategoryId !== null) {
-      // 2차 카테고리가 선택된 경우: 해당 세부 카테고리만 조회
-      params.category = selectedSubCategoryId;
+    } else if (selectedSubCategoryIds.length > 0) {
+      // 2차 카테고리들이 선택된 경우: 선택된 세부 카테고리들만 조회
+      params.category = selectedSubCategoryIds;
     } else if (selectedMainCategoryId !== null) {
-      // 1차 카테고리만 선택된 경우: 해당 카테고리 전체 조회
-      params.category = selectedMainCategoryId;
+      // 1차 카테고리만 선택된 경우: 해당 1차 카테고리의 모든 서브카테고리 조회
+      params.category = [selectedMainCategoryId];
     }
 
     // ========== 지역 필터링 ==========
-    // 현재는 단일 선택만 지원 (배열의 첫 번째 요소만 사용)
+    // 선택된 모든 지역들을 배열로 전달
     if (selectedRegions.length > 0) {
-      params.region = selectedRegions[0];
+      params.region = selectedRegions;
     }
 
     // ========== 상영관 종류 필터링 ==========
@@ -99,8 +99,11 @@ export const useCategoryFilters = () => {
       params.isClosed = showClosed;
     }
 
+    console.log('[useCategoryFilters] API 요청 파라미터:', params);
+    console.log('[useCategoryFilters] 선택된 지역들:', selectedRegions);
+
     return params;
-  }, [sortBy, selectedUiCategoryId, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType, showClosed, user?.userId]);
+  }, [sortBy, selectedUiCategoryId, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions, selectedTheaterType, showClosed, user?.userId]);
 
   // ========== 데이터 조회 ==========
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
@@ -113,7 +116,7 @@ export const useCategoryFilters = () => {
   const handleResetFilters = useCallback(() => {
     setSelectedMainCategoryId(null);
     setSelectedUiCategoryId(null);
-    setSelectedSubCategoryId(null);
+    setSelectedSubCategoryIds([]);
     setSelectedRegions([]);
     setSelectedTheaterType([]);
     setSortBy('LATEST');
@@ -171,7 +174,7 @@ export const useCategoryFilters = () => {
   const handleCategoryChange = useCallback((categoryId: number | null) => {
     setSelectedMainCategoryId(categoryId);
     setSelectedUiCategoryId(categoryId);
-    setSelectedSubCategoryId(categoryId);
+    setSelectedSubCategoryIds([]); // 1차 카테고리 변경 시 2차는 초기화
   }, []);
 
   // API에서 받아온 모든 페이지의 아이템들을 평탄화한 배열
@@ -181,7 +184,7 @@ export const useCategoryFilters = () => {
     // 상태들
     selectedMainCategoryId,
     selectedUiCategoryId,
-    selectedSubCategoryId,
+    selectedSubCategoryIds,
     selectedRegions,
     selectedTheaterType,
     sortBy,
@@ -191,7 +194,7 @@ export const useCategoryFilters = () => {
     // 상태 변경 함수들
     setSelectedMainCategoryId,
     setSelectedUiCategoryId,
-    setSelectedSubCategoryId,
+    setSelectedSubCategoryIds,
     setSelectedRegions,
     setSelectedTheaterType,
     setSortBy,
