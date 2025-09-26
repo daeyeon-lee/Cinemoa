@@ -1,5 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
+import OutlinedButton from '@/components/buttons/OutlinedButton';
 import { useState } from 'react';
 import Link from 'next/link';
 import MovieIcon from '@/component/icon/movieIcon';
@@ -88,59 +89,48 @@ export default function Step1Page() {
   };
 
   return (
-    <div className="w-max mx-auto px-4 py-8 sm:py-12">
-      {/* 헤더 */}
-      <div className="text-center mb-6 sm:mb-8">
-        <h1 className="text-h3-b mb-2">필수 정보 입력하기</h1>
-      </div>
-      <div className="mt-6 sm:mt-10 mb-6 sm:mb-8 border-b border-stroke-4">
-        <div className="flex justify-between items-end mb-1">
-          <h2 className="text-h5-b">선호 카테고리 선택하기</h2>
-          <span className={`text-sm ${totalSelected >= 1 && totalSelected <= 10 ? 'text-Brand1-Primary' : 'text-tertiary'}`}>{totalSelected}/10</span>
-        </div>
-        <p className="text-xs sm:text-p3 text-tertiary pb-2"> 선호 카테고리를 1개 이상 선택해야 가입이 완료됩니다. (최대 10개)</p>
+    <div className="w-full px-4 pt-32 sm:pt-20 sm:w-[376px] sm:mx-auto sm:px-0 flex flex-col gap-10">
+      {/* header */}
+      <div className="text-center">
+        <h1 className="text-h3-b">필수 정보 입력하기</h1>
       </div>
 
-      {/* 카테고리 섹션들 */}
-      <div className="sm:space-y-6">
-        {Object.entries(categories).map(([key, category]) => (
-          <div key={key}>
-            <div className="flex items-center mb-2">
-              <category.icon className="w-4 h-4 mr-1" />
-              <h3 className="text-sm sm:text-p2-b text-Brand1-Primary">{category.title}</h3>
-            </div>
-            <div className="flex gap-1 sm:gap-1">
-              {category.items.map((item) => {
-                const isSelected = selectedCategories[key as keyof typeof selectedCategories].includes(item as string);
-                const totalSelected = getTotalSelectedCount();
-                const isDisabled = !isSelected && totalSelected >= 10; // 총 10개 이상 선택 시 비활성화
-                return (
-                  <Button
-                    variant="outline"
-                    key={item}
-                    size="sm"
-                    textSize="sm"
-                    onClick={() => handleCategorySelect(key, item)}
-                    disabled={isDisabled}
-                    className={`w-full rounded-[6px] max-sm:p1 ${
-                      isSelected
-                        ? 'text-Brand1-Strong border-Brand1-Strong hover:border-Brand1-Secondary'
-                        : isDisabled
-                        ? 'text-tertiary border-stroke-4 opacity-50 cursor-not-allowed'
-                        : 'text-tertiary border-stroke-4 hover:border-stroke-2'
-                    }`}
-                  >
-                    {item}
-                  </Button>
-                );
-              })}
-            </div>
+      {/* main */}
+      <div className="flex flex-col gap-5">
+        <div className="border-b border-stroke-4 pb-2">
+          <div className="flex justify-between items-end">
+            <h2 className="text-h5-b">선호 카테고리 선택하기</h2>
+            <span className={`text-p3 ${totalSelected >= 1 && totalSelected <= 10 ? 'text-Brand1-Primary' : 'text-tertiary'}`}>{totalSelected}/10</span>
           </div>
-        ))}
+          <p className="text-p3 text-tertiary"> 선호 카테고리를 1개 이상 선택해야 가입이 완료됩니다. (최대 10개)</p>
+        </div>
+        {/* 카테고리 섹션들 */}
+        <div className="flex flex-col gap-5">
+          {Object.entries(categories).map(([key, category]) => (
+            <div key={key}>
+              <div className="flex items-center pb-2">
+                <category.icon className="w-4 h-4" />
+                <h3 className="text-p2-b text-Brand1-Primary">{category.title}</h3>
+              </div>
+              <div className="flex gap-1">
+                {category.items.map((item) => {
+                  const isSelected = selectedCategories[key as keyof typeof selectedCategories].includes(item as string);
+                  const totalSelected = getTotalSelectedCount();
+                  const isDisabled = !isSelected && totalSelected >= 10; // 총 10개 이상 선택 시 비활성화
+                  return (
+                    <OutlinedButton key={item} size="sm" variant={isSelected ? 'brand1' : 'default'} onClick={() => handleCategorySelect(key, item)} disabled={isDisabled} className="w-full">
+                      {item}
+                    </OutlinedButton>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* 다음 단계 버튼 */}
-      <div className="mt-6 sm:mt-8">
+      {/* bottom: 다음 단계 버튼 */}
+      <div className="">
         <Button
           onClick={handleNextStep}
           disabled={!isValidSelection}
