@@ -27,7 +27,7 @@ import { useSearch } from '@/hooks/queries/useSearch';
 import type { SearchParams, SortBy } from '@/types/searchApi';
 
 /**
- * 이거어때 페이지 컴포넌트
+ * 수요조사 페이지 컴포넌트
  *
  * @description 투표 프로젝트를 둘러볼 수 있는 페이지입니다.
  * ListShell을 기반으로 필터링과 정렬 기능을 제공하며, brand2 컬러를 사용합니다.
@@ -38,10 +38,10 @@ export default function Vote() {
   const { user } = useAuthStore();
 
   // ========== 필터 상태 관리 ==========
-  // 카테고리 관련 상태들 (3개의 상태로 분리하여 정확한 추적)
+  // 카테고리 관련 상태들 (1차: 단일 선택, 2차: 다중 선택)
   const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number | null>(null); // 선택된 1차 카테고리 ID (1=영화, 2=시리즈, 3=공연, 4=스포츠중계)
-  const [selectedUiCategoryId, setSelectedUiCategoryId] = useState<number | null>(null); // UI 표시용 카테고리 ID (null=전체, 1=영화, 2=시리즈, etc.)
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number | null>(null); // 선택된 세부카테고리 ID (2차 카테고리)
+  const [selectedUiCategoryId, setSelectedUiCategoryId] = useState<number | null>(null); // UI 표시용 카테고리 ID (null=전체 카테고리, 1=영화 전체, 2=시리즈 전체, etc.)
+  const [selectedSubCategoryIds, setSelectedSubCategoryIds] = useState<number[]>([]); // 선택된 2차 카테고리 ID들 (다중 선택)
 
   // 지역 및 상영관 필터 상태들
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]); // 선택된 지역 배열 (현재는 단일 선택)
@@ -58,7 +58,7 @@ export default function Vote() {
   // ========== 모바일 바텀시트 임시 상태들 ==========
   // 바텀시트에서 선택 중인 임시 값들 (적용하기 버튼 누르기 전까지는 실제 상태에 반영 안됨)
   const [tempSelectedMainCategoryId, setTempSelectedMainCategoryId] = useState<number | null>(null);
-  const [tempSelectedSubCategoryId, setTempSelectedSubCategoryId] = useState<number | null>(null);
+  const [tempSelectedSubCategoryIds, setTempSelectedSubCategoryIds] = useState<number[]>([]);
   const [tempSelectedRegions, setTempSelectedRegions] = useState<string[]>([]);
   const [tempSelectedTheaterType, setTempSelectedTheaterType] = useState<string[]>([]);
 
@@ -70,7 +70,7 @@ export default function Vote() {
       if (window.innerWidth >= 1024 && activeBottomSheet) {
         // 임시 상태를 원래 상태로 되돌림
         setTempSelectedMainCategoryId(selectedMainCategoryId);
-        setTempSelectedSubCategoryId(selectedSubCategoryId);
+        setTempSelectedSubCategoryIds([...selectedSubCategoryIds]);
         setTempSelectedRegions(selectedRegions);
         setTempSelectedTheaterType(selectedTheaterType);
         setActiveBottomSheet(null);
@@ -87,7 +87,7 @@ export default function Vote() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [activeBottomSheet, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType]);
+  }, [activeBottomSheet, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions, selectedTheaterType]);
 
   // ========== 상수 데이터 정의 ==========
   const categories = STANDARD_CATEGORIES; // 전체, 영화, 시리즈, 공연, 스포츠중계 등의 카테고리 목록
@@ -107,20 +107,20 @@ export default function Vote() {
     }
 
     // 카테고리 선택 로직 (단일 값만 전달)
-    if (selectedMainCategoryId === null) {
-      // 전체 선택: category 파라미터 없음 (모든 카테고리)
-      // params.category는 추가하지 않음
-    } else if (selectedSubCategoryId !== null) {
-      // 세부 카테고리 선택: 선택된 세부 카테고리 전달
-      params.category = selectedSubCategoryId;
-    } else if (selectedMainCategoryId) {
-      // 1차 카테고리 선택했지만 서브카테고리 선택 안함 (예: "영화-전체")
-      params.category = selectedMainCategoryId;
+    if (selectedUiCategoryId === null) {
+      // "전체" 선택: category 파라미터를 전달하지 않음 → 모든 카테고리 조회
+    } else if (selectedSubCategoryIds.length > 0) {
+      // 2차 카테고리들이 선택된 경우: 선택된 세부 카테고리들만 조회
+      params.category = selectedSubCategoryIds;
+    } else if (selectedMainCategoryId !== null) {
+      // 1차 카테고리만 선택된 경우: 해당 1차 카테고리의 모든 서브카테고리 조회
+      params.category = [selectedMainCategoryId];
     }
 
-    // 사용자가 지역을 선택했을 때만 전달 (기본값: 전체)
+    // ========== 지역 필터링 ==========
+    // 선택된 모든 지역들을 배열로 전달
     if (selectedRegions.length > 0) {
-      params.region = selectedRegions[0];
+      params.region = selectedRegions;
     }
 
     // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
@@ -139,7 +139,7 @@ export default function Vote() {
 
     // console.log('📤 [Vote] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [sortBy, selectedMainCategoryId, selectedSubCategoryId, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
+  }, [sortBy, selectedUiCategoryId, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
@@ -157,7 +157,7 @@ export default function Vote() {
   const handleResetFilters = () => {
     setSelectedMainCategoryId(null);
     setSelectedUiCategoryId(null);
-    setSelectedSubCategoryId(null);
+    setSelectedSubCategoryIds([]);
     setSelectedRegions([]);
     setSelectedTheaterType([]);
     setSortBy('LATEST');
@@ -169,9 +169,9 @@ export default function Vote() {
   const handleOpenCategoryBottomSheet = useCallback(() => {
     // 현재 실제 상태를 임시 상태에 복사
     setTempSelectedMainCategoryId(selectedMainCategoryId);
-    setTempSelectedSubCategoryId(selectedSubCategoryId);
+    setTempSelectedSubCategoryIds(selectedSubCategoryIds);
     setActiveBottomSheet('category');
-  }, [selectedMainCategoryId, selectedSubCategoryId]);
+  }, [selectedMainCategoryId, selectedSubCategoryIds]);
 
   const handleOpenRegionBottomSheet = useCallback(() => {
     // 현재 실제 상태를 임시 상태에 복사
@@ -188,20 +188,23 @@ export default function Vote() {
   // 임시 카테고리 선택 핸들러 (바텀시트 내부용)
   const handleTempCategorySelect = useCallback(
     (categoryValue: CategoryValue) => {
-      const selectedCategory = categories.find((cat) => cat.value === categoryValue);
-      setTempSelectedMainCategoryId(selectedCategory?.categoryId || null);
       if (categoryValue === 'all') {
-        setTempSelectedSubCategoryId(null);
+        setTempSelectedMainCategoryId(null);
+        setTempSelectedSubCategoryIds([]);
       } else {
-        setTempSelectedSubCategoryId(selectedCategory?.categoryId || null);
+        const category = categories.find((c) => c.value === categoryValue);
+        if (category) {
+          setTempSelectedMainCategoryId(category.categoryId || null);
+          setTempSelectedSubCategoryIds([]); // 1차 카테고리 변경 시 2차는 초기화
+        }
       }
     },
     [categories],
   );
 
-  // 임시 서브카테고리 선택 핸들러 (바텀시트 내부용)
-  const handleTempSubCategorySelect = useCallback((subCategoryId: number | null) => {
-    setTempSelectedSubCategoryId(subCategoryId);
+  // 임시 서브카테고리 선택 핸들러 (바텀시트 내부용) - 다중 선택
+  const handleTempSubCategorySelect = useCallback((subCategoryIds: number[]) => {
+    setTempSelectedSubCategoryIds(subCategoryIds);
   }, []);
 
   // 필터 적용 핸들러 (바텀시트에서 적용 버튼 클릭 시)
@@ -209,14 +212,14 @@ export default function Vote() {
     if (activeBottomSheet === 'category') {
       setSelectedMainCategoryId(tempSelectedMainCategoryId);
       setSelectedUiCategoryId(tempSelectedMainCategoryId);
-      setSelectedSubCategoryId(tempSelectedSubCategoryId);
+      setSelectedSubCategoryIds([...tempSelectedSubCategoryIds]);
     } else if (activeBottomSheet === 'region') {
       setSelectedRegions([...tempSelectedRegions]);
     } else if (activeBottomSheet === 'theater') {
       setSelectedTheaterType([...tempSelectedTheaterType]);
     }
     setActiveBottomSheet(null);
-  }, [activeBottomSheet, tempSelectedMainCategoryId, tempSelectedSubCategoryId, tempSelectedRegions, tempSelectedTheaterType]);
+  }, [activeBottomSheet, tempSelectedMainCategoryId, tempSelectedSubCategoryIds, tempSelectedRegions, tempSelectedTheaterType]);
 
   // 표시용 텍스트 생성 함수들
   const getRegionDisplayText = () => {
@@ -241,17 +244,22 @@ export default function Vote() {
     const mainCategory = categories.find((cat) => cat.categoryId === selectedMainCategoryId);
     if (!mainCategory) return '카테고리';
 
-    // 1차 카테고리만 선택된 경우
-    if (selectedSubCategoryId === null || selectedSubCategoryId === selectedMainCategoryId) {
-      return mainCategory.label;
-    }
-
     // 2차 카테고리가 선택된 경우
-    const subCategory = mainCategory.items?.find((sub) => sub.categoryId === selectedSubCategoryId);
-    if (subCategory) {
-      return `${mainCategory.label}-${subCategory.categoryName}`;
+    if (selectedSubCategoryIds.length > 0) {
+      if (selectedSubCategoryIds.length === 1) {
+        const subCategory = mainCategory.items?.find((sub) => sub.categoryId === selectedSubCategoryIds[0]);
+        if (subCategory) {
+          return `${mainCategory.label}-${subCategory.categoryName}`;
+        }
+      } else {
+        const firstSubCategory = mainCategory.items?.find((sub) => sub.categoryId === selectedSubCategoryIds[0]);
+        if (firstSubCategory) {
+          return `${mainCategory.label}-${firstSubCategory.categoryName} 외 ${selectedSubCategoryIds.length - 1}개`;
+        }
+      }
     }
 
+    // 1차 카테고리만 선택된 경우 (전체)
     return mainCategory.label;
   };
 
@@ -311,16 +319,21 @@ export default function Vote() {
           selectedCategory={categories.find((cat) => cat.categoryId === selectedUiCategoryId)?.value || 'all'}
           onCategoryChange={(categoryValue) => {
             const selectedCategory = categories.find((cat) => cat.value === categoryValue);
-            setSelectedMainCategoryId(selectedCategory?.categoryId || null);
-            setSelectedUiCategoryId(selectedCategory?.categoryId || null);
             if (categoryValue === 'all') {
-              setSelectedSubCategoryId(null);
+              setSelectedMainCategoryId(null);
+              setSelectedUiCategoryId(null);
+              setSelectedSubCategoryIds([]);
             } else {
-              setSelectedSubCategoryId(selectedCategory?.categoryId || null);
+              const category = categories.find((c) => c.value === categoryValue);
+              if (category) {
+                setSelectedMainCategoryId(category.categoryId || null);
+                setSelectedUiCategoryId(category.categoryId || null);
+                setSelectedSubCategoryIds([]); // 1차 선택 시 2차는 비우기
+              }
             }
           }}
-          selectedSubCategory={selectedSubCategoryId}
-          onSubCategoryChange={setSelectedSubCategoryId}
+          selectedSubCategory={selectedSubCategoryIds}
+          onSubCategoryChange={setSelectedSubCategoryIds}
           variant="brand2"
         />
       }
@@ -399,7 +412,7 @@ export default function Vote() {
             onClose={() => {
               // 취소 시 임시 상태를 원래 상태로 되돌림
               setTempSelectedMainCategoryId(selectedMainCategoryId);
-              setTempSelectedSubCategoryId(selectedSubCategoryId);
+              setTempSelectedSubCategoryIds([...selectedSubCategoryIds]);
               setActiveBottomSheet(null);
             }}
             title="카테고리 선택하기"
@@ -408,7 +421,7 @@ export default function Vote() {
           >
             <CategoryBottomSheetContent
               selectedCategory={categories.find((cat) => cat.categoryId === tempSelectedMainCategoryId)?.value || 'all'}
-              selectedSubCategory={tempSelectedSubCategoryId}
+              selectedSubCategory={tempSelectedSubCategoryIds}
               onCategoryChange={handleTempCategorySelect}
               onSubCategoryChange={handleTempSubCategorySelect}
               categories={categories}
