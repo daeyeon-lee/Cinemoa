@@ -19,15 +19,16 @@ const formSchema = z.object({
 interface FundingInfoTabProps {
   onNext: (data: fundinginfo) => void;
   onPrev?: () => void;
+  existingData?: fundinginfo | null;
 }
 
-export default function FundingInfoTab({ onNext, onPrev }: FundingInfoTabProps) {
+export default function FundingInfoTab({ onNext, onPrev, existingData }: FundingInfoTabProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
-      title: '',
-      content: '',
+      title: existingData?.title || '',
+      content: existingData?.content || '',
     },
   });
 

@@ -21,9 +21,10 @@ import { movieinfo } from '@/types/funding';
 interface MovieInfoTabProps {
   onNext: (data: movieinfo) => void;
   onPrev?: () => void;
+  existingData?: movieinfo | null;
 }
 
-export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
+export default function MovieInfoTab({ onNext, onPrev, existingData }: MovieInfoTabProps) {
   const { data: getCategories } = useGetCategories();
 
   const [categories, setCategories] = useState<CategoryResponse[]>([]); // 카테고리 목록을 저장하는 상태
@@ -110,6 +111,20 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
       setCategories(getCategories);
     }
   }, [getCategories]);
+
+  // 기존 데이터로 초기화
+  useEffect(() => {
+    if (existingData) {
+      setSelectedCategoryId(existingData.categoryId?.toString() || '');
+      setMovieTitle(existingData.videoName || '');
+      setMovieDescription(existingData.videoContent || '');
+      setSelectedImage(existingData.posterUrl || '');
+      setSelectedMovieId('');
+    }
+  }, [existingData]);
+
+  // 기존 데이터가 있는지 확인
+  const hasExistingData = !!existingData;
 
   const handleCategorySelect = (categoryId: string) => {
     // 카테고리 에러 메시지 초기화
@@ -287,6 +302,17 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
 
   return (
     <div className="space-y-8">
+      {/* 기존 데이터 안내 메시지 */}
+      {hasExistingData && (
+        <div className="bg-BG-1 border border-Brand1-Primary rounded-[6px] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-Brand1-Primary rounded-full"></div>
+            <h4 className="h6-b text-Brand1-Primary">기존 투표 정보</h4>
+          </div>
+          <p className="p2 text-secondary">투표에서 가져온 영화 정보는 수정할 수 없습니다. 원하시는 경우 만들기에서 새로 입력해주세요.</p>
+        </div>
+      )}
+      
       {/* 카테고리 선택 */}
       <div className="space-y-3">
         <div className="space-y-1">
@@ -332,12 +358,12 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                       key={item.categoryId}
                       size="sm"
                       textSize="sm"
-                      onClick={() => handleCategorySelect(item.categoryId.toString())}
-                      disabled={isDisabled}
+                      onClick={hasExistingData ? undefined : () => handleCategorySelect(item.categoryId.toString())}
+                      disabled={isDisabled || (hasExistingData && !isSelected)}
                       className={`flex-1 rounded-[6px] p2-b ${
                         isSelected
                           ? 'text-Brand1-Strong border-Brand1-Strong hover:border-Brand1-Secondary'
-                          : isDisabled
+                          : isDisabled || (hasExistingData && !isSelected)
                           ? 'text-tertiary border-stroke-4 opacity-50 cursor-not-allowed'
                           : 'text-tertiary border-stroke-4 hover:border-stroke-2'
                       }`}
@@ -372,11 +398,12 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   setMovieTitle(e.target.value);
                   setTitleError(''); // 제목 에러 메시지 초기화
                 }}
+                disabled={hasExistingData}
                 className="flex-1 placeholder:text-p2-b"
               />
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" onClick={handleModalOpen} className="h-10 px-4">
+                  <Button variant="outline" onClick={handleModalOpen} disabled={hasExistingData} className="h-10 px-4">
                     <Search className="w-4 h-4 mr-2" />
                     상영물 검색
                   </Button>
@@ -507,6 +534,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
               <Button
                 variant="outline"
                 size="md"
+                disabled={hasExistingData}
                 onClick={() => {
                   setAiSummary(''); // AI 요약 초기화
                   setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
@@ -524,6 +552,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                 setMovieDescription(e.target.value);
                 setDescriptionError(''); // 상영물 소개 에러 메시지 초기화
               }}
+              disabled={hasExistingData}
               className="min-h-[135px] resize-none"
             />
             {/* 상영물 소개 에러 메시지 */}
@@ -547,10 +576,10 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   <div className="flex flex-col gap-2 ">
                     <img src={selectedImage} alt="선택된 상영물 이미지" className="w-[200px] h-[280px] object-fill max-sm:w-full max-sm:object-fill rounded-[6px]" />
                     <div className="flex gap-2">
-                      <Button variant="outline" size="md" onClick={handleUploadClick} className="flex-1">
+                      <Button variant="outline" size="md" onClick={handleUploadClick} disabled={hasExistingData} className="flex-1">
                         변경
                       </Button>
-                      <Button variant="secondary" size="md" onClick={handleImageDelete} className="flex-1">
+                      <Button variant="secondary" size="md" onClick={handleImageDelete} disabled={hasExistingData} className="flex-1">
                         삭제
                       </Button>
                     </div>
@@ -583,7 +612,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-BG-2 rounded-[6px] transition-colors" onClick={handleUploadClick}>
+                <div className={`flex flex-col items-center justify-center w-full h-full ${hasExistingData ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-BG-2'} rounded-[6px] transition-colors`} onClick={hasExistingData ? undefined : handleUploadClick}>
                   <Upload className="w-11 h-11 text-tertiary mb-3" size={44} />
                   <p className="p2-b text-tertiary text-center mb-1">이미지는 1개 이상 필수로 업로드 해주세요.</p>
                   <p className="p2 text-subtle text-center">JPG, PNG, WEBP 파일을 지원합니다</p>

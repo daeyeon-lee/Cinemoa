@@ -6,6 +6,7 @@ import { ShareButton } from '@/components/share/ShareButton'; // 공유 버튼 �
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요 토글)
 import { useAuthStore } from '@/stores/authStore'; // 로그인 사용자 상태
 import { useVoteDetail as useVoteDetailContext } from '@/contexts/VoteDetailContext';
+import { useRouter } from 'next/navigation';
 
 // ✅ 투표 전용 액션 섹션 Props
 type VoteActionSectionProps = {
@@ -14,6 +15,8 @@ type VoteActionSectionProps = {
 };
 
 const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId, isExpired }) => {
+  const router = useRouter();
+  
   // Context에서 데이터 가져오기
   const { data: contextData, userId: contextUserId } = useVoteDetailContext();
   const { funding, proposer } = contextData;
@@ -73,17 +76,16 @@ const VoteActionSection: React.FC<VoteActionSectionProps> = ({ fundingId, isExpi
     });
   };
 
-  // 🆕 상영회 전환 버튼 클릭 (임시 함수)
+  // 🆕 상영회 전환 버튼 클릭
   const handleConvertToFunding = () => {
     if (!userId) {
       // 로그인 필요 체크
       alert('로그인 후 이용해주세요.');
-      window.location.href = '/auth';
+      router.push('/auth');
       return;
     }
-    // TODO: 실제 상영회 전환 API 호출
-    console.log('상영회로 전환 요청:', { fundingId, userId });
-    alert('상영회 전환 기능이 곧 추가될 예정입니다.');
+    // create/funding 페이지로 이동하면서 fundingId와 userId 전달
+    router.push(`/create/funding?fundingId=${fundingId}&userId=${userId}`);
   };
 
   return (
