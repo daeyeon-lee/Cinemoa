@@ -191,9 +191,9 @@ export default function PaymentTab({ onNext, onPrev, fundingId, amount }: Paymen
       <div>
         {/* 이전 다음 바튼 */}
         <div className="pt-4 flex justify-center gap-2">
-          <Button variant="tertiary" size="lg" className="w-[138px] max-lg:w-full" onClick={onPrev}>
+          {/* <Button variant="tertiary" size="lg" className="w-[138px] max-lg:w-full" onClick={onPrev}>
             이전
-          </Button>
+          </Button> */}
           <Button type="button" variant="brand1" size="lg" className="w-[138px] max-lg:w-full" onClick={handleNext} disabled={isSubmitting}>
             {isSubmitting ? '처리 중...' : '결제 하기'}
           </Button>
