@@ -190,6 +190,60 @@ public class FundingService {
     }
 
     @Transactional
+    public FundingCreationResult convertToFunding(Long fundingId, FundingCreateRequest request) {
+
+        // 입력값 검증
+        userRepository.findById(request.getUserId())
+                .orElseThrow(ResourceNotFoundException::ofUser);
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(ResourceNotFoundException::ofCategory);
+
+        Cinema cinema = cinemaRepository.findById(request.getCinemaId())
+                .orElseThrow(ResourceNotFoundException::ofCinema);
+
+        Screen screen = screenRepository.findById(request.getScreenId())
+                .orElseThrow(ResourceNotFoundException::ofScreen);
+
+        // 기존 Funding 조회
+        Funding existingFunding = fundingRepository.findById(fundingId)
+                .orElseThrow(ResourceNotFoundException::ofFunding);
+
+        // 기존 FundingEstimatedDay 레코드 삭제
+        FundingEstimatedDay existingEstimatedDay = fundingEstimatedDayRepository.findByFunding_FundingId(fundingId);
+        if (existingEstimatedDay != null) {
+            fundingEstimatedDayRepository.delete(existingEstimatedDay);
+        }
+
+        // 상영관 예약시간 저장
+        if (!unavailableTImeBatchRepository.insertRangeIfAvailable(screen.getScreenId(), request.getScreenDay(),
+                request.getScreenStartsOn(), request.getScreenEndsOn())) {
+            throw BadRequestException.ofFunding("사용 불가능한 예약 시간대 입니다.");
+        }
+
+        // 기존 Funding의 필요한 컬럼들만 수정
+        existingFunding.setTitle(request.getTitle());
+        existingFunding.setContent(request.getContent());
+        existingFunding.setMaxPeople(request.getMaxPeople());
+        existingFunding.setScreenDay(request.getScreenDay());
+        existingFunding.setScreenStartsOn(request.getScreenStartsOn());
+        existingFunding.setScreenEndsOn(request.getScreenEndsOn());
+        existingFunding.setCategory(category);
+        existingFunding.setCinema(cinema);
+        existingFunding.setScreen(screen);
+        existingFunding.setState(FundingState.ON_PROGRESS);
+        existingFunding.setEndsOn(request.getScreenDay().minusDays(7));
+        existingFunding.setFundingType(FundingType.FUNDING);
+
+        // 수정된 Funding 저장
+        fundingRepository.save(existingFunding);
+
+        eventPublisher.publishEvent(new AccountCreationRequestEvent(existingFunding.getFundingId()));
+
+        return new FundingCreationResult(existingFunding.getFundingId());
+    }
+
+    @Transactional
     public void holdSeatOf(Long userId, Long fundingId) {
         // put seat info on redis, then reduce remaining seats.
         Funding funding = fundingRepository.findById(fundingId)
