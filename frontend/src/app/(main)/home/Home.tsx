@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import SearchIcon from '@/component/icon/searchIcon';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import { HOME_CATEGORIES } from '@/constants/categories';
-// 버튼 클릭 시 둘러보기 페이지 이동
+// 버튼 클릭 시 샹영회 페이지 이동
 import { navigateToCategory } from '@/utils/categoryNavigation';
 import { useHomeRecommended } from '@/hooks/queries/useHomeRecommended';
 import { useHomePopular } from '@/hooks/queries/useHomePopular';

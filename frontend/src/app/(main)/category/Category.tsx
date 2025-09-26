@@ -27,7 +27,7 @@ import { useSearch } from '@/hooks/queries/useSearch';
 import { useFundingLike } from '@/hooks/queries/useFunding'; // ✅ 동일 훅 import
 import type { SearchParams, SortBy } from '@/types/searchApi';
 /**
- * 둘러보기 페이지 컴포넌트
+ * 상영회 페이지 컴포넌트
  *
  * @description 카테고리별 펀딩 프로젝트를 둘러볼 수 있는 페이지입니다.
  * ListShell을 기반으로 필터링과 정렬 기능을 제공하며, 모바일에서는 바텀시트 UI를 제공합니다.
@@ -133,7 +133,7 @@ export default function Category() {
   // useMemo를 사용하여 불필요한 재계산 방지 및 성능 최적화
   const searchParams = useMemo(() => {
     const params: SearchParams = {
-      fundingType: 'FUNDING' as const, // 둘러보기 페이지는 FUNDING 타입만 조회 (VOTE와 구분)
+      fundingType: 'FUNDING' as const, // 상영회 페이지는 FUNDING 타입만 조회 (VOTE와 구분)
       userId: user?.userId ? Number(user.userId) : undefined, // 로그인한 사용자의 좋아요 정보 포함
     };
 

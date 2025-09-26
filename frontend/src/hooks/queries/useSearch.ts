@@ -1,7 +1,7 @@
 /**
  * 통합 검색 React Query 훅
  *
- * @description 둘러보기/이거어때/검색 페이지에서 공용으로 사용
+ * @description 상영회/수요조사/검색 페이지에서 공용으로 사용
  * @features
  * - 응답 기반 동적 페이징: hasNext에 따라 서버/클라이언트 페이징 결정
  * - 서버 페이징: nextCursor 기반 무한스크롤

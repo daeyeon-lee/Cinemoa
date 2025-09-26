@@ -97,7 +97,7 @@ export default function Vote() {
   // 🔍 useSearch 훅으로 API 데이터 조회 - 투표용 (사용자가 선택한 것만 전달)
   const searchParams = useMemo(() => {
     const params: SearchParams = {
-      fundingType: 'VOTE' as const, // 이거어때는 투표만
+      fundingType: 'VOTE' as const, // 수요조사는 투표 타입만
       userId: user?.userId ? Number(user.userId) : undefined, // 사용자 ID 추가
     };
 

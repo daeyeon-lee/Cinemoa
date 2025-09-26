@@ -60,7 +60,7 @@ export const useCategoryFilters = () => {
   // ========== API 요청 파라미터 생성 ==========
   const searchParams = useMemo(() => {
     const params: SearchParams = {
-      fundingType: 'FUNDING' as const, // 둘러보기 페이지는 FUNDING 타입만 조회 (VOTE와 구분)
+      fundingType: 'FUNDING' as const, // 상영회 페이지는 FUNDING 타입만 조회 (VOTE와 구분)
       userId: user?.userId ? Number(user.userId) : undefined, // 로그인한 사용자의 좋아요 정보 포함
     };
 

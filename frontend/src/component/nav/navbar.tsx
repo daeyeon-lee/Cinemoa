@@ -205,11 +205,11 @@ export default function Navbar() {
         {/* 두 번째 줄: 네비게이션 메뉴 */}
         <nav className="flex items-center space-x-6">
           <Link href="/category" className={getLinkClasses('/category')}>
-            둘러보기
+            상영회
             {isActive('/category') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
           </Link>
           <Link href="/vote" className={getLinkClasses('/vote')}>
-            이거어때
+            수요조사
             {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
           </Link>
           <Link href="/create" className={getLinkClasses('/create')} onClick={handleCreateClick}>
@@ -229,11 +229,11 @@ export default function Navbar() {
           {/* navbar */}
           <nav className="flex items-center justify-center gap-x-8">
             <Link href="/category" className={getLinkClasses('/category')}>
-              둘러보기
+              상영회
               {isActive('/category') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
             <Link href="/vote" className={getLinkClasses('/vote')}>
-              이거어때
+              수요조사
               {isActive('/vote') && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary"></div>}
             </Link>
             <Link href="/create" className={getLinkClasses('/create')} onClick={handleCreateClick}>

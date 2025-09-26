@@ -2,7 +2,7 @@
  * Query Types
  *
  * API 요청에 사용되는 공통 쿼리 파라미터 타입 정의
- * 둘러보기, 이거어때, 검색 등 모든 리스트 조회 API에서 공용으로 사용
+ * 상영회, 수요조사, 검색 등 모든 리스트 조회 API에서 공용으로 사용
  *
  * UI는 서비스 시그니처만 사용하는 원칙에 따라,
  * 컴포넌트는 이 QueryParams를 직접 구성하여 서비스 함수에 전달
@@ -55,7 +55,7 @@ const homeRecommendedParams: QueryParams = {
   size: 8
 };
 
-// 둘러보기 - 펀딩만
+// 상영회 - 펀딩만
 const browseFundingParams: QueryParams = {
   type: 'funding',
   sortBy: 'deadline',
