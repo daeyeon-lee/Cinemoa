@@ -2,13 +2,16 @@
 
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FundingInfoTab from './component/FundingInfoTab';
 import { fundinginfo } from '@/types/funding';
 import { movieinfo } from '@/types/funding';
 import MovieInfoTab from './component/MovieInfoTab';
 import TheaterInfoTab from './component/TheaterInfoTab';
 import PaymentTab from './component/PaymentTab';
+import { getFundingDetail } from '@/api/fundingDetail';
+import type { DetailData } from '@/types/fundingDetail';
 
 // MovieInfoTab에서 전달하는 데이터 타입
 interface MovieData {
@@ -20,12 +23,63 @@ interface MovieData {
 }
 
 export default function FundingPage() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('funding-info');
   const [fundingData, setFundingData] = useState<fundinginfo | null>(null);
   const [movieData, setMovieData] = useState<movieinfo | null>(null);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [fundingId, setFundingId] = useState<number | null>(null);
   const [perPersonAmount, setPerPersonAmount] = useState<number | null>(null);
+  const [existingFundingData, setExistingFundingData] = useState<DetailData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // URL 파라미터에서 fundingId와 userId 가져오기
+  const urlFundingId = searchParams.get('fundingId');
+  const urlUserId = searchParams.get('userId');
+
+  // 기존 투표 정보 조회
+  useEffect(() => {
+    const fetchExistingFunding = async () => {
+      if (urlFundingId && urlUserId) {
+        setIsLoading(true);
+        try {
+          const response = await getFundingDetail(urlFundingId, urlUserId);
+          if (response.data) {
+            setExistingFundingData(response.data);
+            console.log('기존 투표 정보 조회 성공:', response.data);
+            
+            // 기존 정보를 폼 데이터로 변환
+            if (response.data.type === 'VOTE') {
+              const voteData = response.data;
+              
+              // 펀딩 정보 설정
+              const fundingInfo: fundinginfo = {
+                title: voteData.funding.title,
+                content: voteData.funding.content,
+              };
+              setFundingData(fundingInfo);
+
+              // 영화 정보 설정
+              const movieInfo: movieinfo = {
+                categoryId: voteData.category.categoryId,
+                videoName: voteData.funding.title,
+                videoContent: voteData.funding.content,
+                posterUrl: voteData.funding.bannerUrl || '',
+              };
+              setMovieData(movieInfo);
+            }
+          }
+        } catch (error) {
+          console.error('기존 투표 정보 조회 실패:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchExistingFunding();
+  }, [urlFundingId, urlUserId]);
+
   // 펀딩 정보 데이터 처리 함수
   const handleFundingData = (data: fundinginfo) => {
     // console.log('=== handleFundingData ===');
@@ -74,17 +128,25 @@ export default function FundingPage() {
 
   // 탭 컴포넌트 렌더링 함수
   const renderTabContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center py-8">
+          <div className="text-lg">기존 정보를 불러오는 중...</div>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'funding-info':
-        return <FundingInfoTab onNext={handleFundingData} onPrev={handlePrevFunding} />;
+        return <FundingInfoTab onNext={handleFundingData} onPrev={handlePrevFunding} existingData={fundingData} />;
       case 'movie-info':
-        return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} />;
+        return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} existingData={movieData} />;
       case 'theater-info':
         return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} fundingData={fundingData || undefined} movieData={movieData || undefined} />;
       case 'payment':
         return <PaymentTab onNext={handlePaymentData} onPrev={handlePrevPayment} fundingId={fundingId} amount={perPersonAmount || undefined} />;
       default:
-        return <FundingInfoTab onNext={handleFundingData} onPrev={handlePrevFunding} />;
+        return <FundingInfoTab onNext={handleFundingData} onPrev={handlePrevFunding} existingData={fundingData} />;
     }
   };
 
