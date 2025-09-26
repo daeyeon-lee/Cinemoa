@@ -101,10 +101,10 @@ public class UserAdditionalInfoService {
         if (categoryIds == null || categoryIds.isEmpty()) {
             throw BadRequestException.ofInput();
         }
-        if (categoryIds.size() < 4) {
+        if (categoryIds.size() < 1) {
             throw BadRequestException.ofInput();
         }
-        if (categoryIds.size() > 12) {
+        if (categoryIds.size() > 10) {
             throw BadRequestException.ofInput();
         }
 
