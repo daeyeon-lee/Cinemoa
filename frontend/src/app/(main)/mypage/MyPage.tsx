@@ -17,7 +17,6 @@ import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal
 import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
 import { useFundingLike } from '@/hooks/queries/useFunding';
 
-
 export default function MyPage() {
   const router = useRouter();
 
@@ -521,7 +520,7 @@ export default function MyPage() {
         <div className="w-full flex flex-col justify-start items-start gap-2.5">
           {/* 섹션 헤더 */}
           <div className="w-full flex items-center justify-between">
-            <h2 className="text-h5-b">내가 제안한 상영회</h2>
+            <h2 className="text-h5-b">내가 제안한 펀딩</h2>
             {/* {hasMoreProposals && ( */}
             <button onClick={() => router.push('/mypage/detail/proposals')} className="text-h6-b text-secondary ">
               더보기 →
@@ -593,7 +592,7 @@ export default function MyPage() {
           <div className="w-full flex flex-col justify-start items-start gap-2.5">
             {/* 섹션 헤더 */}
             <div className="w-full flex items-center justify-between">
-              <h2 className="text-h5-b">내가 참여한 상영회</h2>
+              <h2 className="text-h5-b">내가 참여한 펀딩</h2>
               {/* {hasMoreParticipated && ( */}
               <button onClick={() => router.push('/mypage/detail/participated')} className="text-h6-b text-secondary">
                 더보기 →
@@ -666,7 +665,7 @@ export default function MyPage() {
           <div className="w-full flex flex-col justify-start items-start gap-2.5">
             {/* 섹션 헤더 */}
             <div className="w-full flex items-center justify-between">
-              <h2 className="text-h5-b">내가 보고 싶은 상영회</h2>
+              <h2 className="text-h5-b">내가 보고 싶은 펀딩</h2>
               {/* {hasMoreLiked && ( */}
               <button onClick={() => router.push('/mypage/detail/liked')} className="text-h6-b text-secondary hover:text-slate-400 transition-colors">
                 더보기 →
