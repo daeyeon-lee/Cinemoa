@@ -48,9 +48,15 @@ export default function Step1Page() {
     sports: [],
   });
 
+  // 전체 선택된 카테고리 개수 계산
+  const getTotalSelectedCount = () => {
+    return Object.values(selectedCategories).reduce((total, category) => total + category.length, 0);
+  };
+
   const handleCategorySelect = (categoryKey: string, item: string) => {
     setSelectedCategories((prev: any) => {
       const currentCategory = prev[categoryKey as keyof typeof prev];
+      const totalSelected = getTotalSelectedCount();
 
       if (currentCategory.includes(item)) {
         // 이미 선택된 경우 제거
@@ -58,18 +64,19 @@ export default function Step1Page() {
           ...prev,
           [categoryKey]: currentCategory.filter((c: any) => c !== item),
         };
-      } else if (currentCategory.length < 3) {
-        // 3개 미만인 경우 추가
+      } else if (totalSelected < 10) {
+        // 총 10개 미만인 경우에만 추가
         return {
           ...prev,
           [categoryKey]: [...currentCategory, item as string],
         };
       }
-      return prev; // 3개 이상이면 변경 없음
+      return prev; // 10개 이상이면 변경 없음
     });
   };
 
-  const isAllCategoriesSelected = Object.values(selectedCategories).every((category) => category.length > 0);
+  const totalSelected = getTotalSelectedCount();
+  const isValidSelection = totalSelected >= 1 && totalSelected <= 10;
 
   const handleNextStep = () => {
     // 선택한 카테고리 정보를 사용자 정보에 저장
@@ -87,8 +94,11 @@ export default function Step1Page() {
         <h1 className="text-h3-b mb-2">필수 정보 입력하기</h1>
       </div>
       <div className="mt-6 sm:mt-10 mb-6 sm:mb-8 border-b border-stroke-4">
-        <h2 className="text-h5-b mb-1">선호 카테고리 선택하기</h2>
-        <p className="text-xs sm:text-p3 text-tertiary pb-2"> 각 카테고리별로 최대 3개까지 선택해주세요.</p>
+        <div className="flex justify-between items-end mb-1">
+          <h2 className="text-h5-b">선호 카테고리 선택하기</h2>
+          <span className={`text-sm ${totalSelected >= 1 && totalSelected <= 10 ? 'text-Brand1-Primary' : 'text-tertiary'}`}>{totalSelected}/10</span>
+        </div>
+        <p className="text-xs sm:text-p3 text-tertiary pb-2"> 선호 카테고리를 1개 이상 선택해야 가입이 완료됩니다. (최대 10개)</p>
       </div>
 
       {/* 카테고리 섹션들 */}
@@ -102,7 +112,8 @@ export default function Step1Page() {
             <div className="flex gap-1 sm:gap-1">
               {category.items.map((item) => {
                 const isSelected = selectedCategories[key as keyof typeof selectedCategories].includes(item as string);
-                const isDisabled = !isSelected && selectedCategories[key as keyof typeof selectedCategories].length >= 3;
+                const totalSelected = getTotalSelectedCount();
+                const isDisabled = !isSelected && totalSelected >= 10; // 총 10개 이상 선택 시 비활성화
                 return (
                   <Button
                     variant="outline"
@@ -132,10 +143,10 @@ export default function Step1Page() {
       <div className="mt-6 sm:mt-8">
         <Button
           onClick={handleNextStep}
-          disabled={!isAllCategoriesSelected}
+          disabled={!isValidSelection}
           size="lg"
-          variant={isAllCategoriesSelected ? 'brand1' : 'secondary'}
-          className={`w-full text-h6-b ${isAllCategoriesSelected ? 'text-primary' : 'text-tertiary'}`}
+          variant={isValidSelection ? 'brand1' : 'secondary'}
+          className={`w-full text-h6-b ${isValidSelection ? 'text-primary' : 'text-tertiary'}`}
         >
           다음 단계 &gt;
         </Button>
