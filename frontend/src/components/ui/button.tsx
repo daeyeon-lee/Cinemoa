@@ -8,14 +8,14 @@ const buttonVariants = cva('inline-flex items-center justify-center gap-2 whites
   variants: {
     variant: {
       // 색상만 정의 + disabled 상태 스타일 추가
-      primary: 'bg-BG-Inverse text-inverse disabled:bg-stroke-3 disabled:text-tertiary',
-      secondary: 'bg-BG-3 text-secondary hover:bg-BG-2 disabled:bg-stroke-3 disabled:text-secondary',
-      tertiary: 'bg-BG-2 text-secondary disabled:bg-stroke-4 disabled:text-subtle',
-      subtle: 'bg-BG-1 text-tertiary disabled:bg-stroke-3 disabled:text-secondary',
-      brand1: 'bg-Brand1-Primary text-primary hover:bg-Brand1-Secondary disabled:bg-stroke-3 disabled:text-secondary',
-      brand2: 'bg-Brand2-Primary text-inverse hover:bg-Brand2-Secondary disabled:bg-stroke-3 disabled:text-secondary',
-      outline: 'text-tertiary hover:border-stroke-2 border-stroke-4 border-2 disabled:bg-BG-0 disabled:border-stroke-4 disabled:text-subtle',
-      ghost: 'bg-transparent text-inverse hover:bg-BG-2 hover:text-secondary disabled:text-subtle',
+      primary: 'bg-BG-Inverse text-inverse disabled:bg-BG-1 disabled:text-tertiary disabled:border-stroke-4',
+      secondary: 'bg-BG-3 text-primary hover:bg-BG-2',
+      tertiary: 'bg-BG-2 text-secondary',
+      subtle: 'bg-BG-1 text-tertiary',
+      brand1: 'bg-Brand1-Primary text-primary hover:bg-Brand1-Secondary',
+      brand2: 'bg-Brand2-Primary text-inverse hover:bg-Brand2-Secondary',
+      outline: 'text-tertiary border-stroke-4 border-2 hover:border-stroke-1 hover:test-primary',
+      ghost: 'bg-transparent text-inverse hover:bg-BG-2 hover:text-secondary',
     },
     size: {
       // 크기만 정의
