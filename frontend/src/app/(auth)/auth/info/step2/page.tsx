@@ -208,9 +208,25 @@ export default function Step2Page() {
     },
   });
 
-  // 계좌번호가 16자리 숫자인지 확인
-  const accountNumber = form.watch('accountNumber');
+  // 계좌번호와 인증번호 실시간 유효성 검사
+  const accountNumber = form.watch('accountNumber'); // 사용자가 입력한 계좌번호 실시간 감지
+  const bank = form.watch('bank'); // 사용자가 선택한 은행 실시간 감지
+  const verificationCode = form.watch('verificationCode'); // 사용자가 입력한 인증번호 실시간 감지
+
+  // 계좌번호가 16자리 숫자인지 검사
   const isAccountNumberValid = accountNumber && accountNumber.length === 16 && /^\d+$/.test(accountNumber);
+
+  // 은행이 선택되었는지 검사
+  const isBankSelected = bank && bank.length > 0;
+
+  // 인증번호가 4자리 숫자인지 검사
+  const isVerificationCodeValid = verificationCode && verificationCode.length === 4 && /^\d+$/.test(verificationCode);
+
+  // [계좌 인증하기] 버튼 활성화 조건: 은행 선택 + 16자리 계좌번호 입력
+  const canRequestVerification = isAccountNumberValid && isBankSelected;
+
+  // [확인] 버튼 활성화 조건: 인증번호 요청 완료 + 4자리 인증번호 입력 + 아직 인증 완료되지 않은 상태
+  const canConfirmVerification = isVerificationCodeValid && isVerificationRequested && !isVerificationSent;
 
   // 계좌번호 실시간 유효성 검사
   const validateAccountNumber = (value: string) => {
@@ -313,6 +329,16 @@ export default function Step2Page() {
 
     try {
       setEmailError('');
+
+      // 인증번호 재전송 시 인증 상태 초기화 (이미 이메일이 전송된 경우)
+      if (isEmailSent) {
+        form.setValue('verificationCode', ''); // 인증번호 입력창 비우기
+        setIsVerificationSuccess(false); // 인증 성공 상태 초기화
+        setIsVerificationSent(false); // 인증 완료 상태 초기화
+        setSecretKey(''); // secretKey 초기화
+        setVerificationCodeError(''); // 에러 메시지 초기화
+      }
+
       await startWonauth({
         accountNo: accountNumber,
         userEmail: user.email,
@@ -433,8 +459,10 @@ export default function Step2Page() {
             <Button
               type="button"
               onClick={handleEmailSend}
-              variant={isEmailSent ? 'outline' : 'tertiary'}
-              disabled={!isAccountNumberValid}
+              // 조건 만족 시 brand1(빨강), 이미 전송된 경우 outline, 나머지는 tertiary(비활성화 느낌)
+              variant={canRequestVerification ? (isEmailSent ? 'tertiary' : 'secondary') : 'tertiary'}
+              // 은행 선택 + 16자리 계좌번호 입력 시에만 활성화
+              disabled={!canRequestVerification}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
               {isEmailSent ? '인증번호 재전송' : '계좌 인증하기'}
@@ -475,15 +503,20 @@ export default function Step2Page() {
             <Button
               type="button"
               onClick={handleVerificationRequest}
-              variant={isVerificationSent ? 'outline' : 'tertiary'}
-              disabled={!isVerificationRequested || isVerificationSent}
+              // 4자리 인증번호 입력 시 brand1(빨강), 인증 완료 시 outline, 나머지는 tertiary(비활성화 느낌)
+              variant={canConfirmVerification ? 'secondary' : isVerificationSent ? 'outline' : 'tertiary'}
+              // 4자리 인증번호 입력 시에만 활성화 (인증 완료 후에는 비활성화)
+              disabled={!canConfirmVerification}
               className="h-10 sm:h-full sm:w-auto sm:min-w-[100px] md:min-w-[120px]"
             >
               {isVerificationSent ? '인증 완료' : '확인'}
             </Button>
           </div>
           {(form.formState.errors.verificationCode || verificationCodeError) && !isVerificationSuccess && (
-            <p className="text-Brand1-Primary p2 mt-1">{form.formState.errors.verificationCode?.message || verificationCodeError}</p>
+            <p className="text-Brand1-Primary p2 mt-1">
+              인증 번호가 올바르지 않습니다.
+              {/* {form.formState.errors.verificationCode?.message || verificationCodeError} */}
+            </p>
           )}
           {isVerificationSuccess && !verificationCodeError && <p className="text-Brand2-Primary p2 mt-1">인증이 완료되었습니다.</p>}
         </div>
@@ -496,7 +529,7 @@ export default function Step2Page() {
             이전
           </Button>
         </Link>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={!form.formState.isValid} size="lg" variant={form.formState.isValid ? 'brand1' : 'tertiary'} className="w-full sm:flex-1 h-12 sm:h-14">
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={!isVerificationSuccess} size="lg" variant={isVerificationSuccess ? 'brand1' : 'tertiary'} className="w-full sm:flex-1 h-12 sm:h-14">
           회원가입 완료하기
         </Button>
       </div>

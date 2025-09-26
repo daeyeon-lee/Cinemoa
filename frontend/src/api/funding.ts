@@ -78,6 +78,7 @@ export const getDetailSummary = async (videoContent: string): Promise<DetailSumm
         'Content-Type': 'application/json',
       },
       credentials: 'include',
+      // 비디오 콘텐트 상세정보를 보냄
       body: JSON.stringify({ videoContent }),
     });
 

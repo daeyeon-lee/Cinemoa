@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
-import { Upload, Search, Image } from 'lucide-react';
+import { Upload, Search, Image, AlertTriangle } from 'lucide-react';
 import MovieIcon from '@/component/icon/movieIcon';
 import SeriesIcon from '@/component/icon/seriesIcon';
 import ConcertIcon from '@/component/icon/concertIcon';
@@ -47,12 +47,14 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false); // AI 요약 생성 중 상태
   const [displayedAiSummary, setDisplayedAiSummary] = useState<string>(''); // 타이핑 애니메이션용 AI 요약
   const [revealedChars, setRevealedChars] = useState<boolean[]>([]);
+  const [aiSummaryError, setAiSummaryError] = useState<boolean>(false); // AI 요약 에러 상태
 
   // AI 요약 생성 함수
   const handleGenerateAiSummary = async () => {
     setIsGeneratingSummary(true);
     setDisplayedAiSummary(''); // 타이핑 애니메이션 초기화
     setRevealedChars([]); // 글자 애니메이션 상태 초기화
+    setAiSummaryError(false); // 에러 상태 초기화
 
     try {
       // 현재 입력된 내용을 videoContent로 사용
@@ -73,6 +75,7 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
       setAiSummary(aiGeneratedSummary);
       setDisplayedAiSummary(aiGeneratedSummary);
       setIsGeneratingSummary(false);
+      setAiSummaryError(false); // 성공 시 에러 상태 해제
 
       // 대각선 순차 애니메이션 시작
       const chars = Array.from(aiGeneratedSummary);
@@ -92,8 +95,9 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
     } catch (error) {
       console.error('AI 요약 생성 오류:', error);
       setIsGeneratingSummary(false);
-      // 에러 발생 시 기본 메시지 표시
-      const errorMessage = 'AI 요약 생성에 실패했습니다. 다시 시도해주세요.';
+      setAiSummaryError(true); // 에러 상태 설정
+      // 에러 발생 시 사용자 친화적인 메시지 표시
+      const errorMessage = '일시적으로 요약을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
       setAiSummary(errorMessage);
       setDisplayedAiSummary(errorMessage);
     }
@@ -665,7 +669,13 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                     <div className="group cursor-pointer transition-all duration-200">
                       <div className="bg-BG-1 border border-stroke-3 rounded-lg p-4 transition-all duration-200 ">
                         <div className="p-1 max-h-[120px] overflow-y-auto scrollbar-hide">
-                          <div className="p1 max-lg:text-p2 text-secondary !leading-[1.5] !tracking-tight whitespace-pre-wrap">
+                          {aiSummaryError ? (
+                            <div className="flex items-start gap-3">
+                              <AlertTriangle className="w-5 h-5 text-Brand1-Primary flex-shrink-0 mt-0.5" />
+                              <div className="p1 max-lg:text-p2 text-secondary">{displayedAiSummary}</div>
+                            </div>
+                          ) : (
+                            <div className="p1 max-lg:text-p2 text-secondary !leading-[1.5] !tracking-tight whitespace-pre-wrap">
                             {Array.from(displayedAiSummary).map((char, index) => {
                               const delayMs = index * 10;
                               const style: React.CSSProperties = {
@@ -682,7 +692,8 @@ export default function MovieInfoTab({ onNext, onPrev }: MovieInfoTabProps) {
                                 </span>
                               );
                             })}
-                          </div>
+                            </div>
+                          )}
                         </div>
                         <div className="mt-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
