@@ -60,6 +60,15 @@ public class FundingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ofSuccess(result));
     }
 
+    @PostMapping("/{fundingId}/convert-to-funding")
+    public ResponseEntity<ApiResponse<?>> convertToFunding(
+            @PathVariable("fundingId") Long fundingId,
+            @RequestBody FundingCreateRequest request) {
+
+        FundingCreationResult result = fundingService.convertToFunding(fundingId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ofSuccess(result));
+    }
+
     @GetMapping("/{fundingId}")
     public ResponseEntity<ApiResponse<?>> getFundingDetails(@PathVariable("fundingId") Long fundingId,
                                                             @RequestParam(value = "userId", required = false) Long userId) {
