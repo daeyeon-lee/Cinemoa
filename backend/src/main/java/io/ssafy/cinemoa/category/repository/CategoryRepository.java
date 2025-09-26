@@ -15,16 +15,10 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c WHERE c.parentCategory IS NULL")
     List<Category> findParentCategories();
 
-    // 하위 카테고리 조회 (parent_category_id가 null이 아닌 카테고리들)
-    @Query("SELECT c FROM Category c WHERE c.parentCategory IS NOT NULL")
-    List<Category> findSubCategories();
-
-    @Query("SELECT c.id FROM Category c WHERE c.parent.id IN :parentIds")
+    @Query("SELECT c.id FROM Category c WHERE c.parentCategory.categoryId IN :parentIds")
     List<Long> findSubCategoryIdsByParentIds(@Param("parentIds") Set<Long> parentIds);
 
     @Query("SELECT c FROM Category c WHERE c.parentCategory.categoryId = :parentId")
     List<Category> findSubCategoriesByParentId(@Param("parentId") Long parentId);
 
-    @Query("SELECT COUNT(c) > 0 FROM Category c WHERE c.parentCategory.categoryId = :categoryId")
-    boolean isParent(@Param("categoryId") Long categoryId);
 }
