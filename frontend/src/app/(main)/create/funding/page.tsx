@@ -99,39 +99,22 @@ export default function FundingPage() {
         </Card>
 
         {/* 네비게이션 탭 */}
-        <div className="w-full flex px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-2 lg:px-4 lg:py-2">
-          <Button
-            variant={activeTab === 'funding-info' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4  text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            <span className="md:inline">상영회 소개</span>
-          </Button>
-          <Button
-            variant={activeTab === 'movie-info' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            <span className="md:inline">상영물 정보</span>
-          </Button>
-          <Button
-            variant={activeTab === 'theater-info' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            <span className="md:inline">영화관 정보</span>
-          </Button>
-          <Button
-            variant={activeTab === 'payment' ? 'brand1' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px]  mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4  text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            결제
-          </Button>
+        <div className="w-full flex px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-2 lg:px-4 lg:py-2 gap-1.5">
+          {[
+            { key: 'funding-info', label: '상영회 소개' },
+            { key: 'movie-info', label: '상영물 정보' },
+            { key: 'theater-info', label: '영화관 정보' },
+            { key: 'payment', label: '결제' }
+          ].map(({ key, label }) => (
+            <div
+              key={key}
+              className={`flex-1 rounded-full mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-h6-b max-sm:text-p2-b max-sm:h-8 flex items-center justify-center text-primary select-none ${
+                activeTab === key ? 'bg-Brand1-Primary' : 'bg-BG-3'
+              }`}
+            >
+              <span className="md:inline">{label}</span>
+            </div>
+          ))}
         </div>
 
         {/* 탭 컨텐츠 */}

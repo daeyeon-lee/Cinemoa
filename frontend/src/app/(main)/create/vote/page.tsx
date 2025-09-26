@@ -88,31 +88,21 @@ export default function VotePage() {
         </Card>
 
         {/* 네비게이션 탭 */}
-        <div className="w-full flex px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-2 lg:px-4 lg:py-2">
-          <Button
-            variant={voteActiveTab === 'vote-funding-info' ? 'brand2' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            <span className="md:inline">수요조사 소개</span>
-          </Button>
-          <Button
-            variant={voteActiveTab === 'vote-movie-info' ? 'brand2' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            <span className="md:inline">상영물 정보</span>
-          </Button>
-          <Button
-            variant={voteActiveTab === 'vote-theater-info' ? 'brand2' : 'tertiary'}
-            size="md"
-            className="flex-1 rounded-[20px] mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-sm max-sm:text-xs max-sm:h-8"
-            disabled
-          >
-            <span className="md:inline">영화관 정보</span>
-          </Button>
+        <div className="w-full flex px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-2 lg:px-4 lg:py-2 gap-1.5">
+          {[
+            { key: 'vote-funding-info', label: '수요조사 소개' },
+            { key: 'vote-movie-info', label: '상영물 정보' },
+            { key: 'vote-theater-info', label: '영화관 정보' },
+          ].map(({ key, label }) => (
+            <div
+              key={key}
+              className={`flex-1 rounded-full mx-0.5 sm:mx-0.5 md:mx-0.5 lg:mx-1 h-10 px-1 sm:px-2 md:px-3 lg:px-4 text-h6-b max-sm:text-p2-b max-sm:h-8 flex items-center justify-center text-primary select-none ${
+                voteActiveTab === key ? 'bg-Brand2-Strong text-BG-0' : 'bg-BG-3'
+              }`}
+            >
+              <span className="md:inline">{label}</span>
+            </div>
+          ))}
         </div>
 
         {/* 탭 컨텐츠 */}
