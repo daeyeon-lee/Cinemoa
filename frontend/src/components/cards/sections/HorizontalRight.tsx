@@ -65,7 +65,7 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
           {/* 오-상단 --명이 보고싶어요 */}
           <div className="text-slate-50 text-p2-b leading-normal">
             {currentLikeCount}명이
-            <br /> 보고싶어요
+            <br /> 보고싶어해요
           </div>
           {/* 오-하단 */}
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
@@ -73,12 +73,13 @@ const HorizontalRight: React.FC<HorizontalRightProps> = ({ data, loadingState = 
             <Button
               variant="outline"
               size="sm"
+              textSize="sm"
               onClick={handleVoteClick}
               disabled={isLoading}
-              className={`w-full gap-1 ${currentIsLiked ? 'text-Brand2-Primary border-Brand2-Tertiary' : 'text-slate-400 border-stroke-4'}`}
+              className={`w-full gap-1 ${currentIsLiked ? 'text-slate-400 border-stroke-4': 'text-Brand2-Primary border-Brand2-Tertiary'}`}
             >
-              <span className="text-lg">{currentIsLiked ? '♡' : '♥'}</span>
-              보고싶어요
+              {/* <span className="text-lg">{currentIsLiked ? '♡' : '♥'}</span> */}
+              {currentIsLiked ? '보고싶어요 취소' : '보고싶어요'}
             </Button>
           </div>
         </div>
