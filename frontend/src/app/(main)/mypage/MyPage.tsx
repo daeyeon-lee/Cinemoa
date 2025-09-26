@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CineCardVertical } from '@/components/cards/CineCardVertical';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import type { CardItem } from '@/types/mypage';
@@ -16,26 +17,6 @@ import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal
 import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
 import { useFundingLike } from '@/hooks/queries/useFunding';
 
-// 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
-function Avatar({ src, size = 80 }: { src?: string; size?: number }) {
-  // 기본 이미지(플레이스홀더) 설정
-  const url = src || 'https://placehold.co/72x72';
-
-  return (
-    <div
-      // 동그란 아바타 프레임 + 잘림 처리
-      className="rounded-full overflow-hidden flex-shrink-0 bg-center bg-cover bg-no-repeat border border-slate-700"
-      // 크기와 배경 이미지 동적 지정
-      style={{
-        width: size,
-        height: size,
-        backgroundImage: `url("${url}")`,
-      }}
-      aria-label="프로필 이미지" // 접근성 라벨
-      role="img" // 접근성 역할
-    />
-  );
-}
 
 export default function MyPage() {
   const router = useRouter();
@@ -467,7 +448,10 @@ export default function MyPage() {
         <div className="hidden sm:flex w-full justify-between items-center">
           <div className="w-full flex flex-col justify-start items-start gap-2.5">
             <div className="flex justify-start items-center gap-6">
-              <Avatar src={userInfo?.profileImgUrl} size={72} />
+              <Avatar className="w-[72px] h-[72px] border border-slate-700">
+                <AvatarImage src={userInfo?.profileImgUrl} />
+                <AvatarFallback />
+              </Avatar>
               <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
                 <div className="text-primary h3-b">
                   {isLoading ? (
@@ -508,7 +492,10 @@ export default function MyPage() {
         {/* 모바일: 세로 레이아웃 */}
         <div className="w-full sm:hidden flex flex-col items-start gap-4">
           <div className="flex items-center gap-4">
-            <Avatar src={userInfo?.profileImgUrl} size={52} />
+            <Avatar className="w-[52px] h-[52px] border border-slate-700">
+              <AvatarImage src={userInfo?.profileImgUrl} />
+              <AvatarFallback />
+            </Avatar>
             <div className="flex flex-col">
               <span className="text-primary h6-b">안녕하세요, </span>
               <div className="text-Brand2-Strong h6-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}님</div>

@@ -11,6 +11,7 @@ import Link from 'next/link';
 // ui
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 // 스마트티켓
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
@@ -21,26 +22,6 @@ import { getUserInfo } from '@/api/mypage';
 import { UserInfo } from '@/types/mypage';
 import Ticket from './ticket';
 
-// 아바타 컴포넌트: CSS background-image로 이미지를 렌더링
-function Avatar({ src, size = 32 }: { src?: string; size?: number }) {
-  // 기본 이미지(플레이스홀더) 설정
-  const url = src || 'https://placehold.co/32x32';
-
-  return (
-    <div
-      // 동그란 아바타 프레임 + 잘림 처리
-      className="rounded-full overflow-hidden flex-shrink-0 bg-center bg-cover bg-no-repeat"
-      // 크기와 배경 이미지 동적 지정
-      style={{
-        width: size,
-        height: size,
-        backgroundImage: `url("${url}")`,
-      }}
-      aria-label="프로필 이미지" // 접근성 라벨
-      role="img" // 접근성 역할
-    />
-  );
-}
 
 export default function Navbar() {
   // navbar 페이지 활성화 여부 확인 함수
@@ -186,7 +167,10 @@ export default function Navbar() {
             {isClient && user && isLoggedIn() ? (
               <>
                 <Link href="/mypage" className="cursor-pointer" onClick={handleMyPageClick}>
-                  <Avatar src={userInfo?.profileImgUrl} size={24} />
+                  <Avatar className="w-6 h-6">
+                    <AvatarImage src={userInfo?.profileImgUrl} />
+                    <AvatarFallback />
+                  </Avatar>
                 </Link>
                 {/* 로그아웃 아이콘 */}
                 <button onClick={handleLogout} className="cursor-pointer">
@@ -285,7 +269,10 @@ export default function Navbar() {
                   </DialogContent>
                 </Dialog>
                 <Link href="/mypage" className="flex-none cursor-pointer" onClick={handleMyPageClick}>
-                  <Avatar src={userInfo?.profileImgUrl} size={32} />
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={userInfo?.profileImgUrl} />
+                    <AvatarFallback />
+                  </Avatar>
                 </Link>
                 {/* 출시될 때 마이페이지로 가기 */}
                 <Button onClick={handleLogout} className="rounded-[99px]" variant="tertiary" size="sm" textSize="sm">
