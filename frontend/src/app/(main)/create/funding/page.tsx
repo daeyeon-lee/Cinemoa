@@ -33,6 +33,7 @@ function FundingPageContent() {
   const [perPersonAmount, setPerPersonAmount] = useState<number | null>(null);
   const [existingFundingData, setExistingFundingData] = useState<DetailData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFromVote, setIsFromVote] = useState(false); // 투표에서 전환된 경우인지 여부
 
   // URL 파라미터에서 fundingId와 userId 가져오기
   const urlFundingId = searchParams.get('fundingId');
@@ -42,6 +43,7 @@ function FundingPageContent() {
   useEffect(() => {
     const fetchExistingFunding = async () => {
       if (urlFundingId && urlUserId) {
+        setIsFromVote(true); // URL에 fundingId가 있으면 투표에서 전환된 것으로 간주
         setIsLoading(true);
         try {
           const response = await getFundingDetail(urlFundingId, urlUserId);
@@ -63,8 +65,8 @@ function FundingPageContent() {
               // 영화 정보 설정
               const movieInfo: movieinfo = {
                 categoryId: voteData.category.categoryId,
-                videoName: voteData.funding.title,
-                videoContent: voteData.funding.content,
+                videoName: voteData.screening.videoName,
+                videoContent: voteData.screening.videoContent,
                 posterUrl: voteData.funding.bannerUrl || '',
               };
               setMovieData(movieInfo);
@@ -141,7 +143,7 @@ function FundingPageContent() {
       case 'funding-info':
         return <FundingInfoTab onNext={handleFundingData} onPrev={handlePrevFunding} existingData={fundingData} />;
       case 'movie-info':
-        return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} existingData={movieData} />;
+        return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} existingData={movieData} isFromVote={isFromVote} />;
       case 'theater-info':
         return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} fundingData={fundingData || undefined} movieData={movieData || undefined} existingData={existingFundingData} />;
       case 'payment':

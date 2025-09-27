@@ -22,9 +22,10 @@ interface MovieInfoTabProps {
   onNext: (data: movieinfo) => void;
   onPrev?: () => void;
   existingData?: movieinfo | null;
+  isFromVote?: boolean; // 투표에서 전환된 경우인지 여부
 }
 
-export default function MovieInfoTab({ onNext, onPrev, existingData }: MovieInfoTabProps) {
+export default function MovieInfoTab({ onNext, onPrev, existingData, isFromVote = false }: MovieInfoTabProps) {
   const { data: getCategories } = useGetCategories();
 
   const [categories, setCategories] = useState<CategoryResponse[]>([]); // 카테고리 목록을 저장하는 상태
@@ -112,7 +113,7 @@ export default function MovieInfoTab({ onNext, onPrev, existingData }: MovieInfo
     }
   }, [getCategories]);
 
-  // 기존 데이터로 초기화
+  // 기존 데이터로 초기화 (기존 데이터가 있으면 항상)
   useEffect(() => {
     if (existingData) {
       setSelectedCategoryId(existingData.categoryId?.toString() || '');
@@ -123,8 +124,8 @@ export default function MovieInfoTab({ onNext, onPrev, existingData }: MovieInfo
     }
   }, [existingData]);
 
-  // 기존 데이터가 있는지 확인
-  const hasExistingData = !!existingData;
+  // 기존 데이터가 있고 투표에서 전환된 경우에만 수정 불가
+  const hasExistingData = !!existingData && isFromVote;
 
   const handleCategorySelect = (categoryId: string) => {
     // 카테고리 에러 메시지 초기화
