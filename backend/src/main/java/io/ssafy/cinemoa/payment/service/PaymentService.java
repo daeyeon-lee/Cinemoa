@@ -17,6 +17,7 @@ import io.ssafy.cinemoa.global.exception.InternalServerException;
 import io.ssafy.cinemoa.global.exception.NoAuthorityException;
 import io.ssafy.cinemoa.global.exception.ResourceNotFoundException;
 import io.ssafy.cinemoa.global.redis.service.RedisService;
+import io.ssafy.cinemoa.notification.service.FundingNotificationService;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentRequest;
 import io.ssafy.cinemoa.payment.dto.FundingPaymentResponse;
 import io.ssafy.cinemoa.payment.dto.FundingRefundRequest;
@@ -48,6 +49,7 @@ public class PaymentService {
     private final AccountDepositApiClient accountDepositApiClient;
     private final AccountTransferApiClient accountTransferApiClient;
     private final RedisService redisService;
+    private final FundingNotificationService fundingNotificationService;
 
     /**
      * 펀딩 참여 처리
@@ -64,6 +66,7 @@ public class PaymentService {
 
         Long fundingId = request.getFundingId();
         Long userId = request.getUserId();
+        Long amount = request.getAmount();
 
         // 1. 사용자 정보 검증
         // if (!currentUserId.equals(targetUserId)) {
@@ -96,7 +99,7 @@ public class PaymentService {
         CreditCardTransactionResponse apiResponse = cardApiClient.createCreditCardTransaction(
                 request.getCardNumber(),
                 request.getCardCvc(),
-                request.getAmount().toString());
+                amount.toString());
 
         // 결제결과 성공 여부 확인
         PaymentErrorCode paymentResult = PaymentErrorCode.fromCode(apiResponse.getResponseCode());
@@ -121,7 +124,7 @@ public class PaymentService {
             try {
                 // 5. 펀딩별 계좌로 입금 처리
                 // 씨네모아 가맹점으로 카드결제가 실행되고 -> 성공하면 -> 펀딩별 계좌로 입금
-                processAccountDeposit(fundingId, userId, request.getAmount());
+                processAccountDeposit(fundingId, userId, amount);
 
             } catch (Exception e) {
                 log.error("계좌 입금 처리 중 오류 발생 - 사용자ID: {}, 펀딩ID: {}, 금액: {}, 오류: {}",
@@ -133,6 +136,9 @@ public class PaymentService {
             // 6. 펀딩 상태 업데이트(참여자 수 +1)
             fundingStatRepository.incrementParticipantCount(fundingId);
             redisService.removeKey(seatKey);
+
+            // 7. SSE 알림 전송 (결제 성공)
+            fundingNotificationService.notifyPaymentSuccess(userId, funding, amount);
 
         } // 결제 실패 시 로깅
         else {

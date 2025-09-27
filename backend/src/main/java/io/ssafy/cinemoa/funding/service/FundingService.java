@@ -8,7 +8,6 @@ import io.ssafy.cinemoa.cinema.repository.ScreenUnavailableTImeBatchRepository;
 import io.ssafy.cinemoa.cinema.repository.entity.Cinema;
 import io.ssafy.cinemoa.cinema.repository.entity.Screen;
 import io.ssafy.cinemoa.external.text.client.GPTApiClient;
-import io.ssafy.cinemoa.external.text.client.TextSummaryApiClient;
 import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
 import io.ssafy.cinemoa.funding.dto.CardTypeFundingInfoDto;
 import io.ssafy.cinemoa.funding.dto.FundingCreateRequest;
@@ -45,6 +44,7 @@ import io.ssafy.cinemoa.image.dto.AnimateTask;
 import io.ssafy.cinemoa.image.enums.ImageCategory;
 import io.ssafy.cinemoa.image.event.AnimateDoneEvent;
 import io.ssafy.cinemoa.image.service.ImageService;
+import io.ssafy.cinemoa.notification.service.FundingNotificationService;
 import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 import io.ssafy.cinemoa.payment.repository.UserTransactionRepository;
 import io.ssafy.cinemoa.user.repository.UserRepository;
@@ -127,10 +127,10 @@ public class FundingService {
     private final ImageService imageService;
     private final RedisService redisService;
     private final RedisRankingService redisRankingService;
+    private final FundingNotificationService fundingNotificationService;
 
     private final ApplicationEventPublisher eventPublisher;
 
-    private final TextSummaryApiClient textSummaryApiClient;
     private final GPTApiClient openAiApiClient;
 
     @Transactional
@@ -239,6 +239,9 @@ public class FundingService {
         fundingRepository.save(existingFunding);
 
         eventPublisher.publishEvent(new AccountCreationRequestEvent(existingFunding.getFundingId()));
+
+        // 투표 → 펀딩 전환 알림 전송
+        fundingNotificationService.notifyVoteToFunding(existingFunding);
 
         return new FundingCreationResult(existingFunding.getFundingId());
     }
@@ -560,5 +563,6 @@ public class FundingService {
             throw InternalServerException.ofSummarize();
         }
     }
+
 
 }

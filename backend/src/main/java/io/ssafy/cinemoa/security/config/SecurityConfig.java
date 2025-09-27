@@ -53,6 +53,10 @@ public class SecurityConfig {
             "/api/wonauth/**"
     };
 
+    private static final String[] NOTIFICATION_PATHS = {
+            "/api/notification/**"
+    };
+
     @Value("${uploader.user}")
     private String uploaderUserName;
 
@@ -88,9 +92,8 @@ public class SecurityConfig {
                         .logoutSuccessHandler(logoutSuccessHandler)
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID"))
-                .exceptionHandling(e ->
-                        e.accessDeniedHandler(accessDeniedHandler)
-                                .authenticationEntryPoint(authenticationEntryPoint))
+                .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PERMIT_ALL_PATHS)
                         .permitAll()
@@ -98,10 +101,11 @@ public class SecurityConfig {
                         .requestMatchers(matcher).permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/user/**")
                         .hasAnyRole(Role.USER.getRole(), Role.ANONYMOUS.getRole())
-                        .requestMatchers(PERMIT_ANONYMOUS).hasAnyRole(Role.USER.getRole(), Role.ANONYMOUS.getRole())
+                        .requestMatchers(PERMIT_ANONYMOUS).hasAnyRole(Role.USER.getRole(),
+                                Role.ANONYMOUS.getRole())
+                        .requestMatchers(NOTIFICATION_PATHS).hasRole(Role.USER.getRole())
                         .requestMatchers("/api/**").hasRole(Role.USER.getRole())
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(oAuthTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -113,9 +117,8 @@ public class SecurityConfig {
         return httpSecurity
                 .securityMatcher("/api/image/animated")
                 .httpBasic(Customizer.withDefaults())
-                .authorizeHttpRequests(a ->
-                        a.requestMatchers("/api/image/animated")
-                                .hasRole(Role.UPLOADER.name()))
+                .authorizeHttpRequests(a -> a.requestMatchers("/api/image/animated")
+                        .hasRole(Role.UPLOADER.name()))
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .userDetailsService(uploaderAuthService())

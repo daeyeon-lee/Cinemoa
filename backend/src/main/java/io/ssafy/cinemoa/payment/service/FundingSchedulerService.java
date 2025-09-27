@@ -11,24 +11,24 @@ import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.funding.repository.entity.FundingStat;
 import io.ssafy.cinemoa.global.exception.BadRequestException;
 import io.ssafy.cinemoa.global.exception.InternalServerException;
+import io.ssafy.cinemoa.notification.service.FundingNotificationService;
+import io.ssafy.cinemoa.payment.enums.FundingTransactionState;
+import io.ssafy.cinemoa.payment.enums.UserTransactionState;
 import io.ssafy.cinemoa.payment.repository.FundingTransactionRepository;
 import io.ssafy.cinemoa.payment.repository.UserTransactionRepository;
 import io.ssafy.cinemoa.payment.repository.entity.FundingTransaction;
 import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import io.ssafy.cinemoa.user.repository.entity.User;
-import io.ssafy.cinemoa.payment.enums.FundingTransactionState;
-import io.ssafy.cinemoa.payment.enums.UserTransactionState;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 펀딩 스케줄러 서비스
@@ -46,6 +46,7 @@ public class FundingSchedulerService {
     private final FundingTransactionRepository fundingTransactionRepository;
     private final UserTransactionRepository userTransactionRepository;
     private final AccountTransferApiClient accountTransferApiClient;
+    private final FundingNotificationService fundingNotificationService;
 
     @Value("${finance.cinema-accounts.cgv.account-no}")
     private String cgvAccountNo;
@@ -98,7 +99,7 @@ public class FundingSchedulerService {
 
     /**
      * 매일 오전 7시(07:00)에 실행되는 영화관 송금 스케줄러
-     * 
+     *
      * 1. 어제 성공한 펀딩들을 조회
      * 2. 각 펀딩의 계좌에서 영화관 계좌로 송금
      * 3. 송금 결과를 funding_transactions 테이블에 저장
@@ -135,7 +136,7 @@ public class FundingSchedulerService {
 
     /**
      * 매일 오전 8시(08:00)에 실행되는 실패한 펀딩에 대한 참여자 환불 스케줄러
-     * 
+     *
      * 1. 어제 실패한 펀딩들을 조회
      * 2. 각 펀딩의 계좌에서 참여자 계좌로 송금
      * 3. 환불 결과를 user_transactions 테이블에 저장
@@ -248,6 +249,9 @@ public class FundingSchedulerService {
 
                 log.info("영화관 송금 성공 - 펀딩ID: {}, 영화관: {}, 금액: {}, 거래번호: {}",
                         fundingId, cinema.getCinemaName(), totalAmount, transferResponse.getTransactionUniqueNo());
+
+                // 4. 펀딩 성공 알림 전송
+                fundingNotificationService.notifyFundingSuccess(funding);
             } else {
                 // 실패 시 에러 로깅
                 log.error("영화관 송금 실패 - 펀딩ID: {}, 영화관: {}, 금액: {}, 에러코드: {}",
@@ -289,7 +293,7 @@ public class FundingSchedulerService {
 
             // 3. 각 참여자별로 환불 처리
             for (UserTransaction userTransaction : successTransactions) {
-                processIndividualRefund(userTransaction, fundingId, fundingAccount);
+                processIndividualRefund(userTransaction, funding, fundingId, fundingAccount);
             }
 
             log.info("환불 처리 완료 - 펀딩ID: {}", fundingId);
@@ -304,12 +308,13 @@ public class FundingSchedulerService {
 
     /**
      * 개별 참여자 환불 처리
-     * 
+     *
      * @param userTransaction 환불할 사용자 거래
      * @param fundingId       펀딩 ID
      * @param fundingAccount  펀딩 계좌번호
      */
-    private void processIndividualRefund(UserTransaction userTransaction, Long fundingId, String fundingAccount) {
+    private void processIndividualRefund(UserTransaction userTransaction, Funding funding, Long fundingId,
+                                         String fundingAccount) {
 
         try {
             User user = userTransaction.getUser();
@@ -340,6 +345,9 @@ public class FundingSchedulerService {
 
                 log.info("참여자 환불 성공 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 거래번호: {}",
                         fundingId, user.getId(), refundAmount, transferResponse.getTransactionUniqueNo());
+
+                // 펀딩 실패 및 환불 알림 전송
+                fundingNotificationService.notifyFailedFundingRefund(user, funding, refundAmount);
             } else {
                 // 실패 시 에러 로깅 및 개별 참여자 환불 실패 처리
                 log.error("참여자 환불 실패 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 에러코드: {}",
@@ -416,7 +424,7 @@ public class FundingSchedulerService {
 
     /**
      * 펀딩 계좌 -> 영화관 계좌 송금 실패 시 공통 처리
-     * 
+     *
      * - FundingTransaction 상태 업데이트
      */
     private void handleTransferFailure(Funding funding, String reason) {
@@ -446,7 +454,7 @@ public class FundingSchedulerService {
 
     /**
      * 펀딩 계좌 -> 참여자 계좌 송금 실패 시 공통 처리
-     * 
+     *
      * - UserTransaction 상태 업데이트
      */
     private void handleRefundFailure(Long userId, Long fundingId, String reason) {
@@ -476,6 +484,7 @@ public class FundingSchedulerService {
                     fundingId, userId, e.getMessage());
         }
     }
+
 
     /**
      * Validation 전용 예외 클래스
