@@ -17,7 +17,7 @@ interface PaymentProps {
   amount?: number;
   title?: string;
   videoName?: string;
-  fundingEndsOn?: string;
+  screenDate?: string;
   screenStartsOn?: number;
   screenEndsOn?: number;
   cinemaName?: string;
@@ -32,7 +32,7 @@ interface PaymentProps {
   onClose?: () => void; // Dialog를 닫기 위한 콜백 함수
 }
 
-export default function Payment({ fundingId, userId, amount, title, videoName, fundingEndsOn, screenStartsOn, screenEndsOn, cinemaName, screenName, screenFeatures, onClose }: PaymentProps) {
+export default function Payment({ fundingId, userId, amount, title, videoName, screenDate, screenStartsOn, screenEndsOn, cinemaName, screenName, screenFeatures, onClose }: PaymentProps) {
   const { user } = useAuthStore();
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
   const [isLoading, setIsLoading] = useState(false);
@@ -197,7 +197,7 @@ export default function Payment({ fundingId, userId, amount, title, videoName, f
                 {screenFeatures?.isRecliner ? ' | 리클라이너' : ''}
               </div>
               <div className="p2 text-tertiary">
-                {fundingEndsOn ? formatKoreanDate(fundingEndsOn) : '상영일'}
+                {screenDate ? formatKoreanDate(screenDate) : '상영일'}
                 {screenStartsOn && screenEndsOn ? ` ${formatTime(screenStartsOn)} ~ ${formatTime(screenEndsOn)}` : ' 시간'}
               </div>
             </div>
