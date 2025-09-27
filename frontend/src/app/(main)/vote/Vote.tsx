@@ -12,14 +12,15 @@ import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 import { ListShell } from '@/components/layouts/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
-import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
+// import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
 // 모바일
 import { FilterBottomSheet } from '@/components/filters/sheets/FilterBottomSheet';
 import { CategoryBottomSheetContent } from '@/components/filters/sheets/CategoryBottomSheetContent';
 import { RegionBottomSheetContent } from '@/components/filters/sheets/RegionBottomSheetContent';
-import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/TheaterTypeBottomSheetContent';
+// import { TheaterTypeBottomSheetContent } from '@/components/filters/sheets/TheaterTypeBottomSheetContent';
 //type, 상수
-import { REGIONS, THEATER_TYPES } from '@/constants/regions';
+import { REGIONS } from '@/constants/regions';
+// import { THEATER_TYPES } from '@/constants/regions';
 import { STANDARD_CATEGORIES, type CategoryValue } from '@/constants/categories';
 //api 관련
 import { useAuthStore } from '@/stores/authStore';
@@ -45,7 +46,7 @@ export default function Vote() {
 
   // 지역 및 상영관 필터 상태들
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]); // 선택된 지역 배열 (현재는 단일 선택)
-  const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]); // 선택된 상영관 종류 배열
+  // const [selectedTheaterType, setSelectedTheaterType] = useState<string[]>([]); // 선택된 상영관 종류 배열
 
   // 정렬 및 옵션 상태들
   const [sortBy, setSortBy] = useState<SortBy>('LATEST'); // 정렬 기준 (LATEST, POPULAR, DEADLINE, etc.)
@@ -53,14 +54,14 @@ export default function Vote() {
 
   // ========== 모바일 바텀시트 상태 관리 ==========
   // 현재 활성화된 바텀시트 종류를 추적 (null이면 모든 바텀시트 닫힘)
-  const [activeBottomSheet, setActiveBottomSheet] = useState<'category' | 'region' | 'theater' | null>(null);
+  const [activeBottomSheet, setActiveBottomSheet] = useState<'category' | 'region' | null>(null);
 
   // ========== 모바일 바텀시트 임시 상태들 ==========
   // 바텀시트에서 선택 중인 임시 값들 (적용하기 버튼 누르기 전까지는 실제 상태에 반영 안됨)
   const [tempSelectedMainCategoryId, setTempSelectedMainCategoryId] = useState<number | null>(null);
   const [tempSelectedSubCategoryIds, setTempSelectedSubCategoryIds] = useState<number[]>([]);
   const [tempSelectedRegions, setTempSelectedRegions] = useState<string[]>([]);
-  const [tempSelectedTheaterType, setTempSelectedTheaterType] = useState<string[]>([]);
+  // const [tempSelectedTheaterType, setTempSelectedTheaterType] = useState<string[]>([]);
 
   // ========== 반응형 화면 크기 감지 및 바텀시트 자동 닫기 ==========
   // 모바일에서 웹으로 화면 크기가 변경될 때 바텀시트를 자동으로 닫기
@@ -72,7 +73,7 @@ export default function Vote() {
         setTempSelectedMainCategoryId(selectedMainCategoryId);
         setTempSelectedSubCategoryIds([...selectedSubCategoryIds]);
         setTempSelectedRegions(selectedRegions);
-        setTempSelectedTheaterType(selectedTheaterType);
+        // setTempSelectedTheaterType(selectedTheaterType);
         setActiveBottomSheet(null);
       }
     };
@@ -87,12 +88,12 @@ export default function Vote() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [activeBottomSheet, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions, selectedTheaterType]);
+  }, [activeBottomSheet, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions]);
 
   // ========== 상수 데이터 정의 ==========
   const categories = STANDARD_CATEGORIES; // 전체, 영화, 시리즈, 공연, 스포츠중계 등의 카테고리 목록
   const regions = REGIONS; // 서울, 부산, 대구 등의 지역 목록
-  const theaterTypes = THEATER_TYPES; // 일반, IMAX, 4DX 등의 상영관 종류 목록
+  // const theaterTypes = THEATER_TYPES; // 일반, IMAX, 4DX 등의 상영관 종류 목록
 
   // 🔍 useSearch 훅으로 API 데이터 조회 - 투표용 (사용자가 선택한 것만 전달)
   const searchParams = useMemo(() => {
@@ -125,12 +126,12 @@ export default function Vote() {
 
     // 사용자가 상영관 타입을 선택했을 때만 전달 (기본값: 전체)
     // selectedTheaterType에는 한글 label이 들어있으므로 백엔드용 value로 변환
-    if (selectedTheaterType.length > 0) {
-      const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean);
-      if (theaterValues.length > 0) {
-        params.theaterType = theaterValues as string[];
-      }
-    }
+    // if (selectedTheaterType.length > 0) {
+    //   const theaterValues = selectedTheaterType.map((label) => theaterTypes.find((type) => type.label === label)?.value).filter(Boolean);
+    //   if (theaterValues.length > 0) {
+    //     params.theaterType = theaterValues as string[];
+    //   }
+    // }
 
     // 사용자가 종료된 상영회 포함을 체크했을 때만 전달 (기본값: false)
     if (showClosed) {
@@ -139,7 +140,7 @@ export default function Vote() {
 
     // console.log('📤 [Vote] API 파라미터 (선택된 것만):', params);
     return params;
-  }, [sortBy, selectedUiCategoryId, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions, selectedTheaterType, showClosed, categories, theaterTypes, user?.userId]);
+  }, [sortBy, selectedUiCategoryId, selectedMainCategoryId, selectedSubCategoryIds, selectedRegions, showClosed, categories, user?.userId]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useSearch(searchParams);
 
@@ -159,7 +160,7 @@ export default function Vote() {
     setSelectedUiCategoryId(null);
     setSelectedSubCategoryIds([]);
     setSelectedRegions([]);
-    setSelectedTheaterType([]);
+    // setSelectedTheaterType([]);
     setSortBy('LATEST');
     setShowClosed(false);
   };
@@ -179,11 +180,11 @@ export default function Vote() {
     setActiveBottomSheet('region');
   }, [selectedRegions]);
 
-  const handleOpenTheaterBottomSheet = useCallback(() => {
-    // 현재 실제 상태를 임시 상태에 복사
-    setTempSelectedTheaterType([...selectedTheaterType]);
-    setActiveBottomSheet('theater');
-  }, [selectedTheaterType]);
+  // const handleOpenTheaterBottomSheet = useCallback(() => {
+  //   // 현재 실제 상태를 임시 상태에 복사
+  //   setTempSelectedTheaterType([...selectedTheaterType]);
+  //   setActiveBottomSheet('theater');
+  // }, [selectedTheaterType]);
 
   // 임시 카테고리 선택 핸들러 (바텀시트 내부용)
   const handleTempCategorySelect = useCallback(
@@ -215,11 +216,12 @@ export default function Vote() {
       setSelectedSubCategoryIds([...tempSelectedSubCategoryIds]);
     } else if (activeBottomSheet === 'region') {
       setSelectedRegions([...tempSelectedRegions]);
-    } else if (activeBottomSheet === 'theater') {
-      setSelectedTheaterType([...tempSelectedTheaterType]);
     }
+    // } else if (activeBottomSheet === 'theater') {
+    //   setSelectedTheaterType([...tempSelectedTheaterType]);
+    // }
     setActiveBottomSheet(null);
-  }, [activeBottomSheet, tempSelectedMainCategoryId, tempSelectedSubCategoryIds, tempSelectedRegions, tempSelectedTheaterType]);
+  }, [activeBottomSheet, tempSelectedMainCategoryId, tempSelectedSubCategoryIds, tempSelectedRegions]);
 
   // 표시용 텍스트 생성 함수들
   const getRegionDisplayText = () => {
@@ -228,11 +230,11 @@ export default function Vote() {
     return `${selectedRegions[0]} 외 ${selectedRegions.length - 1}곳`;
   };
 
-  const getTheaterTypeDisplayText = () => {
-    if (selectedTheaterType.length === 0) return '상영관 종류';
-    if (selectedTheaterType.length === 1) return selectedTheaterType[0];
-    return `${selectedTheaterType[0]} 외 ${selectedTheaterType.length - 1}개`;
-  };
+  // const getTheaterTypeDisplayText = () => {
+  //   if (selectedTheaterType.length === 0) return '상영관 종류';
+  //   if (selectedTheaterType.length === 1) return selectedTheaterType[0];
+  //   return `${selectedTheaterType[0]} 외 ${selectedTheaterType.length - 1}개`;
+  // };
 
   /**
    * 카테고리 버튼에 표시할 텍스트 계산
@@ -343,7 +345,7 @@ export default function Vote() {
           <RegionFilterPanel regions={regions} value={selectedRegions} onChange={setSelectedRegions} onReset={() => setSelectedRegions([])} variant="brand2" />
 
           {/* 상영관 타입 필터 */}
-          <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} variant="brand2" />
+          {/* <TheaterTypeFilterPanel types={theaterTypes} value={selectedTheaterType} onChange={setSelectedTheaterType} onReset={() => setSelectedTheaterType([])} variant="brand2" /> */}
         </div>
       }
       content={
@@ -351,7 +353,7 @@ export default function Vote() {
           <div className="">
             {/* ========== 모바일 전용 필터 헤더 ========== */}
             <div className="block lg:hidden pb-3">
-              {/* 세 개의 필터 버튼: 카테고리, 지역, 상영관 종류 */}
+              {/* 두 개의 필터 버튼: 카테고리, 지역 */}
               <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                 <Button
                   variant="outline"
@@ -371,7 +373,7 @@ export default function Vote() {
                   <span className="truncate">{getRegionDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   size="md"
                   onClick={handleOpenTheaterBottomSheet}
@@ -379,7 +381,7 @@ export default function Vote() {
                 >
                   <span className="truncate">{getTheaterTypeDisplayText()}</span>
                   <ChevronDown size={14} className="absolute right-2 flex-shrink-0" />
-                </Button>
+                </Button> */}
               </div>
             </div>
 
@@ -447,7 +449,7 @@ export default function Vote() {
           </FilterBottomSheet>
 
           {/* 상영관 종류 선택 바텀시트 */}
-          <FilterBottomSheet
+          {/* <FilterBottomSheet
             isOpen={activeBottomSheet === 'theater'}
             onClose={() => {
               // 취소 시 임시 상태를 원래 상태로 되돌림
@@ -461,7 +463,7 @@ export default function Vote() {
             variant="brand2"
           >
             <TheaterTypeBottomSheetContent types={theaterTypes} value={tempSelectedTheaterType} onChange={setTempSelectedTheaterType} variant="brand2" />
-          </FilterBottomSheet>
+          </FilterBottomSheet> */}
         </>
       }
     />
