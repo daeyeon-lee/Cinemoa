@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import FundingInfoTab from './component/FundingInfoTab';
 import { fundinginfo } from '@/types/funding';
@@ -22,7 +22,8 @@ interface MovieData {
   selectedMovieId: string;
 }
 
-export default function FundingPage() {
+// useSearchParams를 사용하는 컴포넌트를 분리
+function FundingPageContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('funding-info');
   const [fundingData, setFundingData] = useState<fundinginfo | null>(null);
@@ -47,11 +48,11 @@ export default function FundingPage() {
           if (response.data) {
             setExistingFundingData(response.data);
             // console.log('기존 투표 정보 조회 성공:', response.data);
-            
+
             // 기존 정보를 폼 데이터로 변환
             if (response.data.type === 'VOTE') {
               const voteData = response.data;
-              
+
               // 펀딩 정보 설정
               const fundingInfo: fundinginfo = {
                 title: voteData.funding.title,
@@ -142,13 +143,7 @@ export default function FundingPage() {
       case 'movie-info':
         return <MovieInfoTab onNext={handleMovieData} onPrev={handlePrevMovie} existingData={movieData} />;
       case 'theater-info':
-        return <TheaterInfoTab 
-          onNext={handleTheaterData} 
-          onPrev={handlePrevTheater} 
-          fundingData={fundingData || undefined} 
-          movieData={movieData || undefined}
-          existingData={existingFundingData}
-        />;
+        return <TheaterInfoTab onNext={handleTheaterData} onPrev={handlePrevTheater} fundingData={fundingData || undefined} movieData={movieData || undefined} existingData={existingFundingData} />;
       case 'payment':
         return <PaymentTab onNext={handlePaymentData} onPrev={handlePrevPayment} fundingId={fundingId} amount={perPersonAmount || undefined} />;
       default:
@@ -172,7 +167,7 @@ export default function FundingPage() {
             { key: 'funding-info', label: '상영회 소개' },
             { key: 'movie-info', label: '상영물 정보' },
             { key: 'theater-info', label: '영화관 정보' },
-            { key: 'payment', label: '결제' }
+            { key: 'payment', label: '결제' },
           ].map(({ key, label }) => (
             <div
               key={key}
@@ -189,5 +184,14 @@ export default function FundingPage() {
         <div className="px-4 w-full overflow-hidden">{renderTabContent()}</div>
       </div>
     </div>
+  );
+}
+
+// 메인 컴포넌트
+export default function FundingPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">로딩 중...</div>}>
+      <FundingPageContent />
+    </Suspense>
   );
 }
