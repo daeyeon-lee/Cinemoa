@@ -66,7 +66,7 @@ const HorizontalLeft: React.FC<HorizontalLeftProps> = ({
       {/* 영화 정보 */}
       <div className="flex-1 min-w-0 space-y-2">
         {/* 영화 제목 - 2줄 */}
-        <h3 className="text-sm font-semibold text-slate-50 line-clamp-2 leading-tight min-h-[2.5rem]">{data.funding.videoName}</h3>
+        <h3 className="text-sm font-semibold text-slate-50 line-clamp-2 leading-tight">{data.funding.videoName}</h3>
 
         {/* 위치 및 날짜 정보 */}
         <div className="flex flex-wrap gap-1">

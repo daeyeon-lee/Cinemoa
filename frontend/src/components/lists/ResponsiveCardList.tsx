@@ -40,6 +40,12 @@ interface ResponsiveCardListProps {
   hasNextPage?: boolean;
   /** 다음 페이지 로딩 중 여부 */
   isFetchingNextPage?: boolean;
+  /** 상태 태그 표시 여부 */
+  showStateTag?: boolean;
+  /** 상태 태그 클래스명 */
+  stateTagClassName?: string;
+  /** 상태 배지 정보 함수 */
+  getStateBadgeInfo?: (state: string, fundingType: 'FUNDING' | 'VOTE') => { text: string; className: string };
 }
 
 /**
@@ -87,6 +93,9 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
   onLoadMore,
   hasNextPage = false,
   isFetchingNextPage = false,
+  showStateTag = false,
+  stateTagClassName,
+  getStateBadgeInfo,
 }) => {
   // 자동 무한스크롤을 위한 Intersection Observer 훅
   // 사용자가 페이지 하단 근처에 도달하면 자동으로 다음 페이지를 로드합니다
@@ -219,7 +228,14 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
       <div className="hidden md:grid grid-cols-[repeat(auto-fill,minmax(172px,1fr))] gap-x-2 gap-y-8">
         {items.map((item) => (
           <div key={item.funding.fundingId}>
-            <CineCardVertical data={item} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+            <CineCardVertical 
+              data={item} 
+              onCardClick={onCardClick} 
+              onVoteClick={onVoteClick}
+              showStateTag={showStateTag}
+              stateTagClassName={stateTagClassName}
+              getStateBadgeInfo={getStateBadgeInfo}
+            />
           </div>
         ))}
       </div>
@@ -228,7 +244,14 @@ const ResponsiveCardList: React.FC<ResponsiveCardListProps> = ({
       <div className="md:hidden space-y-2">
         {items.map((item) => (
           <div key={`mobile-${item.funding.fundingId}`} className="w-full">
-            <CineCardHorizontal data={item} onCardClick={onCardClick} onVoteClick={onVoteClick} />
+            <CineCardHorizontal 
+              data={item} 
+              onCardClick={onCardClick} 
+              onVoteClick={onVoteClick}
+              showStateTag={showStateTag}
+              stateTagClassName={stateTagClassName}
+              getStateBadgeInfo={getStateBadgeInfo}
+            />
           </div>
         ))}
       </div>

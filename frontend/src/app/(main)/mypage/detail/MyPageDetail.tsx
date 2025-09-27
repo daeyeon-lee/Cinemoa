@@ -374,6 +374,9 @@ const MyPageDetail: React.FC<MyPageDetailProps> = ({ section }) => {
           }}
           hasNextPage={hasNextPage}
           isFetchingNextPage={isLoadingMore}
+          showStateTag={true}
+          stateTagClassName="state state-active"
+          getStateBadgeInfo={getStateBadgeInfo}
         />
       )}
     </div>

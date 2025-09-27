@@ -39,7 +39,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ title, section, onActionClick }
   return (
     <div className="flex flex-col justify-center items-center h-64 gap-4">
       <div className="text-center">
-        <div className="text-slate-400 text-lg font-medium mb-2">{title}이 없습니다</div>
+        <div className="text-slate-400 text-lg font-medium mb-2">{title}가 없습니다</div>
         <div className="text-slate-500 text-sm">{getDescription()}</div>
       </div>
       <Button onClick={onActionClick} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">

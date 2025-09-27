@@ -1,13 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { CineCardVertical } from '@/components/cards/CineCardVertical';
-import HorizontalScroller from '@/components/containers/HorizontalScroller';
-import type { CardItem } from '@/types/mypage';
-import type { ApiSearchItem } from '@/types/searchApi';
 import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFunding } from '@/api/mypage';
 import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
@@ -16,6 +9,10 @@ import CardManagement from '@/app/(main)/mypage/component/CardManagement';
 import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
 import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
 import { useFundingLike } from '@/hooks/queries/useFunding';
+import ProfileSection from '@/app/(main)/mypage/sections/ProfileSection';
+import ProposalsSection from '@/app/(main)/mypage/sections/ProposalsSection';
+import ParticipatedSection from '@/app/(main)/mypage/sections/ParticipatedSection';
+import LikedSection from '@/app/(main)/mypage/sections/LikedSection';
 
 export default function MyPage() {
   const router = useRouter();
@@ -343,73 +340,6 @@ export default function MyPage() {
     }
   }, [likedType]);
 
-  // CardItem을 ApiSearchItem으로 변환하는 함수
-  const convertCardItemToApiSearchItem = (cardItem: CardItem): ApiSearchItem => {
-    return {
-      funding: {
-        ...cardItem.funding,
-        state: cardItem.funding.state as any,
-        screenDate: cardItem.funding.screenDate || '',
-      },
-      cinema: cardItem.cinema,
-    };
-  };
-
-  // API 데이터를 CardItem 형식으로 변환
-  // 내가 제안한 상영회 데이터를 CardItem 형식으로 변환
-  const convertToCardData = (proposal: FundingProposal): CardItem => {
-    return {
-      funding: {
-        ...proposal.funding,
-        state: proposal.funding.state as any,
-        screenDate: proposal.funding.screenDate || '',
-      },
-      cinema: {
-        cinemaId: proposal.cinema.cinemaId,
-        cinemaName: proposal.cinema.cinemaName,
-        city: proposal.cinema.city,
-        district: proposal.cinema.district,
-      },
-    };
-  };
-
-  // 참여한 상영회 데이터를 CardItem 형식으로 변환
-  const convertParticipatedToCardData = (participated: ParticipatedFunding): CardItem => {
-    return {
-      funding: {
-        ...participated.funding,
-        state: participated.funding.state as any,
-        screenDate: participated.funding.screenDate || '',
-      },
-      cinema: {
-        cinemaId: participated.cinema.cinemaId,
-        cinemaName: participated.cinema.cinemaName,
-        city: participated.cinema.city,
-        district: participated.cinema.district,
-      },
-    };
-  };
-
-  // 보고싶어요 한 상영회 데이터를 CardItem 형식으로 변환
-  const convertLikedToCardData = (liked: LikedFunding): CardItem => {
-    // price가 0보다 크면 FUNDING, 아니면 VOTE로 구분
-    const fundingType = liked.funding.price > 0 ? 'FUNDING' : 'VOTE';
-
-    return {
-      funding: {
-        ...liked.funding,
-        fundingType: fundingType,
-        state: liked.funding.state as any,
-        screenDate: liked.funding.screenDate || '',
-      },
-      cinema: {
-        cinemaId: liked.cinema.cinemaId,
-        cinemaName: liked.cinema.cinemaName,
-        city: liked.cinema.city,
-        district: liked.cinema.district,
-      },
-    };
-  };
 
   // 로그인하지 않은 경우 로딩 화면 표시 (리다이렉트 중)
   if (!isLoggedIn && !isLoading) {
@@ -442,297 +372,42 @@ export default function MyPage() {
   return (
     <div className="w-full px-5">
       {/* 프로필 섹션 */}
-      <div className="col-span-12 px-5 py-7 my-10 bg-BG-1 rounded-2xl flex flex-col justify-start items-start gap-6">
-        {/* PC: 한 줄 레이아웃 */}
-        <div className="hidden sm:flex w-full justify-between items-center">
-          <div className="w-full flex flex-col justify-start items-start gap-2.5">
-            <div className="flex justify-start items-center gap-6">
-              <Avatar className="w-[72px] h-[72px] border border-slate-700">
-                <AvatarImage src={userInfo?.profileImgUrl} />
-                <AvatarFallback />
-              </Avatar>
-              <div className="flex-1 min-w-0 px-1 flex flex-col justify-center items-start gap-2.5">
-                <div className="text-primary h3-b">
-                  {isLoading ? (
-                    '로딩 중...'
-                  ) : (
-                    <>
-                      <span className="text-primary">안녕하세요, </span>
-                      <span className="text-Brand2-Strong">{userInfo?.nickname || '사용자'}님</span>
-                    </>
-                  )}
-                </div>
-                <div className="h-8 flex justify-start items-center gap-2 sm:gap-[14px]">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1 sm:w-[120px] px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600"
-                    onClick={() => alert('서비스 준비중입니다')}
-                  >
-                    환불 계좌 수정
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1 sm:w-[120px] px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600"
-                    onClick={() => alert('서비스 준비중입니다')}
-                  >
-                    결제 카드 등록
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <Button variant="secondary" size="sm" className="w-28 px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
-            프로필 수정
-          </Button>
-        </div>
-
-        {/* 모바일: 세로 레이아웃 */}
-        <div className="w-full sm:hidden flex flex-col items-start gap-4">
-          <div className="flex items-center gap-4">
-            <Avatar className="w-[52px] h-[52px] border border-slate-700">
-              <AvatarImage src={userInfo?.profileImgUrl} />
-              <AvatarFallback />
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="text-primary h6-b">안녕하세요, </span>
-              <div className="text-Brand2-Strong h6-b">{isLoading ? '로딩 중...' : `${userInfo?.nickname || '사용자'}`}님</div>
-            </div>
-          </div>
-          <div className="w-full flex flex-col gap-2">
-            <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
-              프로필 수정
-            </Button>
-            <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
-              환불 계좌 수정
-            </Button>
-            <Button variant="secondary" size="sm" className="w-full px-3 py-1.5 bg-slate-700 text-primary p2-b rounded-md hover:bg-slate-600" onClick={() => alert('서비스 준비중입니다')}>
-              결제 카드 등록
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ProfileSection userInfo={userInfo} isLoading={isLoading} />
 
       {/* 상영회 섹션들 */}
       <div className="w-full px-2 inline-flex flex-col justify-start items-start gap-11">
         {/* 내가 제안한 상영회 섹션 */}
-        <div className="w-full flex flex-col justify-start items-start gap-2.5">
-          {/* 섹션 헤더 */}
-          <div className="w-full flex items-center justify-between">
-            <h2 className="text-h5-b">내가 제안한 펀딩</h2>
-            {/* {hasMoreProposals && ( */}
-            <button onClick={() => router.push('/mypage/detail/proposals')} className="text-h6-b text-secondary ">
-              더보기 →
-            </button>
-            {/* // )} */}
-          </div>
-          {/* 필터 버튼 그룹 */}
-          <div className="flex gap-2">
-            <Button
-              variant={proposalType === undefined ? 'brand1' : 'secondary'}
-              size="sm"
-              className={`p3-b rounded-[15px] ${proposalType === undefined ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-              onClick={() => setProposalType(undefined)}
-            >
-              전체
-            </Button>
-            <Button
-              variant={proposalType === 'funding' ? 'brand1' : 'secondary'}
-              size="sm"
-              className={`p3-b rounded-[15px]  ${proposalType === 'funding' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-              onClick={() => setProposalType('funding')}
-            >
-              상영회
-            </Button>
-            <Button
-              variant={proposalType === 'vote' ? 'brand1' : 'secondary'}
-              size="sm"
-              className={`p3-b rounded-[15px]  ${proposalType === 'vote' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-              onClick={() => setProposalType('vote')}
-            >
-              수요조사
-            </Button>
-          </div>
-          {/* 상영회 카드 */}
-          <div className="self-stretch inline-flex justify-start items-center gap-2">
-            {myProposals.length === 0 ? (
-              <div className="w-full flex justify-center items-center pt-12">
-                <div className="flex flex-col justify-center items-center gap-4">
-                  <div className="text-center">
-                    <div className="p1-b text-secondary mb-2">내가 제안한 상영회가 없습니다</div>
-                    <div className="p3 text-tertiary">프로젝트를 시작해보세요</div>
-                  </div>
-                  <Button onClick={() => router.push('/create')} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                    프로젝트 생성하기
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <HorizontalScroller className="w-full">
-                {myProposals.map((proposal, index) => (
-                  <div key={proposal.funding.fundingId} className="w-[172px] flex-shrink-0 h-[400px]">
-                    <CineCardVertical
-                      data={convertCardItemToApiSearchItem(convertToCardData(proposal))}
-                      onCardClick={handleCardClick}
-                      onVoteClick={handleVoteClick}
-                      showStateTag={true}
-                      stateTagClassName="state state-active"
-                      getStateBadgeInfo={getStateBadgeInfo}
-                    />
-                  </div>
-                ))}
-              </HorizontalScroller>
-            )}
-          </div>
-        </div>
+        <ProposalsSection
+          myProposals={myProposals}
+          isProposalsLoading={isProposalsLoading}
+          proposalType={proposalType}
+          setProposalType={setProposalType}
+          handleCardClick={handleCardClick}
+          handleVoteClick={handleVoteClick}
+          getStateBadgeInfo={getStateBadgeInfo}
+        />
 
         {/* 내가 참여한 상영회 섹션 */}
-        {myParticipated.length > 0 && (
-          <div className="w-full flex flex-col justify-start items-start gap-2.5">
-            {/* 섹션 헤더 */}
-            <div className="w-full flex items-center justify-between">
-              <h2 className="text-h5-b">내가 참여한 펀딩</h2>
-              {/* {hasMoreParticipated && ( */}
-              <button onClick={() => router.push('/mypage/detail/participated')} className="text-h6-b text-secondary">
-                더보기 →
-              </button>
-              {/* )} */}
-            </div>
-            {/* 필터 버튼 그룹 */}
-            <div className="flex gap-2">
-              <Button
-                variant={participatedState === undefined ? 'brand1' : 'secondary'}
-                size="sm"
-                className={`p3-b rounded-[15px]  ${participatedState === undefined ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-                onClick={() => setParticipatedState(undefined)}
-              >
-                전체
-              </Button>
-              <Button
-                variant={participatedState === 'ON_PROGRESS' ? 'brand1' : 'secondary'}
-                size="sm"
-                className={`p3-b rounded-[15px]  ${participatedState === 'ON_PROGRESS' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-                onClick={() => setParticipatedState('ON_PROGRESS')}
-              >
-                진행 중
-              </Button>
-              <Button
-                variant={participatedState === 'CLOSE' ? 'brand1' : 'secondary'}
-                size="sm"
-                className={`p3-b rounded-[15px]  ${participatedState === 'CLOSE' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-                onClick={() => setParticipatedState('CLOSE')}
-              >
-                진행 완료
-              </Button>
-            </div>
-            {/* 상영회 카드 */}
-            <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
-              {myParticipated.length === 0 ? (
-                <div className="w-full flex justify-center items-center h-80">
-                  <div className="flex flex-col justify-center items-center gap-4">
-                    <div className="text-center">
-                      <div className="text-slate-400 text-lg font-medium mb-2">참여한 상영회가 없습니다</div>
-                      <div className="text-slate-500 text-sm">상영회에 참여해보세요</div>
-                    </div>
-                    <Button onClick={() => router.push('/')} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                      상영회 보러가기
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <HorizontalScroller className="w-full">
-                  {myParticipated.map((participated, index) => (
-                    <div key={participated.funding.fundingId} className="w-[172px] flex-shrink-0 h-[400px]">
-                      <CineCardVertical
-                        data={convertCardItemToApiSearchItem(convertParticipatedToCardData(participated))}
-                        onCardClick={handleCardClick}
-                        onVoteClick={handleVoteClick}
-                        showStateTag={true}
-                        stateTagClassName="state state-active"
-                        getStateBadgeInfo={getStateBadgeInfo}
-                      />
-                    </div>
-                  ))}
-                </HorizontalScroller>
-              )}
-            </div>
-          </div>
-        )}
+        <ParticipatedSection
+          myParticipated={myParticipated}
+          isParticipatedLoading={isParticipatedLoading}
+          participatedState={participatedState}
+          setParticipatedState={setParticipatedState}
+          handleCardClick={handleCardClick}
+          handleVoteClick={handleVoteClick}
+          getStateBadgeInfo={getStateBadgeInfo}
+        />
 
         {/* 내가 보고 싶은 상영회 섹션 */}
-        {myLiked.length > 0 && (
-          <div className="w-full flex flex-col justify-start items-start gap-2.5">
-            {/* 섹션 헤더 */}
-            <div className="w-full flex items-center justify-between">
-              <h2 className="text-h5-b">내가 보고 싶은 펀딩</h2>
-              {/* {hasMoreLiked && ( */}
-              <button onClick={() => router.push('/mypage/detail/liked')} className="text-h6-b text-secondary hover:text-slate-400 transition-colors">
-                더보기 →
-              </button>
-              {/* )} */}
-            </div>
-            {/* 필터 버튼 그룹 */}
-            <div className="flex gap-2">
-              <Button
-                variant={likedType === undefined ? 'brand1' : 'secondary'}
-                size="sm"
-                className={`p3-b rounded-[15px]  ${likedType === undefined ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-                onClick={() => setLikedType(undefined)}
-              >
-                전체
-              </Button>
-              <Button
-                variant={likedType === 'funding' ? 'brand1' : 'secondary'}
-                size="sm"
-                className={`p3-b rounded-[15px]  ${likedType === 'funding' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-                onClick={() => setLikedType('funding')}
-              >
-                상영회
-              </Button>
-              <Button
-                variant={likedType === 'vote' ? 'brand1' : 'secondary'}
-                size="sm"
-                className={`p3-b rounded-[15px]  ${likedType === 'vote' ? 'bg-red-500 text-slate-300' : 'bg-slate-800 text-slate-400'}`}
-                onClick={() => setLikedType('vote')}
-              >
-                수요조사
-              </Button>
-            </div>
-            {/* 상영회 카드 */}
-            <div className="self-stretch inline-flex justify-start items-center gap-2 overflow-hidden">
-              {!myLiked || myLiked.length === 0 ? (
-                <div className="w-full flex justify-center items-center h-80">
-                  <div className="flex flex-col justify-center items-center gap-4">
-                    <div className="text-center">
-                      <div className="text-slate-400 text-lg font-medium mb-2">보고 싶은 상영회가 없습니다</div>
-                      <div className="text-slate-500 text-sm">보고 싶은 상영회를 저장해보세요</div>
-                    </div>
-                    <Button onClick={() => router.push('/category')} className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                      상영회 보러가기
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <HorizontalScroller className="w-full">
-                  {myLiked &&
-                    myLiked.map((liked, index) => (
-                      <div key={liked.funding.fundingId} className="w-[172px] flex-shrink-0 h-[400px]">
-                        <CineCardVertical
-                          data={convertCardItemToApiSearchItem(convertLikedToCardData(liked))}
-                          onCardClick={handleCardClick}
-                          onVoteClick={handleVoteClick}
-                          showStateTag={true}
-                          stateTagClassName="state state-active"
-                          getStateBadgeInfo={getStateBadgeInfo}
-                        />
-                      </div>
-                    ))}
-                </HorizontalScroller>
-              )}
-            </div>
-          </div>
-        )}
+        <LikedSection
+          myLiked={myLiked}
+          isLikedLoading={isLikedLoading}
+          likedType={likedType}
+          setLikedType={setLikedType}
+          handleCardClick={handleCardClick}
+          handleVoteClick={handleVoteClick}
+          getStateBadgeInfo={getStateBadgeInfo}
+        />
       </div>
 
       {/* 카드 관리 모달 */}
