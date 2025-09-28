@@ -86,7 +86,7 @@ public class FundingController {
 
     @DeleteMapping("/{fundingId}/like")
     public ResponseEntity<ApiResponse<?>> unlikeFunding(@PathVariable("fundingId") Long fundingId,
-                                                        @RequestParam Long userId) {
+                                                        @RequestParam("userId") Long userId) {
         fundingFavoriteService.unlike(userId, fundingId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null));
     }
@@ -100,7 +100,7 @@ public class FundingController {
 
     @DeleteMapping("/{fundingId}/hold")
     public ResponseEntity<ApiResponse<?>> unholdSeatOfFunding(@PathVariable("fundingId") Long fundingId,
-                                                              @RequestParam Long userId) {
+                                                              @RequestParam("userId") Long userId) {
         fundingService.unholdSeatOf(userId, fundingId);
         return ResponseEntity.ok(ApiResponse.ofSuccess(null, "좌석 획득 해제 성공"));
     }
