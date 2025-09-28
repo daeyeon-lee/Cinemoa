@@ -27,6 +27,8 @@ export interface NotificationEventDto {
   message: string;
   data: NotificationEventData;
   timestamp: string;
+  // 읽음 상태 (현재는 서버에서 보내지 않음)
+  isRead?: boolean;
 }
 
 // 이벤트별 데이터 타입
