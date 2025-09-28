@@ -21,6 +21,7 @@ import { logout } from '@/api/auth';
 import { getUserInfo } from '@/api/mypage';
 import { UserInfo } from '@/types/mypage';
 import Ticket from './ticket';
+import NotificationDropdown from './NotificationDropdown';
 
 
 export default function Navbar() {
@@ -144,6 +145,10 @@ export default function Navbar() {
             <Link href="/search/start" className="cursor-porinter">
               <SearchIcon width={20} height={20} />
             </Link>
+            {/* 알림 아이콘 - 로그인한 사용자만 */}
+            {isClient && user && isLoggedIn() && (
+              <NotificationDropdown isMobile={true} />
+            )}
             {/* 스마트 티켓 아이콘 - 로그인한 사용자만 */}
             {isClient && user && isLoggedIn() && (
               <Dialog open={isMobileTicketOpen} onOpenChange={setIsMobileTicketOpen}>
@@ -251,6 +256,8 @@ export default function Navbar() {
             {/* 로그인 상태일 시 */}
             {isClient && user && isLoggedIn() ? (
               <>
+                {/* 알림 아이콘 */}
+                <NotificationDropdown isMobile={false} />
                 <Dialog open={isTicketOpen} onOpenChange={setIsTicketOpen}>
                   <DialogTrigger asChild>
                     <button className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2cd8ce] to-[#ff5768] hover:from-[#2cd8ce] hover:to-[#e04e5f] flex items-center justify-center cursor-pointer transition-all duration-300 shadow-lg hover:shadow-[#71e5de]/25 relative overflow-hidden">
