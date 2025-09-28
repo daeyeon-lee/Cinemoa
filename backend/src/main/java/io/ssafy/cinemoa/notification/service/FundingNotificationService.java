@@ -93,12 +93,8 @@ public class FundingNotificationService {
             Long userId = user.getId();
             Long fundingId = funding.getFundingId();
             String fundingTitle = funding.getTitle();
-            int participantCount = funding.getMaxPeople();
 
             // 펀딩 실패 알림
-            String failureReason = String.format("목표 인원 %d명 중 %d명만 참여하여 목표에 미달했습니다.",
-                    funding.getMaxPeople(), participantCount);
-
             NotificationEventDto failedEvent = NotificationEventDto.createFundingFailedEvent(
                     userId, fundingId, fundingTitle, refundAmount);
             notificationService.sendEventToUser(userId, failedEvent);

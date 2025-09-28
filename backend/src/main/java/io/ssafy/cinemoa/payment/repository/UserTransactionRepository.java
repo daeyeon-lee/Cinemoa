@@ -42,4 +42,16 @@ public interface UserTransactionRepository extends JpaRepository<UserTransaction
      * 펀딩 ID, 사용자 ID, 상태로 UserTransaction 존재 여부 확인
      */
     boolean existsByFunding_FundingIdAndUser_IdAndState(Long fundingId, Long userId, UserTransactionState state);
+
+    /**
+     * 사용자별 결제 성공 거래 목록 조회 (최신순)
+     */
+    @Query("SELECT ut FROM UserTransaction ut JOIN FETCH ut.funding WHERE ut.user.id = :userId AND ut.state = 'SUCCESS' ORDER BY ut.processedAt DESC")
+    List<UserTransaction> findSuccessTransactionsByUserId(@Param("userId") Long userId);
+
+    /**
+     * 사용자별 환불 거래 목록 조회 (최신순)
+     */
+    @Query("SELECT ut FROM UserTransaction ut JOIN FETCH ut.funding WHERE ut.user.id = :userId AND ut.state = 'REFUNDED' ORDER BY ut.processedAt DESC")
+    List<UserTransaction> findRefundedTransactionsByUserId(@Param("userId") Long userId);
 }

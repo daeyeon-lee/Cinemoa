@@ -1,9 +1,17 @@
 package io.ssafy.cinemoa.notification.service;
 
+import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.notification.dto.NotificationEventDto;
+import io.ssafy.cinemoa.payment.repository.FundingTransactionRepository;
+import io.ssafy.cinemoa.payment.repository.UserTransactionRepository;
+import io.ssafy.cinemoa.payment.repository.entity.FundingTransaction;
+import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -11,7 +19,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationService {
+
+    private final UserTransactionRepository userTransactionRepository;
+    private final FundingTransactionRepository fundingTransactionRepository;
 
     // 사용자별 SSE 연결 관리 (사용자 ID -> SseEmitter)
     private final ConcurrentMap<Long, SseEmitter> userConnections = new ConcurrentHashMap<>();
@@ -79,7 +91,81 @@ public class NotificationService {
             emitter.completeWithError(e);
         }
 
+        // 초기 데이터 전송 (과거 알림 이력 목록)
+        sendInitialData(emitter, userId);
+
         return emitter;
+    }
+
+    /**
+     * 초기 데이터 전송 (과거 알림 이력 목록)
+     */
+    private void sendInitialData(SseEmitter emitter, Long userId) {
+        try {
+            log.info("초기 데이터 전송 - 사용자 ID: {}", userId);
+
+            List<NotificationEventDto> initialNotifications = new ArrayList<>();
+
+            // 1. 결제 성공 알림 (UserTransaction SUCCESS)
+            List<UserTransaction> successTransactions = userTransactionRepository
+                    .findSuccessTransactionsByUserId(userId);
+
+            for (UserTransaction transaction : successTransactions) {
+                NotificationEventDto eventDto = NotificationEventDto.createPaymentSuccessEvent(
+                        userId,
+                        transaction.getFunding().getFundingId(),
+                        transaction.getFunding().getTitle(),
+                        transaction.getBalance().longValue());
+
+                eventDto.setTimestamp(transaction.getProcessedAt());
+                initialNotifications.add(eventDto);
+            }
+
+            // 2. 펀딩 성공 알림 (FundingTransaction SUCCESS)
+            List<FundingTransaction> successFundingTransactions = fundingTransactionRepository
+                    .findSuccessFundingTransactionsByUserId(userId);
+
+            for (FundingTransaction fundingTransaction : successFundingTransactions) {
+                Funding funding = fundingTransaction.getFunding();
+                NotificationEventDto eventDto = NotificationEventDto.createFundingSuccessEvent(
+                        userId,
+                        funding.getFundingId(),
+                        funding.getTitle(),
+                        fundingTransaction.getBalance(),
+                        funding.getMaxPeople());
+                eventDto.setTimestamp(fundingTransaction.getProcessedAt());
+                initialNotifications.add(eventDto);
+            }
+
+            // 3. 펀딩 실패 환불 알림 (UserTransaction REFUNDED)
+            List<UserTransaction> refundedTransactions = userTransactionRepository
+                    .findRefundedTransactionsByUserId(userId);
+            for (UserTransaction transaction : refundedTransactions) {
+                NotificationEventDto eventDto = NotificationEventDto.createFundingFailedEvent(
+                        userId,
+                        transaction.getFunding().getFundingId(),
+                        transaction.getFunding().getTitle(),
+                        transaction.getBalance());
+                eventDto.setTimestamp(transaction.getProcessedAt());
+                initialNotifications.add(eventDto);
+            }
+
+            // (보류) 4. 투표→펀딩 전환 알림 (UserFavorite)
+
+            // 시간순으로 정렬 (최신순)
+            initialNotifications.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+
+            log.info("초기 알림 데이터 수집 완료 - 사용자 ID: {}, 총 알림 수: {}", userId, initialNotifications.size());
+
+            // SSE로 리스트 형태로 한 번에 전송
+            emitter.send(SseEmitter.event()
+                    .id("initial_data_" + System.currentTimeMillis())
+                    .name("INITIAL_DATA")
+                    .data(initialNotifications));
+
+        } catch (IOException e) {
+            log.error("초기 데이터 전송 실패 - 사용자 ID: {}, 오류: {}", userId, e.getMessage());
+        }
     }
 
     /**
