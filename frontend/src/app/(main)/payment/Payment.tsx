@@ -162,22 +162,25 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
       queryKey: ['DETAIL', fundingId?.toString(), userId]
     });
     
+    // 현재 알림 개수
+    const initialNotificationCount = useNotificationStore.getState().notifications.length;
+
     // 알림 상태 확인 및 로깅
     // console.log('💳 결제 성공! 현재 알림 개수:', notifications.length);
     // console.log('💳 알림 목록:', notifications);
     
-    // 5초 후 알림 상태 재확인 (백엔드 처리 시간 고려)
+    // 7초 후 알림 상태 재확인 (백엔드 처리 시간 고려)
     setTimeout(() => {
       const updatedNotifications = useNotificationStore.getState().notifications;
-      console.log('💳 5초 후 알림 개수:', updatedNotifications.length);
-      console.log('💳 5초 후 알림 목록:', updatedNotifications);
+      console.log('💳 7초 후 알림 개수:', updatedNotifications.length);
+      console.log('💳 7초 후 알림 목록:', updatedNotifications);
       
-      if (updatedNotifications.length > notifications.length) {
+      if (updatedNotifications.length > initialNotificationCount) {
         console.log('🎉 새로운 알림이 추가되었습니다!');
       } else {
         console.log('⚠️ 아직 새로운 알림이 추가되지 않았습니다. SSE 연결을 확인해주세요.');
       }
-    }, 5000);
+    }, 7000);
     
     router.push(`/detail/${fundingId}`); // 새로고침 없이 페이지 이동
   };
