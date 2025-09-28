@@ -10,7 +10,7 @@ interface OutlinedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEleme
 }
 
 const OutlinedButton = React.forwardRef<HTMLButtonElement, OutlinedButtonProps>(({ className, variant = 'default', size = 'md', children, disabled, ...props }, ref) => {
-  const baseStyles = 'border rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'border rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap';
 
   const variantStyles = {
     default: 'text-[var(--text-tertiary)] border-[var(--stroke-4)] hover:border-[var(--stroke-2)] hover:text-[var(--text-secondary)]',
