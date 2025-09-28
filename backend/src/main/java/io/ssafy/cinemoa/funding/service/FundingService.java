@@ -543,7 +543,7 @@ public class FundingService {
         if (funding == null) {
             return;
         }
-        String url = imageService.translatePath(ImageCategory.BANNER.getPrefix() + "-" + event.getAnimationUrl());
+        String url = imageService.translatePath(event.getAnimationUrl());
         funding.setTicketBanner(url);
     }
 
