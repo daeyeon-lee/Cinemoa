@@ -90,7 +90,7 @@ export default function Create() {
         <CardContent className="mt-8 sm:mt-14">
           <div className="flex items-center gap-2">
             <p className="h4-b text-Brand1-Primary">|</p>
-            <h2 className="h4-b text-primary">프로젝트 생성 유형 선택</h2>
+            <h2 className="h4-b text-primary">펀딩 유형 선택</h2>
           </div>
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
             <Button variant="brand1" size="lg" className="w-full flex flex-col gap-1 sm:gap-2 py-4 sm:py-7 h-auto sm:h-full min-h-[100px] sm:min-h-[140px]" onClick={handleFundingStart}>
