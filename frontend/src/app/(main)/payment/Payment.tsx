@@ -169,18 +169,31 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
     // console.log('💳 결제 성공! 현재 알림 개수:', notifications.length);
     // console.log('💳 알림 목록:', notifications);
     
-    // 7초 후 알림 상태 재확인 (백엔드 처리 시간 고려)
+    // 5초 후 알림 상태 재확인 (백엔드 처리 시간 고려)
     setTimeout(() => {
       const updatedNotifications = useNotificationStore.getState().notifications;
-      console.log('💳 7초 후 알림 개수:', updatedNotifications.length);
-      console.log('💳 7초 후 알림 목록:', updatedNotifications);
+      // console.log('💳 5초 후 알림 개수:', updatedNotifications.length);
+      // console.log('💳 5초 후 알림 목록:', updatedNotifications);
       
       if (updatedNotifications.length > initialNotificationCount) {
         console.log('🎉 새로운 알림이 추가되었습니다!');
       } else {
-        console.log('⚠️ 아직 새로운 알림이 추가되지 않았습니다. SSE 연결을 확인해주세요.');
+        console.log('⚠️ 5초 후 아직 새로운 알림이 추가되지 않았습니다. 10초 후 다시 확인합니다.');
+        
+        // 10초 후 한 번 더 확인
+        setTimeout(() => {
+          const finalNotifications = useNotificationStore.getState().notifications;
+          // console.log('💳 10초 후 알림 개수:', finalNotifications.length);
+          // console.log('💳 10초 후 알림 목록:', finalNotifications);
+          
+          if (finalNotifications.length > initialNotificationCount) {
+            console.log('🎉 10초 후 새로운 알림이 추가되었습니다!');
+          } else {
+            console.log('⚠️ 10초 후에도 새로운 알림이 추가되지 않았습니다. SSE 연결을 확인해주세요.');
+          }
+        }, 5000); // 5초 + 5초 = 10초
       }
-    }, 7000);
+    }, 5000);
     
     router.push(`/detail/${fundingId}`); // 새로고침 없이 페이지 이동
   };
