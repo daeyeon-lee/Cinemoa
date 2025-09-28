@@ -93,6 +93,9 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
       case 'FUNDING_FAILED_REFUNDED':
         // return '💰';  
         return <RefundIcon width={iconSize} height={iconSize} />;
+      case 'FUNDING_REFUND':
+        // return '💰';  
+        return <RefundIcon width={iconSize} height={iconSize} />;
       case 'VOTE_TO_FUNDING':
         // return '📊';  
         return <VoteNotificationIcon width={iconSize} height={iconSize} />;
