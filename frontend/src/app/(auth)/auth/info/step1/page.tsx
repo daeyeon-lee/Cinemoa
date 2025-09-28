@@ -138,7 +138,7 @@ export default function Step1Page() {
           variant={isValidSelection ? 'brand1' : 'secondary'}
           className={`w-full text-h6-b ${isValidSelection ? 'text-primary' : 'text-tertiary'}`}
         >
-          다음 단계 &gt;
+          다음 단계
         </Button>
       </div>
     </div>
