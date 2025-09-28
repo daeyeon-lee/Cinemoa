@@ -4,7 +4,6 @@ import { useState } from 'react';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useFundingRefund } from '@/hooks/queries/useFunding';
 import InfoIcon from '@/component/icon/infoIcon';
-import { useNotificationStore } from '@/stores/notificationStore';
 
 interface RefundConfirmProps {
   fundingId?: number;
@@ -25,7 +24,6 @@ export default function RefundConfirm({
 }: RefundConfirmProps) {
   const [isLoading, setIsLoading] = useState(false);
   const refundMutation = useFundingRefund({ skipRedirect: true });
-  const { notifications } = useNotificationStore();
 
   // 환불 진행
   const handleRefund = async () => {
@@ -36,9 +34,6 @@ export default function RefundConfirm({
 
     setIsLoading(true);
 
-    // 현재 알림 개수
-    const initialNotificationCount = useNotificationStore.getState().notifications.length;
-    
     try {
       refundMutation.mutate({
         fundingId,
@@ -47,36 +42,6 @@ export default function RefundConfirm({
         onSuccess: () => {
           setIsLoading(false);
           onSuccess?.(); // 환불 성공 시 완료 모달 표시
-          
-          // 환불 성공 후 알림 상태 확인 및 로깅
-          // console.log('💸 환불 성공! 현재 알림 개수:', notifications.length);
-          // console.log('💸 알림 목록:', notifications);
-          
-          // 5초 후 알림 상태 재확인 (백엔드 처리 시간 고려)
-          setTimeout(() => {
-            const updatedNotifications = useNotificationStore.getState().notifications;
-            // console.log('💸 5초 후 알림 개수:', updatedNotifications.length);
-            // console.log('💸 5초 후 알림 목록:', updatedNotifications);
-            
-            if (updatedNotifications.length > initialNotificationCount) {
-              console.log('🎉 새로운 알림이 추가되었습니다!');
-            } else {
-              console.log('⚠️ 5초 후 아직 새로운 알림이 추가되지 않았습니다. 10초 후 다시 확인합니다.');
-              
-              // 10초 후 한 번 더 확인
-              setTimeout(() => {
-                const finalNotifications = useNotificationStore.getState().notifications;
-                // console.log('💸 10초 후 알림 개수:', finalNotifications.length);
-                // console.log('💸 10초 후 알림 목록:', finalNotifications);
-                
-                if (finalNotifications.length > initialNotificationCount) {
-                  console.log('🎉 10초 후 새로운 알림이 추가되었습니다!');
-                } else {
-                  console.log('⚠️ 10초 후에도 새로운 알림이 추가되지 않았습니다. SSE 연결을 확인해주세요.');
-                }
-              }, 5000); // 5초 + 5초 = 10초
-            }
-          }, 5000);
         },
         onError: (error) => {
           console.error('환불 처리 중 오류:', error);
