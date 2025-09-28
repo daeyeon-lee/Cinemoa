@@ -84,6 +84,10 @@ class NotificationSSEManager {
           this.handleNotificationEvent(event);
         });
 
+        this.eventSource.addEventListener('FUNDING_REFUND', (event) => {
+          this.handleNotificationEvent(event);
+        });
+
         // 모든 메시지 이벤트 캐치 (디버깅용)
         this.eventSource.onmessage = (event) => {
           console.log('📨 모든 메시지 이벤트 수신:', event);
