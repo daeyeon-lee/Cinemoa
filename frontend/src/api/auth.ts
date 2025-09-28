@@ -44,9 +44,9 @@ export const googleLogin = async (idToken: string) => {
       // SSE 알림 연결 시작 (약간의 지연 후)
       setTimeout(async () => {
         try {
-          console.log('SSE 알림 연결 시도 중...');
+          // console.log('SSE 알림 연결 시도 중...');
           await connectNotificationSSE();
-          console.log('SSE 알림 연결 성공');
+          // console.log('SSE 알림 연결 성공');
         } catch (error) {
           console.error('SSE 알림 연결 실패:', error);
           console.error('에러 상세:', error instanceof Error ? error.message : String(error));
@@ -81,11 +81,15 @@ export const logout = async (): Promise<LogoutResponse> => {
 
     // SSE 알림 연결 종료
     disconnectNotificationSSE();
-    console.log('SSE 알림 연결 종료');
+    // console.log('SSE 알림 연결 종료');
 
     // 알림 데이터 초기화
     clearAllNotifications();
-    console.log('알림 데이터 초기화');
+    // console.log('알림 데이터 초기화');
+
+    // 사용자 관련 모든 localStorage 데이터 초기화
+    localStorage.removeItem('readNotifications');
+    // console.log('사용자 관련 localStorage 데이터 초기화');
 
     // 로그아웃 성공 여부와 관계없이 클라이언트에서 사용자 정보 제거
     clearUser();
@@ -104,6 +108,10 @@ export const logout = async (): Promise<LogoutResponse> => {
     // 에러가 발생해도 클라이언트에서는 로그아웃 처리
     disconnectNotificationSSE();
     clearAllNotifications();
+    
+    localStorage.removeItem('readNotifications');
+    // console.log('에러 발생 시 사용자 관련 localStorage 데이터 초기화');
+    
     useAuthStore.getState().clearUser();
     throw error;
   }

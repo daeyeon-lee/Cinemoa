@@ -15,7 +15,7 @@ class NotificationSSEManager {
   private autoConnectIfLoggedIn() {
     const { user } = useAuthStore.getState();
     if (user && user.userId) {
-      console.log('🔄 로그인된 사용자 감지, SSE 자동 연결 시도');
+      // console.log('🔄 로그인된 사용자 감지, SSE 자동 연결 시도');
       setTimeout(() => {
         this.connect().catch(error => {
           console.log('🔄 자동 연결 실패:', error);
@@ -40,8 +40,8 @@ class NotificationSSEManager {
         }
 
         const url = `${process.env.NEXT_PUBLIC_BASE_URL}notification/subscribe`;
-        console.log('SSE 연결 시도:', url);
-        console.log('현재 사용자:', user);
+        // console.log('SSE 연결 시도:', url);
+        // console.log('현재 사용자:', user);
         
         this.eventSource = new EventSource(url, {
           withCredentials: true // 쿠키 포함
@@ -49,19 +49,20 @@ class NotificationSSEManager {
 
         // 연결 성공 이벤트
         this.eventSource.addEventListener('connected', (event) => {
-          console.log('SSE 연결 성공:', event);
+          console.log('SSE 연결 성공');
+          // console.log('SSE 연결 성공:', event);
           useNotificationStore.getState().setConnected(true);
           resolve();
         });
 
         // 초기 데이터 이벤트
         this.eventSource.addEventListener('INITIAL_DATA', (event) => {
-          console.log('🔥 INITIAL_DATA 이벤트 수신됨!', event);
-          console.log('🔥 INITIAL_DATA 데이터:', event.data);
+          // console.log('🔥 INITIAL_DATA 이벤트 수신됨!', event);
+          // console.log('🔥 INITIAL_DATA 데이터:', event.data);
           try {
             const data: NotificationEventDto[] = JSON.parse(event.data);
             useNotificationStore.getState().setNotifications(data);
-            console.log('초기 알림 데이터 로드:', data);
+            // console.log('초기 알림 데이터 로드:', data);
           } catch (error) {
             console.error('초기 데이터 파싱 오류:', error);
           }
@@ -90,10 +91,10 @@ class NotificationSSEManager {
 
         // 모든 메시지 이벤트 캐치 (디버깅용)
         this.eventSource.onmessage = (event) => {
-          console.log('📨 모든 메시지 이벤트 수신:', event);
-          console.log('📨 이벤트 타입:', event.type);
-          console.log('📨 이벤트 데이터:', event.data);
-          console.log('📨 이벤트 ID:', event.lastEventId);
+          // console.log('📨 모든 메시지 이벤트 수신:', event);
+          // console.log('📨 이벤트 타입:', event.type);
+          // console.log('📨 이벤트 데이터:', event.data);
+          // console.log('📨 이벤트 ID:', event.lastEventId);
         };
 
         // 연결 오류 처리
@@ -115,17 +116,17 @@ class NotificationSSEManager {
   // 알림 이벤트 처리
   private handleNotificationEvent(event: MessageEvent) {
     try {
-      console.log('🔔 알림 이벤트 처리 시작:', event);
-      console.log('🔔 이벤트 데이터:', event.data);
-      console.log('🔔 이벤트 타입:', event.type);
+      // console.log('🔔 알림 이벤트 처리 시작:', event);
+      // console.log('🔔 이벤트 데이터:', event.data);
+      // console.log('🔔 이벤트 타입:', event.type);
       
       const notificationData: NotificationEventDto = JSON.parse(event.data);
-      console.log('🔔 파싱된 알림 데이터:', notificationData);
+      // console.log('🔔 파싱된 알림 데이터:', notificationData);
       
       // Store에 알림 추가
       useNotificationStore.getState().addNotification(notificationData);
-      console.log('🔔 Store에 알림 추가 완료');
-      console.log('새 알림 수신:', notificationData);
+      // console.log('🔔 Store에 알림 추가 완료');
+      // console.log('새 알림 수신:', notificationData);
     } catch (error) {
       console.error('알림 이벤트 파싱 오류:', error);
     }

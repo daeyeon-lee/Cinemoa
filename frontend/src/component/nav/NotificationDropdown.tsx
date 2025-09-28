@@ -54,7 +54,7 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
     // store 업데이트 (읽음 표시 반영)
     useNotificationStore.getState().markAsRead(notification.eventId);
     
-    console.log('알림 클릭:', notification);
+    // console.log('알림 클릭:', notification);
   };
 
   const handleMarkAllAsRead = () => {
