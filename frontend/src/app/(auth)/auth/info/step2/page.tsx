@@ -399,17 +399,19 @@ export default function Step2Page() {
   };
 
   return (
-    <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto px-4 py-8 sm:py-12">
+    <div className="w-full px-4 pt-32 sm:pt-20 sm:w-[376px] sm:mx-auto sm:px-0 flex flex-col gap-10">
       {/* 헤더 */}
-      <div className="text-center mb-6 sm:mb-8">
-        <h1 className="text-h4-b sm:text-h3-b mb-2">필수 정보 입력하기</h1>
+      <div className="text-center">
+        <h1 className="text-h3-b">필수 정보 입력하기</h1>
       </div>
-      <div className="mt-6 sm:mt-10 mb-6 sm:mb-8 border-b border-stroke-4">
-        <h2 className="text-h6-b sm:text-h5-b mb-1">환불 계좌 등록하기</h2>
-      </div>
+      {/* main */}
+      <div className="flex flex-col gap-5">
+        <div className="border-b border-stroke-4 pb-2">
+          <h2 className="text-h5-b">환불 계좌 등록하기</h2>
+        </div>
 
-      {/* 폼 */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+        {/* 폼 */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
         {/* 결제 은행 */}
         <div>
           <Label htmlFor="bank" className="text-p2-b text-primary mb-2 block">
@@ -520,17 +522,18 @@ export default function Step2Page() {
           )}
           {isVerificationSuccess && !verificationCodeError && <p className="text-Brand2-Primary p2 mt-1">인증이 완료되었습니다.</p>}
         </div>
-      </form>
+        </form>
+      </div>
 
-      {/* 버튼들 */}
-      <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <Link href="/auth/info/step1" className="w-full sm:flex-1">
-          <Button variant="tertiary" size="lg" className="w-full h-12 sm:h-14">
-            이전
+      {/* bottom: 버튼들 */}
+      <div className="flex flex-row gap-2">
+        <Link href="/auth/info/step1" className="flex-1">
+          <Button variant="tertiary" size="lg" className="w-full text-h6-b">
+            이전 단계
           </Button>
         </Link>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={!isVerificationSuccess} size="lg" variant={isVerificationSuccess ? 'brand1' : 'tertiary'} className="w-full sm:flex-1 h-12 sm:h-14">
-          회원가입 완료하기
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={!isVerificationSuccess} size="lg" variant={isVerificationSuccess ? 'brand1' : 'tertiary'} className={`flex-1 text-h6-b ${isVerificationSuccess ? 'text-primary' : 'text-tertiary'}`}>
+          회원가입 완료
         </Button>
       </div>
     </div>

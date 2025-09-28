@@ -112,13 +112,13 @@ export default function Step1Page() {
                 <category.icon className="w-4 h-4" />
                 <h3 className="text-p2-b text-Brand1-Primary">{category.title}</h3>
               </div>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-3">
                 {category.items.map((item) => {
                   const isSelected = selectedCategories[key as keyof typeof selectedCategories].includes(item as string);
                   const totalSelected = getTotalSelectedCount();
                   const isDisabled = !isSelected && totalSelected >= 10; // 총 10개 이상 선택 시 비활성화
                   return (
-                    <OutlinedButton key={item} size="sm" variant={isSelected ? 'brand1' : 'default'} onClick={() => handleCategorySelect(key, item)} disabled={isDisabled} className="w-full">
+                    <OutlinedButton key={item} size="sm" variant={isSelected ? 'brand1' : 'default'} onClick={() => handleCategorySelect(key, item)} disabled={isDisabled} className="flex-shrink-0">
                       {item}
                     </OutlinedButton>
                   );
@@ -138,7 +138,7 @@ export default function Step1Page() {
           variant={isValidSelection ? 'brand1' : 'secondary'}
           className={`w-full text-h6-b ${isValidSelection ? 'text-primary' : 'text-tertiary'}`}
         >
-          다음 단계 &gt;
+          다음 단계
         </Button>
       </div>
     </div>
