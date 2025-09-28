@@ -1,15 +1,11 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import NotificationIcon from '@/component/icon/notificationIcon';
+import { markNotificationAsRead, markAllNotificationsAsRead } from '@/api/notification';
+import { useNotificationStore } from '@/stores/notificationStore';
+import { NotificationEventDto } from '@/types/notification';
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-  type: 'funding' | 'vote' | 'system';
-}
+// 기존 Notification 인터페이스는 제거하고 NotificationEventDto 사용
 
 interface NotificationDropdownProps {
   isMobile?: boolean;
@@ -17,37 +13,12 @@ interface NotificationDropdownProps {
 
 export default function NotificationDropdown({ isMobile = false }: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true); // 임시로 true로 설정
+  
+  // Store에서 알림 상태 가져오기
+  const { notifications, isConnected, hasUnread } = useNotificationStore();
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
-
-  // 임시 알림 데이터 (나중에 API로 교체)
-  const mockNotifications: Notification[] = [
-    {
-      id: '1',
-      title: '새로운 상영회가 등록되었습니다',
-      message: '영화 "인터스텔라" 상영회가 등록되었습니다.',
-      time: '5분 전',
-      isRead: false,
-      type: 'funding'
-    },
-    {
-      id: '2',
-      title: '수요조사 참여해주세요',
-      message: '영화 "오펜하이머" 수요조사에 참여해보세요.',
-      time: '1시간 전',
-      isRead: false,
-      type: 'vote'
-    },
-    {
-      id: '3',
-      title: '시스템 점검 안내',
-      message: '오늘 밤 12시부터 2시까지 시스템 점검이 있습니다.',
-      time: '3시간 전',
-      isRead: true,
-      type: 'system'
-    }
-  ];
 
   // hover 상태 관리
   useEffect(() => {
@@ -62,21 +33,52 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
     }
   }, [isHovering]);
 
-  const handleNotificationClick = (notification: Notification) => {
-    // 알림 클릭 시 처리 로직 (나중에 구현)
+  const handleNotificationClick = (notification: NotificationEventDto) => {
+    // 알림 클릭 시 읽음 처리
+    markNotificationAsRead(notification.eventId);
     console.log('알림 클릭:', notification);
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'funding':
-        return '🎬';
-      case 'vote':
+  const handleMarkAllAsRead = () => {
+    markAllNotificationsAsRead();
+  };
+
+  const getNotificationIcon = (eventType: string) => {
+    switch (eventType) {
+      case 'PAYMENT_SUCCESS':
+        return '💳';
+      case 'FUNDING_SUCCESS':
+        return '🎉';
+      case 'FUNDING_FAILED_REFUNDED':
+        return '💰';
+      case 'VOTE_TO_FUNDING':
         return '📊';
-      case 'system':
-        return '⚙️';
       default:
         return '🔔';
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return '방금 전';
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}일 전`;
+  };
+
+  const isNotificationRead = (notification: NotificationEventDto): boolean => {
+    try {
+      const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+      return readNotifications.includes(notification.eventId);
+    } catch {
+      return false;
     }
   };
 
@@ -117,7 +119,10 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
           <div className="px-4 py-3 border-b border-BG-1">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-primary">알림</h3>
-              <button className="text-xs text-tertiary hover:text-primary transition-colors">
+              <button 
+                onClick={handleMarkAllAsRead}
+                className="text-xs text-tertiary hover:text-primary transition-colors"
+              >
                 모두 읽음
               </button>
             </div>
@@ -125,46 +130,53 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
 
           {/* 알림 목록 */}
           <div className="max-h-80 overflow-y-auto">
-            {mockNotifications.length > 0 ? (
-              mockNotifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`px-4 py-3 border-b border-BG-1 cursor-pointer hover:bg-BG-1 transition-colors ${
-                    !notification.isRead ? 'bg-BG-1/50' : ''
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="text-lg">{getNotificationIcon(notification.type)}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <p className={`text-sm font-medium ${
-                          !notification.isRead ? 'text-primary' : 'text-secondary'
-                        }`}>
-                          {notification.title}
-                        </p>
-                        {!notification.isRead && (
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                        )}
+            {notifications.length > 0 ? (
+              notifications.map((notification: NotificationEventDto) => {
+                const isRead = isNotificationRead(notification);
+                return (
+                  <div
+                    key={notification.eventId}
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`px-4 py-3 border-b border-BG-1 cursor-pointer hover:bg-BG-1 transition-colors ${
+                      !isRead ? 'bg-BG-1/50' : ''
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="text-lg">{getNotificationIcon(notification.eventType)}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <p className={`text-sm font-medium ${
+                            !isRead ? 'text-primary' : 'text-secondary'
+                          }`}>
+                            {notification.message}
+                          </p>
+                          {!isRead && (
+                            <div className="w-2 h-2 bg-primary rounded-full"></div>
+                          )}
+                        </div>
+                        <p className="text-xs text-tertiary mt-1">{formatTimestamp(notification.timestamp)}</p>
                       </div>
-                      <p className="text-xs text-tertiary mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-tertiary mt-1">{notification.time}</p>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="px-4 py-8 text-center">
                 <div className="text-4xl mb-2">🔔</div>
-                <p className="text-sm text-tertiary">새로운 알림이 없습니다</p>
+                <p className="text-sm text-tertiary">
+                  {isConnected ? '새로운 알림이 없습니다' : '알림 연결 중...'}
+                </p>
+                {!isConnected && (
+                  <p className="text-xs text-red-500 mt-2">
+                    연결이 끊어졌습니다. 새로고침 후 다시 시도해주세요.
+                  </p>
+                )}
               </div>
             )}
           </div>
 
           {/* 푸터 */}
-          {mockNotifications.length > 0 && (
+          {notifications.length > 0 && (
             <div className="px-4 py-3 border-t border-BG-1">
               <button className="w-full text-sm text-primary hover:text-primary/80 transition-colors">
                 모든 알림 보기

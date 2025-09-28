@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -10,6 +11,8 @@ import { validateAndFormatExpiryDate, validateAllPaymentFields } from '@/utils/v
 import { formatTime, formatKoreanDate } from '@/utils/dateUtils';
 import { createPayment, holdSeats } from '@/api/payment';
 import { useAuthStore } from '@/stores/authStore';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNotificationStore } from '@/stores/notificationStore';
 
 interface PaymentProps {
   fundingId?: number;
@@ -34,6 +37,9 @@ interface PaymentProps {
 
 export default function Payment({ fundingId, userId, amount, title, videoName, screenDate, screenStartsOn, screenEndsOn, cinemaName, screenName, screenFeatures, onClose }: PaymentProps) {
   const { user } = useAuthStore();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { notifications } = useNotificationStore();
   const [currentStep, setCurrentStep] = useState<'step1' | 'step2' | 'step3'>('step1');
   const [isLoading, setIsLoading] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
@@ -150,7 +156,30 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
   const handleSuccess = () => {
     resetAllStates();
     onClose?.(); // 부모 Dialog 닫기
-    window.location.href = `/detail/${fundingId}`;
+    
+    // 결제 성공 후 React Query 캐시 무효화하여 UI 업데이트
+    queryClient.invalidateQueries({
+      queryKey: ['DETAIL', fundingId?.toString(), userId]
+    });
+    
+    // 알림 상태 확인 및 로깅
+    // console.log('💳 결제 성공! 현재 알림 개수:', notifications.length);
+    // console.log('💳 알림 목록:', notifications);
+    
+    // 5초 후 알림 상태 재확인 (백엔드 처리 시간 고려)
+    setTimeout(() => {
+      const updatedNotifications = useNotificationStore.getState().notifications;
+      console.log('💳 5초 후 알림 개수:', updatedNotifications.length);
+      console.log('💳 5초 후 알림 목록:', updatedNotifications);
+      
+      if (updatedNotifications.length > notifications.length) {
+        console.log('🎉 새로운 알림이 추가되었습니다!');
+      } else {
+        console.log('⚠️ 아직 새로운 알림이 추가되지 않았습니다. SSE 연결을 확인해주세요.');
+      }
+    }, 5000);
+    
+    router.push(`/detail/${fundingId}`); // 새로고침 없이 페이지 이동
   };
 
   const resetAllStates = () => {
