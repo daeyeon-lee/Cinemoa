@@ -30,6 +30,9 @@ public class NotificationController {
 
         SseEmitter emitter = notificationService.createConnection(userId);
 
+        // ✅ 연결 직후 초기 데이터 전송
+        notificationService.sendInitialData(userId, emitter);
+
         log.info("SSE 연결 생성 완료 - 사용자 ID: {}", userId);
 
         return emitter;

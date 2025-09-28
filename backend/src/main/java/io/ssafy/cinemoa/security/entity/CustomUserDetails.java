@@ -2,6 +2,7 @@ package io.ssafy.cinemoa.security.entity;
 
 import io.ssafy.cinemoa.security.enums.Role;
 import io.ssafy.cinemoa.user.repository.entity.User;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
+    
+    private static final long serialVersionUID = 1L;
 
     private Long userId;
     private String username;

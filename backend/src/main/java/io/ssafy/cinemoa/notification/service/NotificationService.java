@@ -1,9 +1,19 @@
 package io.ssafy.cinemoa.notification.service;
 
+import io.ssafy.cinemoa.favorite.repository.UserFavoriteRepository;
+import io.ssafy.cinemoa.funding.repository.entity.Funding;
 import io.ssafy.cinemoa.notification.dto.NotificationEventDto;
+import io.ssafy.cinemoa.notification.enums.NotificationEventType;
+import io.ssafy.cinemoa.payment.enums.UserTransactionState;
+import io.ssafy.cinemoa.payment.repository.UserTransactionRepository;
+import io.ssafy.cinemoa.payment.repository.entity.UserTransaction;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -11,7 +21,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationService {
+
+    private final UserTransactionRepository userTransactionRepository;
+    private final UserFavoriteRepository userFavoriteRepository;
 
     // 사용자별 SSE 연결 관리 (사용자 ID -> SseEmitter)
     private final ConcurrentMap<Long, SseEmitter> userConnections = new ConcurrentHashMap<>();
@@ -83,6 +97,101 @@ public class NotificationService {
     }
 
     /**
+     * SSE 연결 직후 초기 데이터 전송
+     */
+    @Async("sseTaskExecutor")
+    public void sendInitialData(Long userId, SseEmitter emitter) {
+        try {
+            log.info("SSE 초기 데이터 전송 시작 - 사용자 ID: {}", userId);
+
+            // TODO: DB에서 해당 userId의 과거 알림 이력 조회
+            List<NotificationEventDto> pastEvents = loadPastEvents(userId);
+
+            emitter.send(SseEmitter.event()
+                    .id("initial_data_" + System.currentTimeMillis())
+                    .name("INITIAL_DATA")
+                    .data(pastEvents));
+
+            log.info("SSE 초기 데이터 전송 완료 - 사용자 ID: {}, 알림 개수: {}",
+                    userId, pastEvents.size());
+
+        } catch (Exception e) {
+            log.error("SSE 초기 데이터 전송 실패 - 사용자 ID: {}, 오류: {}", userId, e.getMessage());
+        }
+    }
+
+    /**
+     * 과거 알림 이력 조회 (실제 DB 조회)
+     */
+    private List<NotificationEventDto> loadPastEvents(Long userId) {
+        List<NotificationEventDto> pastEvents = new ArrayList<>();
+        
+        try {
+            // 1. 결제 성공 이력 조회 (최근 30일) - Funding 정보 포함
+            List<UserTransaction> paymentHistory = userTransactionRepository
+                    .findByUser_IdAndStateAndCreatedAtAfterWithFunding(
+                            userId, 
+                            UserTransactionState.SUCCESS, 
+                            LocalDateTime.now().minusDays(30)
+                    );
+            
+            for (UserTransaction transaction : paymentHistory) {
+                Funding funding = transaction.getFunding();
+                if (funding != null) {
+                    NotificationEventDto paymentEvent = NotificationEventDto.builder()
+                            .eventId("past_payment_" + transaction.getTransactionId())
+                            .eventType(NotificationEventType.PAYMENT_SUCCESS)
+                            .userId(userId)
+                            .message(String.format("'%s' 펀딩에 %,d원이 결제되었습니다.", 
+                                    truncateTitle(funding.getTitle(), 15), transaction.getBalance()))
+                            .data(NotificationEventDto.PaymentSuccessData.builder()
+                                    .fundingId(funding.getFundingId())
+                                    .fundingTitle(funding.getTitle())
+                                    .amount((long) transaction.getBalance())
+                                    .build())
+                            .timestamp(transaction.getCreatedAt())
+                            .build();
+                    pastEvents.add(paymentEvent);
+                }
+            }
+            
+            // 2. 관심 등록 이력 조회 (최근 30일) - 임시로 빈 리스트 처리
+            // TODO: UserFavoriteRepository에 필요한 메서드 추가 후 구현
+            
+            // 최신순으로 정렬
+            pastEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+            
+            log.info("과거 알림 이력 조회 완료 - 사용자 ID: {}, 이벤트 수: {}", userId, pastEvents.size());
+            
+        } catch (Exception e) {
+            log.error("과거 알림 이력 조회 실패 - 사용자 ID: {}, 오류: {}", userId, e.getMessage());
+        }
+        
+        return pastEvents;
+    }
+    
+    // 펀딩 제목이 maxLength를 초과하면 축약 처리
+    private String truncateTitle(String fundingTitle, int maxLength) {
+        if (fundingTitle == null || fundingTitle.isEmpty()) {
+            return "";
+        }
+
+        if (fundingTitle.length() <= maxLength) {
+            return fundingTitle;
+        }
+
+        String truncated = fundingTitle.substring(0, maxLength);
+        int lastSpaceIndex = truncated.lastIndexOf(' ');
+
+        // 공백이 있으면 단어 경계에서 자르기
+        if (lastSpaceIndex > 0) {
+            return truncated.substring(0, lastSpaceIndex) + "...";
+        }
+
+        return truncated + "...";
+    }
+
+    /**
      * 특정 사용자에게 이벤트 전송
      */
     @Async("sseTaskExecutor")
@@ -102,7 +211,8 @@ public class NotificationService {
                     .name(event.getEventType().name())
                     .data(event));
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // ✅ 모든 예외를 안전하게 처리하여 ExceptionControllerAdvice로 전파되지 않도록 함
             log.error("SSE 이벤트 전송 실패 - 사용자 ID: {}, 이벤트 ID: {}, 오류: {}",
                     userId, event.getEventId(), e.getMessage());
 
@@ -113,6 +223,9 @@ public class NotificationService {
             } catch (Exception ex) {
                 log.warn("SSE 연결 종료 처리 중 오류 - 사용자 ID: {}, 오류: {}", userId, ex.getMessage());
             }
+            
+            // ✅ 예외를 삼켜서 ExceptionControllerAdvice로 전파되지 않도록 함
+            // SSE 전송 실패는 전체 시스템에 영향을 주지 않아야 함
         }
     }
 
@@ -134,7 +247,8 @@ public class NotificationService {
                         .name(event.getEventType().name())
                         .data(event));
                 return false; // 전송 성공 시 제거하지 않음
-            } catch (IOException e) {
+            } catch (Exception e) {
+                // ✅ 모든 예외를 안전하게 처리하여 ExceptionControllerAdvice로 전파되지 않도록 함
                 log.error("SSE 브로드캐스트 전송 실패 - 사용자 ID: {}, 오류: {}", userId, e.getMessage());
                 try {
                     emitter.complete();

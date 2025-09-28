@@ -15,7 +15,7 @@ public class GPTApiConfig {
     private String apiKey;
 
     @Value("${gpt.api.model}")
-    private String mdoel;
+    private String model;
 
     /**
      * ChatGPT API URL 가져오기
