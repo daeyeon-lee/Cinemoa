@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 import { LoginResponse, LogoutResponse } from '@/types/auth';
+import { connectNotificationSSE, disconnectNotificationSSE, clearAllNotifications } from './notification';
 
 
 // 구글 로그인 api (프론트 -> 백), idToken을 백으로 전송
@@ -39,6 +40,19 @@ export const googleLogin = async (idToken: string) => {
         email: loginData.data.email,
         isAnonymous: loginData.data.isAnonymous,
       });
+
+      // SSE 알림 연결 시작 (약간의 지연 후)
+      setTimeout(async () => {
+        try {
+          console.log('SSE 알림 연결 시도 중...');
+          await connectNotificationSSE();
+          console.log('SSE 알림 연결 성공');
+        } catch (error) {
+          console.error('SSE 알림 연결 실패:', error);
+          console.error('에러 상세:', error instanceof Error ? error.message : String(error));
+          // SSE 연결 실패해도 로그인은 성공으로 처리
+        }
+      }, 2000); // 2초 후 SSE 연결 시도 (쿠키 설정 시간 확보)
     }
 
     return loginData;
@@ -54,7 +68,7 @@ export const logout = async (): Promise<LogoutResponse> => {
     const { clearUser } = useAuthStore.getState();
     
     const response = await fetch(
-      'https://j13a110.p.ssafy.io:8443/api/auth/logout',
+      `${process.env.NEXT_PUBLIC_BASE_URL}auth/logout`,
       {
         method: "GET",
         // method: "POST",
@@ -64,6 +78,14 @@ export const logout = async (): Promise<LogoutResponse> => {
         credentials: "include", // 쿠키 포함
       }
     );
+
+    // SSE 알림 연결 종료
+    disconnectNotificationSSE();
+    console.log('SSE 알림 연결 종료');
+
+    // 알림 데이터 초기화
+    clearAllNotifications();
+    console.log('알림 데이터 초기화');
 
     // 로그아웃 성공 여부와 관계없이 클라이언트에서 사용자 정보 제거
     clearUser();
@@ -80,6 +102,8 @@ export const logout = async (): Promise<LogoutResponse> => {
   } catch (error) {
     console.error("Logout error:", error);
     // 에러가 발생해도 클라이언트에서는 로그아웃 처리
+    disconnectNotificationSSE();
+    clearAllNotifications();
     useAuthStore.getState().clearUser();
     throw error;
   }

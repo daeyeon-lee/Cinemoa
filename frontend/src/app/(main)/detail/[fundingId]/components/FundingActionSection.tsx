@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button'; // 버튼 컴포넌트
 import { Dialog } from '@/components/ui/dialog'; // 결제 모달용
 import Payment from '@/app/(main)/payment/Payment'; // 결제 모달 내용
@@ -10,6 +11,7 @@ import { ShareButton } from '@/components/share/ShareButton'; // 공유 버튼 �
 import InfoIcon from '@/component/icon/infoIcon'; // 정보 아이콘
 
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요)
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/stores/authStore'; // 로그인 사용자 상태
 import { useFundingDetail as useFundingDetailContext } from '@/contexts/FundingDetailContext';
@@ -25,6 +27,8 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, 
   const { data: contextData, userId: contextUserId } = useFundingDetailContext();
   const { user } = useAuthStore();
   const storeUserId = user?.userId?.toString();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   // ✅ context → store 순으로 fallback
   const userId = contextUserId || storeUserId;
@@ -97,6 +101,10 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, 
   const handleRefundComplete = () => {
     setRefundDialogOpen(false); // RefundConfirm 모달 닫기
     setRefundCompleteDialogOpen(true); // 완료 모달 열기
+    // 환불 성공 후 React Query 캐시 무효화하여 UI 업데이트
+    queryClient.invalidateQueries({
+      queryKey: ['DETAIL', fundingId.toString(), userId]
+    });
   };
 
   // 환불 완료 모달이 떠있을 때는 기본 UI 숨기기
@@ -111,8 +119,8 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, 
         subBtnLabel=""
         onBtnLabel={() => {
           setRefundCompleteDialogOpen(false);
-          // 확인 버튼 클릭 시 페이지 새로고침으로 최신 상태 반영
-          window.location.href = `/detail/${fundingId}`;
+          // 확인 버튼 클릭 시 새로고침 없이 페이지 이동
+          router.push(`/detail/${fundingId}`);
         }}
         onSubBtnLabel={() => {}}
       />
