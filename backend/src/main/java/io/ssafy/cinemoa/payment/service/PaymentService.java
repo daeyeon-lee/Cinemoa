@@ -223,6 +223,9 @@ public class PaymentService {
                         targetUserId, fundingId, successTransaction.getBalance(),
                         maskAccountNumber(refundAccountNo));
 
+                // 4-5. SSE 알림 전송 (환불 성공)
+                fundingNotificationService.notifyFundingRefund(user, funding, successTransaction.getBalance());
+
             } // 계좌이체 실패 시 로깅
             else {
                 log.warn("환불 처리 실패 - 환불 대상 사용자ID: {}, 펀딩: {}, 에러코드: {}, 메시지: {}",

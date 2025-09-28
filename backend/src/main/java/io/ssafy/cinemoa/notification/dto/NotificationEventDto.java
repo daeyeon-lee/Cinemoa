@@ -46,7 +46,7 @@ public class NotificationEventDto {
                 .eventId(generateEventId())
                 .eventType(NotificationEventType.PAYMENT_SUCCESS)
                 .userId(userId)
-                .message(String.format("'%s' 펀딩에 %,d원이 결제되었습니다.", truncateTitle(fundingTitle, 15), amount))
+                .message(String.format("'%s' 펀딩에 %,d원이 결제 완료!", truncateTitle(fundingTitle, 15), amount))
                 .data(paymentData)
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -85,7 +85,26 @@ public class NotificationEventDto {
                 .eventId(generateEventId())
                 .eventType(NotificationEventType.FUNDING_FAILED_REFUNDED)
                 .userId(userId)
-                .message(String.format("'%s' 상영회가 목표 달성에 실패하여 참여비 %,d원이 환불되었습니다.", truncateTitle(fundingTitle, 15),
+                .message(String.format("'%s' 상영회 목표 달성 실패! 참여비 %,d원 환불 완료", truncateTitle(fundingTitle, 15),
+                        refundAmount))
+                .data(fundingData)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    // 펀딩 환불 이벤트 생성 헬퍼 메서드
+    public static NotificationEventDto createFundingRefundEvent(Long userId, Long fundingId,
+                                                                String fundingTitle, Integer refundAmount) {
+        FundingInfodData fundingData = FundingInfodData.builder()
+                .fundingId(fundingId)
+                .fundingTitle(fundingTitle)
+                .build();
+
+        return NotificationEventDto.builder()
+                .eventId(generateEventId())
+                .eventType(NotificationEventType.FUNDING_REFUND)
+                .userId(userId)
+                .message(String.format("'%s' 상영회에 대한 참여비 %,d원 환불 완료", truncateTitle(fundingTitle, 15),
                         refundAmount))
                 .data(fundingData)
                 .timestamp(LocalDateTime.now())
@@ -112,7 +131,6 @@ public class NotificationEventDto {
                 .build();
     }
 
-
     @Data
     @Builder
     @NoArgsConstructor
@@ -132,7 +150,6 @@ public class NotificationEventDto {
         private Long fundingId;
         private String fundingTitle;
     }
-
 
     // 펀딩 제목이 maxLength를 초과하면 축약 처리
     private static String truncateTitle(String fundingTitle, int maxLength) {

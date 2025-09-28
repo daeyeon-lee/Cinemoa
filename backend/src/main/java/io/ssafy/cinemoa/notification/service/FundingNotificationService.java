@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -21,7 +20,6 @@ public class FundingNotificationService {
     private final NotificationService notificationService;
     private final UserTransactionRepository userTransactionRepository;
     private final UserFavoriteRepository userFavoriteRepository;
-
 
     /**
      * 결제 성공 결과 알림 전송
@@ -46,7 +44,6 @@ public class FundingNotificationService {
             // SSE 알림 실패는 전체 트랜잭션에 영향을 주지 않도록 예외를 다시 던지지 않음
         }
     }
-
 
     /**
      * 성공한 펀딩 결과 알림 전송
@@ -96,6 +93,30 @@ public class FundingNotificationService {
 
             // 펀딩 실패 알림
             NotificationEventDto failedEvent = NotificationEventDto.createFundingFailedEvent(
+                    userId, fundingId, fundingTitle, refundAmount);
+            notificationService.sendEventToUser(userId, failedEvent);
+
+            log.info("펀딩 실패 알림 전송 완료 - 펀딩ID: {}, 유저 아이디: {}, 환불 금액: {}", fundingId, userId, refundAmount);
+
+        } catch (Exception e) {
+            log.error("펀딩 결과 알림 전송 중 오류 발생 - 펀딩ID: {}, 오류: {}",
+                    funding.getFundingId(), e.getMessage(), e);
+            // 알림 전송 실패는 전체 프로세스에 영향을 주지 않도록 예외를 다시 던지지 않음
+        }
+    }
+
+    /**
+     * 펀딩 환불 결과 알림 전송 (참여자가 직접 환불 신청)
+     */
+    @Async("sseTaskExecutor")
+    public void notifyFundingRefund(User user, Funding funding, Integer refundAmount) {
+        try {
+            Long userId = user.getId();
+            Long fundingId = funding.getFundingId();
+            String fundingTitle = funding.getTitle();
+
+            // 펀딩 실패 알림
+            NotificationEventDto failedEvent = NotificationEventDto.createFundingRefundEvent(
                     userId, fundingId, fundingTitle, refundAmount);
             notificationService.sendEventToUser(userId, failedEvent);
 
