@@ -64,6 +64,8 @@ pipeline {
                 echo 'FE 브랜치 Push가 감지되었습니다. : Docker 빌드를 시작합니다.'
                 script {
                     withCredentials([
+                                    file(credentialsId: 'ssl-private-key',variable: 'SSL_PRIVATE_KEY'),
+                                    file(credentialsId: 'ssl-full-chain',variable: 'SSL_FULL_CHAIN'),
                                     file(credentialsId: 'env',variable: 'ENV')
                                     ]) {
                         sh '''
