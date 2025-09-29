@@ -6,15 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Upload, Search, Image, AlertTriangle } from 'lucide-react';
-import MovieIcon from '@/component/icon/movieIcon';
-import SeriesIcon from '@/component/icon/seriesIcon';
-import ConcertIcon from '@/component/icon/concertIcon';
-import SportsIcon from '@/component/icon/sportsIcon';
+import MovieIcon from '@/components/icon/movieIcon';
+import SeriesIcon from '@/components/icon/seriesIcon';
+import ConcertIcon from '@/components/icon/concertIcon';
+import SportsIcon from '@/components/icon/sportsIcon';
 import { TMDBMultiItem } from '@/types/tmdb';
 import { searchMulti, getMediaTitle, getMediaDate, getMediaTypeKorean } from '@/api/tmdb';
 import { getDetailSummary } from '@/api/funding';
 import { useState, useRef, useEffect } from 'react';
-import { useGetCategories } from '@/api/hooks/useCategoryQueries';
+import { useGetCategories } from '@/hooks/queries/useCategoryQueries';
 import { CategoryResponse } from '@/types/category';
 import { movieinfo } from '@/types/funding';
 
@@ -313,7 +313,7 @@ export default function MovieInfoTab({ onNext, onPrev, existingData, isFromVote 
           <p className="p2 text-secondary">투표에서 가져온 영화 정보는 수정할 수 없습니다. 원하시는 경우 만들기에서 새로 입력해주세요.</p>
         </div>
       )}
-      
+
       {/* 카테고리 선택 */}
       <div className="space-y-3">
         <div className="space-y-1">
@@ -613,7 +613,12 @@ export default function MovieInfoTab({ onNext, onPrev, existingData, isFromVote 
                   </div>
                 </div>
               ) : (
-                <div className={`flex flex-col items-center justify-center w-full h-full ${hasExistingData ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-BG-2'} rounded-[6px] transition-colors`} onClick={hasExistingData ? undefined : handleUploadClick}>
+                <div
+                  className={`flex flex-col items-center justify-center w-full h-full ${
+                    hasExistingData ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-BG-2'
+                  } rounded-[6px] transition-colors`}
+                  onClick={hasExistingData ? undefined : handleUploadClick}
+                >
                   <Upload className="w-11 h-11 text-tertiary mb-3" size={44} />
                   <p className="p2-b text-tertiary text-center mb-1">이미지는 1개 이상 필수로 업로드 해주세요.</p>
                   <p className="p2 text-subtle text-center">JPG, PNG, WEBP 파일을 지원합니다</p>
@@ -706,22 +711,22 @@ export default function MovieInfoTab({ onNext, onPrev, existingData, isFromVote 
                             </div>
                           ) : (
                             <div className="p1 max-lg:text-p2 text-secondary !leading-[1.5] !tracking-tight whitespace-pre-wrap">
-                            {Array.from(displayedAiSummary).map((char, index) => {
-                              const delayMs = index * 10;
-                              const style: React.CSSProperties = {
-                                opacity: revealedChars[index] ? 1 : 0,
-                                transform: revealedChars[index] ? 'translate(0,0)' : 'translate(10px,10px)',
-                                transitionProperty: 'opacity, transform',
-                                transitionDuration: '200ms',
-                                transitionTimingFunction: 'cubic-bezier(0.22,1,0.36,1)',
-                                transitionDelay: `${delayMs}ms`,
-                              };
-                              return (
-                                <span key={`c-${index}`} style={style}>
-                                  {char === ' ' ? '\u00A0' : char}
-                                </span>
-                              );
-                            })}
+                              {Array.from(displayedAiSummary).map((char, index) => {
+                                const delayMs = index * 10;
+                                const style: React.CSSProperties = {
+                                  opacity: revealedChars[index] ? 1 : 0,
+                                  transform: revealedChars[index] ? 'translate(0,0)' : 'translate(10px,10px)',
+                                  transitionProperty: 'opacity, transform',
+                                  transitionDuration: '200ms',
+                                  transitionTimingFunction: 'cubic-bezier(0.22,1,0.36,1)',
+                                  transitionDelay: `${delayMs}ms`,
+                                };
+                                return (
+                                  <span key={`c-${index}`} style={style}>
+                                    {char === ' ' ? '\u00A0' : char}
+                                  </span>
+                                );
+                              })}
                             </div>
                           )}
                         </div>

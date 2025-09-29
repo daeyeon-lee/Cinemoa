@@ -1,5 +1,5 @@
-import Navbar from '@/component/nav/navbar';
-import Footer from '@/component/footer/footer';
+import Navbar from '@/components/layout/navbar';
+import Footer from '@/components/layout/footer';
 
 // 메인 레이아웃 (navbar, footer 포함)
 export default function MainLayout({ children }: { children: React.ReactNode }) {

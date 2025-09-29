@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import InformationIcon from '@/component/icon/infomrationIcon';
-import { useGetCinemas, useGetCinemaDetail, useGetCinemasByDistrict } from '@/api/hooks/useCinemaQueries';
+import InformationIcon from '@/components/icon/infomrationIcon';
+import { useGetCinemas, useGetCinemaDetail, useGetCinemasByDistrict } from '@/hooks/queries/useCinemaQueries';
 import { CinemaResponse } from '@/types/cinema';
 import { creatVoteFunding } from '@/api/vote';
-import { CalendarDemo } from '@/components/calenderdemo';
+import { CalendarDemo } from '@/components/forms/calenderdemo';
 import { VoteTheaterinfo, VoteFundinginfo, VoteMovieinfo, CreateVoteFundingParams } from '@/types/vote';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import InformationIcon from '@/component/icon/infomrationIcon';
+import InformationIcon from '@/components/icon/infomrationIcon';
 import { Button } from '@/components/ui/button';
 import { CreatePaymentParams } from '@/types/payment';
 import { useAuthStore } from '@/stores/authStore';

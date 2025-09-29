@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import FundingIcon from '@/component/icon/fundingIcon';
-import VoteIcon from '@/component/icon/voteIcon';
+import FundingIcon from '@/components/icon/fundingIcon';
+import VoteIcon from '@/components/icon/voteIcon';
 export default function Create() {
   const router = useRouter();
   const [termsAgreed, setTermsAgreed] = useState(false);

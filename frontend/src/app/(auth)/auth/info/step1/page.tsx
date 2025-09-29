@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import OutlinedButton from '@/components/buttons/OutlinedButton';
 import { useState } from 'react';
 import Link from 'next/link';
-import MovieIcon from '@/component/icon/movieIcon';
-import SeriesIcon from '@/component/icon/seriesIcon';
-import ConcertIcon from '@/component/icon/concertIcon';
-import SportsIcon from '@/component/icon/sportsIcon';
+import MovieIcon from '@/components/icon/movieIcon';
+import SeriesIcon from '@/components/icon/seriesIcon';
+import ConcertIcon from '@/components/icon/concertIcon';
+import SportsIcon from '@/components/icon/sportsIcon';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 

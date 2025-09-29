@@ -4,12 +4,12 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import FundingInfoTab from './component/FundingInfoTab';
+import FundingInfoTab from './components/FundingInfoTab';
 import { fundinginfo } from '@/types/funding';
 import { movieinfo } from '@/types/funding';
-import MovieInfoTab from './component/MovieInfoTab';
-import TheaterInfoTab from './component/TheaterInfoTab';
-import PaymentTab from './component/PaymentTab';
+import MovieInfoTab from './components/MovieInfoTab';
+import TheaterInfoTab from './components/TheaterInfoTab';
+import PaymentTab from './components/PaymentTab';
 import { getFundingDetail } from '@/api/fundingDetail';
 import type { DetailData } from '@/types/fundingDetail';
 

@@ -1,9 +1,9 @@
 import { ComponentType } from 'react';
-import { HeartIcon } from '@/component/icon/heartIcon';
-import MovieIcon  from '@/component/icon/movieIcon';
-import SeriesIcon from '@/component/icon/seriesIcon';
-import ConcertIcon from '@/component/icon/concertIcon';
-import SportsIcon from '@/component/icon/sportsIcon';
+import { HeartIcon } from '@/components/icon/heartIcon';
+import MovieIcon from '@/components/icon/movieIcon';
+import SeriesIcon from '@/components/icon/seriesIcon';
+import ConcertIcon from '@/components/icon/concertIcon';
+import SportsIcon from '@/components/icon/sportsIcon';
 
 export const CATEGORY_VALUES = {
   ALL: 'all',
@@ -96,12 +96,7 @@ export const CATEGORIES_INFO: Record<CategoryValue, CategoryInfo> = {
 };
 
 // 홈페이지용 카테고리 (전체 제외)
-export const HOME_CATEGORIES: Category[] = [
-  CATEGORY_VALUES.MOVIE,
-  CATEGORY_VALUES.SERIES,
-  CATEGORY_VALUES.PERFORMANCE,
-  CATEGORY_VALUES.SPORTS,
-].map((value) => ({
+export const HOME_CATEGORIES: Category[] = [CATEGORY_VALUES.MOVIE, CATEGORY_VALUES.SERIES, CATEGORY_VALUES.PERFORMANCE, CATEGORY_VALUES.SPORTS].map((value) => ({
   categoryId: CATEGORIES_INFO[value].categoryId,
   label: CATEGORIES_INFO[value].label,
   icon: CATEGORIES_INFO[value].icon,
@@ -110,13 +105,7 @@ export const HOME_CATEGORIES: Category[] = [
 }));
 
 // 일반 페이지용 카테고리 (전체 포함)
-export const STANDARD_CATEGORIES: Category[] = [
-  CATEGORY_VALUES.ALL,
-  CATEGORY_VALUES.MOVIE,
-  CATEGORY_VALUES.SERIES,
-  CATEGORY_VALUES.PERFORMANCE,
-  CATEGORY_VALUES.SPORTS,
-].map((value) => ({
+export const STANDARD_CATEGORIES: Category[] = [CATEGORY_VALUES.ALL, CATEGORY_VALUES.MOVIE, CATEGORY_VALUES.SERIES, CATEGORY_VALUES.PERFORMANCE, CATEGORY_VALUES.SPORTS].map((value) => ({
   categoryId: CATEGORIES_INFO[value].categoryId,
   label: CATEGORIES_INFO[value].label,
   icon: CATEGORIES_INFO[value].icon,

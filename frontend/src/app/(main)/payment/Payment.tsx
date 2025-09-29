@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import AlertDialog from '@/components/ui/alert-dialog';
-import SuccessCheckIcon from '@/component/icon/success_check_icon';
+import SuccessCheckIcon from '@/components/icon/success_check_icon';
 import { validateAndFormatExpiryDate, validateAllPaymentFields } from '@/utils/validation';
 import { formatTime, formatKoreanDate } from '@/utils/dateUtils';
 import { createPayment, holdSeats } from '@/api/payment';
@@ -85,7 +85,6 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
   const handleNextToStep3 = async () => {
     if (!isAllFieldsCompleted()) return;
 
-
     setIsLoading(true);
     try {
       const fullCardNumber = `${paymentData.cardNumber1}${paymentData.cardNumber2}${paymentData.cardNumber3}${paymentData.cardNumber4}`;
@@ -98,13 +97,11 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
         amount: amount || 0,
       };
 
-
       if (!fundingId || !userId) {
         throw new Error('fundingId 또는 userId가 없습니다.');
       }
 
       await holdSeats(fundingId, parseInt(userId));
-
 
       await createPayment(paymentParams);
 
@@ -129,7 +126,6 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
     }
   };
 
-
   const handleBackToStep1 = () => {
     setCurrentStep('step1');
     setPaymentData({
@@ -145,7 +141,6 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
     });
   };
 
-
   const handleRetry = () => {
     setShowFailureModal(false);
     setPaymentError('');
@@ -154,13 +149,12 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
   const handleSuccess = () => {
     resetAllStates();
     onClose?.(); // 부모 Dialog 닫기
-    
+
     // 결제 성공 후 React Query 캐시 무효화하여 UI 업데이트
     queryClient.invalidateQueries({
-      queryKey: ['DETAIL', fundingId?.toString(), userId]
+      queryKey: ['DETAIL', fundingId?.toString(), userId],
     });
-    
-    
+
     router.push(`/detail/${fundingId}`); // 새로고침 없이 페이지 이동
   };
 
@@ -181,7 +175,6 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
       termsAgreed: false,
     });
   };
-
 
   const renderContent = () => {
     if (currentStep === 'step1') {
@@ -334,7 +327,6 @@ export default function Payment({ fundingId, userId, amount, title, videoName, s
     if (currentStep === 'step3') {
       return null; // DialogContent 대신 AlertDialog 사용
     }
-
   };
 
   return (

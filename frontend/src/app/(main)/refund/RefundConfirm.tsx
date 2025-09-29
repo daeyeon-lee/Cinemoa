@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { useFundingRefund } from '@/hooks/queries/useFunding';
-import InfoIcon from '@/component/icon/infoIcon';
+import InfoIcon from '@/components/icon/infoIcon';
 
 interface RefundConfirmProps {
   fundingId?: number;
@@ -14,14 +14,7 @@ interface RefundConfirmProps {
   onSuccess?: () => void;
 }
 
-export default function RefundConfirm({ 
-  fundingId, 
-  userId,
-  amount,
-  title,
-  onClose,
-  onSuccess
-}: RefundConfirmProps) {
+export default function RefundConfirm({ fundingId, userId, amount, title, onClose, onSuccess }: RefundConfirmProps) {
   const [isLoading, setIsLoading] = useState(false);
   const refundMutation = useFundingRefund({ skipRedirect: true });
 
@@ -35,20 +28,23 @@ export default function RefundConfirm({
     setIsLoading(true);
 
     try {
-      refundMutation.mutate({
-        fundingId,
-        userId,
-      }, {
-        onSuccess: () => {
-          setIsLoading(false);
-          onSuccess?.(); // 환불 성공 시 완료 모달 표시
+      refundMutation.mutate(
+        {
+          fundingId,
+          userId,
         },
-        onError: (error) => {
-          console.error('환불 처리 중 오류:', error);
-          alert('환불 처리 중 오류가 발생했습니다.');
-          setIsLoading(false);
-        }
-      });
+        {
+          onSuccess: () => {
+            setIsLoading(false);
+            onSuccess?.(); // 환불 성공 시 완료 모달 표시
+          },
+          onError: (error) => {
+            console.error('환불 처리 중 오류:', error);
+            alert('환불 처리 중 오류가 발생했습니다.');
+            setIsLoading(false);
+          },
+        },
+      );
     } catch (error) {
       console.error('환불 처리 중 오류:', error);
       alert('환불 처리 중 오류가 발생했습니다.');
@@ -61,8 +57,7 @@ export default function RefundConfirm({
     환불 금액 : ${amount?.toLocaleString()}원`;
 
   // 환불 정보 주의사항 생성
-  const infoText =
-  ` • 참여를 취소하시면 참여금이 환불됩니다.
+  const infoText = ` • 참여를 취소하시면 참여금이 환불됩니다.
     • 환불 처리는 즉시 진행되며, 취소할 수 없습니다.`;
 
   return (

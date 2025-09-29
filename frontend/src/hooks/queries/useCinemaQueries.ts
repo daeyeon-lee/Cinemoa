@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getCinemas, getCinemaDetail, getReservationTime } from '../cinema';
+import { getCinemas, getCinemaDetail, getReservationTime } from '../../api/cinema';
 import { formatDateToISOString } from '../../mappers/dateMapper';
 
 // React Query
@@ -44,7 +44,7 @@ export const useGetReservationTime = (screenId: number, selectedDate: string) =>
   // selectedDate가 있을 때만 Date 객체로 변환
   const targetDate = selectedDate ? new Date(selectedDate) : null;
   const dateString = selectedDate || '';
-  
+
   return useQuery({
     queryKey: ['screen', 'reservationTime', screenId, dateString],
     queryFn: () => getReservationTime(screenId, targetDate!),

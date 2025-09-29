@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import SearchIcon from '@/component/icon/searchIcon';
+import SearchIcon from '@/components/icon/searchIcon';
 import { X } from 'lucide-react';
 
 export default function SearchStartPage() {
@@ -60,14 +60,7 @@ export default function SearchStartPage() {
         <div className="w-full max-w-md mx-auto">
           {/* 검색창 */}
           <div className="w-full max-w-2xl mx-auto flex items-center">
-            <Input
-              type="search"
-              placeholder="검색어 입력하기"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1"
-            />
+            <Input type="search" placeholder="검색어 입력하기" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleKeyDown} className="flex-1" />
             <Button onClick={handleSearch} variant="ghost" className="hover:bg-BG-0">
               <SearchIcon width={24} height={24} stroke="#cbd5e1" className="md:w-9 md:h-9" />
             </Button>

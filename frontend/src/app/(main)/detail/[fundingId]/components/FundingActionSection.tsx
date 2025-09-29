@@ -6,9 +6,9 @@ import Payment from '@/app/(main)/payment/Payment'; // 결제 모달 내용
 import RefundConfirm from '@/app/(main)/refund/RefundConfirm'; // 환불 확인 모달
 import AlertDialog from '@/components/ui/alert-dialog'; // 참여 불가 모달
 // import ConfirmDialog from '@/components/ui/confirm-dialog'; // 환불 완료 모달 - 사용하지 않음
-import { HeartIcon } from '@/component/icon/heartIcon'; // 하트 아이콘
+import { HeartIcon } from '@/components/icon/heartIcon'; // 하트 아이콘
 import { ShareButton } from '@/components/share/ShareButton'; // 공유 버튼 컴포넌트
-import InfoIcon from '@/component/icon/infoIcon'; // 정보 아이콘
+import InfoIcon from '@/components/icon/infoIcon'; // 정보 아이콘
 
 import { useFundingLike, useFundingDetail } from '@/hooks/queries'; // 리액트 쿼리 훅(상세/좋아요)
 import { useQueryClient } from '@tanstack/react-query';
@@ -103,7 +103,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, 
     setRefundCompleteDialogOpen(true); // 완료 모달 열기
     // 환불 성공 후 React Query 캐시 무효화하여 UI 업데이트
     queryClient.invalidateQueries({
-      queryKey: ['DETAIL', fundingId.toString(), userId]
+      queryKey: ['DETAIL', fundingId.toString(), userId],
     });
   };
 
@@ -157,15 +157,8 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, 
         {!isParticipated ? (
           // 참여하지 않은 경우: 마감, 정원 체크 후 결제 모달 또는 참여 불가 모달
           <>
-            <Button 
-              variant={isExpired ? "secondary" : "brand1"} 
-              size="lg" 
-              textSize="lg" 
-              className="w-full" 
-              onClick={handleParticipateClick}
-              disabled={isExpired}
-            >
-              {isExpired ? "마감되었습니다" : "참여하기"}
+            <Button variant={isExpired ? 'secondary' : 'brand1'} size="lg" textSize="lg" className="w-full" onClick={handleParticipateClick} disabled={isExpired}>
+              {isExpired ? '마감되었습니다' : '참여하기'}
             </Button>
 
             {/* 결제 모달 */}
@@ -217,14 +210,7 @@ const FundingActionSection: React.FC<FundingActionSectionProps> = ({ fundingId, 
               참여 취소하기
             </Button>
             {refundDialogOpen && (
-              <RefundConfirm 
-                fundingId={fundingId} 
-                userId={userId} 
-                amount={price} 
-                title={contextData.funding.title} 
-                onClose={() => setRefundDialogOpen(false)}
-                onSuccess={handleRefundComplete}
-              />
+              <RefundConfirm fundingId={fundingId} userId={userId} amount={price} title={contextData.funding.title} onClose={() => setRefundDialogOpen(false)} onSuccess={handleRefundComplete} />
             )}
           </>
         )}

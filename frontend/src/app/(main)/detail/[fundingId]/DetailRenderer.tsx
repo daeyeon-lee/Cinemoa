@@ -8,7 +8,7 @@ import { FundingDetail } from './FundingDetail';
 import { VoteDetail } from './VoteDetail';
 
 import type { DetailData } from '@/types/fundingDetail';
-import InfoIcon from '@/component/icon/infoIcon';
+import InfoIcon from '@/components/icon/infoIcon';
 
 interface DetailRendererProps {
   fundingId: string;
