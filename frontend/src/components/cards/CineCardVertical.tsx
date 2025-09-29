@@ -122,7 +122,7 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" loadingState={loadingState} className={`h-full w-full ${isEnded ? 'opacity-30' : ''}`} />
               {isEnded && <div className="absolute text-white p2-b">마감되었습니다</div>}
               {/* 상태 태그 - 카드 외부에 absolute로 배치 */}
-              {showStateTag && data.funding.state !== 'ON_PROGRESS' &&
+              {showStateTag && data.funding.fundingType === 'FUNDING' && data.funding.state !== 'ON_PROGRESS' &&
                 (() => {
                   const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '대기중', className: 'bg-amber-300 text-secondary' };
                   return (
