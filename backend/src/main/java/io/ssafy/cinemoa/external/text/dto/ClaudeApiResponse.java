@@ -1,0 +1,68 @@
+package io.ssafy.cinemoa.external.text.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import lombok.Data;
+
+/**
+ * Claude API 응답 DTO
+ *
+ * Claude API로부터 받는 응답 형식
+ */
+@Data
+public class ClaudeApiResponse {
+
+    private String id;
+    private String type;
+    private String role;
+    private String model;
+    private List<Content> content;
+    private String stopReason;
+    private String stopSequence;
+    private Usage usage;
+
+    @Data
+    public static class Content {
+        private String type; // "text"
+        private String text; // 실제 텍스트 내용
+    }
+
+    @Data
+    public static class Usage {
+        @JsonProperty("input_tokens")
+        private Integer inputTokens;
+        @JsonProperty("output_tokens")
+        private Integer outputTokens;
+        private Integer cacheCreationInputTokens;
+        private Integer cacheReadInputTokens;
+        private CacheCreation cacheCreation;
+        private String serviceTier;
+
+        @Data
+        public static class CacheCreation {
+            private Integer ephemeral5mInputTokens;
+            private Integer ephemeral1hInputTokens;
+        }
+    }
+
+    /**
+     * 응답에서 요약된 텍스트 추출
+     *
+     * @return 요약된 텍스트 (첫 번째 content의 text)
+     */
+    public String getSummaryText() {
+        if (content != null && !content.isEmpty() && content.get(0) != null) {
+            return content.get(0).getText();
+        }
+        return "";
+    }
+
+    /**
+     * 응답에 유효한 콘텐츠가 있는지 확인
+     *
+     * @return 유효한 콘텐츠가 있으면 true, 없으면 false
+     */
+    public boolean hasValidContent() {
+        return content != null && !content.isEmpty() && content.get(0).getText() != null;
+    }
+}
