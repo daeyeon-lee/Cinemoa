@@ -66,23 +66,27 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
 
     switch (eventType) {
       case 'PAYMENT_SUCCESS':
-        // return '💳';  
-        return <PaymentSuccessIcon width={iconSize} height={iconSize} />;
+        return '💳';  
+        // return <PaymentSuccessIcon width={iconSize} height={iconSize} />;
       case 'FUNDING_SUCCESS':
-        // return '🎉';  
-        return <FundingSuccessIcon width={iconSize} height={iconSize} />;
+        return '🎉';  
+        // return <FundingSuccessIcon width={iconSize} height={iconSize} />;
       case 'FUNDING_FAILED_REFUNDED':
         // return '💰';  
-        return <RefundIcon width={iconSize} height={iconSize} />;
+        // return '🪙';  
+        // return '💴';  
+        return '💸';  
+        // return <RefundIcon width={iconSize} height={iconSize} />;
       case 'FUNDING_REFUND':
         // return '💰';  
-        return <RefundIcon width={iconSize} height={iconSize} />;
+        return '💸';  
+        // return <RefundIcon width={iconSize} height={iconSize} />;
       case 'VOTE_TO_FUNDING':
-        // return '📊';  
-        return <VoteNotificationIcon width={iconSize} height={iconSize} />;
+        return '📊';  
+        // return <VoteNotificationIcon width={iconSize} height={iconSize} />;
       default:
-        // return '🔔';  
-        return <NotificationIcon width={iconSize} height={iconSize} stroke="#94A3B8" />;
+        return '🔔';  
+        // return <NotificationIcon width={iconSize} height={iconSize} stroke="#94A3B8" />;
     }
   };
 
