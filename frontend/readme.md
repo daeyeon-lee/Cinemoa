@@ -2,8 +2,7 @@
 
 ```
 src/
-├── api/                    # API 함수들 (19개 파일)
-│
+├── api/                    # API 함수
 ├── app/                    # Next.js App Router
 │   ├── (auth)/               # 인증 관련 페이지
 │   └── (main)/               # 메인 애플리케이션 페이지
