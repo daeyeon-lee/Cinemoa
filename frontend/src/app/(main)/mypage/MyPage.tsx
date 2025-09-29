@@ -5,9 +5,9 @@ import { getUserInfo, getFundingProposals, getParticipatedFunding, getLikedFundi
 import type { UserInfo, FundingProposal, ParticipatedFunding, LikedFunding } from '@/types/mypage';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
-import CardManagement from '@/app/(main)/mypage/component/CardManagement';
-import RefundAccountModal from '@/app/(main)/mypage/component/RefundAccountModal';
-import EditProfileModal from '@/app/(main)/mypage/component/EditProfileModal';
+import CardManagement from '@/app/(main)/mypage/components/CardManagement';
+import RefundAccountModal from '@/app/(main)/mypage/components/RefundAccountModal';
+import EditProfileModal from '@/app/(main)/mypage/components/EditProfileModal';
 import { useFundingLike } from '@/hooks/queries/useFunding';
 import ProfileSection from '@/app/(main)/mypage/sections/ProfileSection';
 import ProposalsSection from '@/app/(main)/mypage/sections/ProposalsSection';
@@ -339,7 +339,6 @@ export default function MyPage() {
       fetchMyLiked();
     }
   }, [likedType]);
-
 
   // 로그인하지 않은 경우 로딩 화면 표시 (리다이렉트 중)
   if (!isLoggedIn && !isLoading) {
