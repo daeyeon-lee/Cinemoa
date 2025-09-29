@@ -22,30 +22,25 @@
 # ⚡주요 기능
 
 ### 1. 상영회
+<img height="200" alt="상영회" src="images/상영회.gif" />
+<img height="200" alt="실시간 인기" src="images/실시간 인기.gif" />
+<img height="200" alt="검색" src="images/검색.gif" />
+
 - 필터 : 카테고리, 상영관, 지역별 필터링 기능을 통해 원하는 상영회 조회 가능
-
-    <img height="200" alt="상영회" src="images/상영회.gif" />
-
-
-
 - 실시간 인기 펀딩: 30분 단위 조회수/보고싶어요 수를 지표로 wilson-score를 계산
 - 진행률 대시보드: 실시간 펀딩 현황, 참여자 수, 보고싶어요 수, 달성률 시각화
-
-    <img height="200" alt="실시간 인기" src="images/실시간 인기.gif" />
-
-
 - 검색 : 상영물, 상영회 제목으로 검색하여 상영회 조회 가능
-    <img height="200" alt="검색" src="images/검색.gif" />
-
-
 
 ### 2. 수요조사
+<img height="200" alt="검색" src="images/상영회 전환.gif" />
 
 - 수요 조사: 상영회 개설 전 예상 대관일 구간과 영화관을 지정하고 수요 예측 제공
 
 - 상영회 전환 : 완료된 수요 조사는 기존 내용을 바탕으로 수요 조사 전환 제공
 
 ### 3. 만들기 
+<img height="200" alt="검색" src="images/영화 검색.gif" />
+<img height="200" alt="검색" src="images/영화관 검색.gif" />
 
 - 크라우드 펀딩 기반 참여자 모집 : 대관비 기반 참가자 결제 금액 자동 결정
 
