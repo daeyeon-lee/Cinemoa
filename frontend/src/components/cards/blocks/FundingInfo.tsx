@@ -1,0 +1,70 @@
+import React from 'react';
+import { Progress } from '../primitives/Progress';
+import { Skeleton } from '@/components/ui/skeleton';
+
+type FundingInfoProps = {
+  price: number;
+  progressRate: number;
+  participantCount: number;
+  maxPeople: number;
+  fundingEndsOn: string;
+  loadingState?: 'ready' | 'loading' | 'error';
+};
+
+const FundingInfo: React.FC<FundingInfoProps> = ({ price, progressRate, participantCount, maxPeople, fundingEndsOn, loadingState = 'ready' }) => {
+  const formatNumber = (num: number) => {
+    return num.toLocaleString('ko-KR');
+  };
+
+  const calculateDaysLeft = (endDate: string) => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const daysLeft = calculateDaysLeft(fundingEndsOn);
+
+  if (loadingState === 'loading') {
+    return (
+      <div className="space-y-1">
+        <Skeleton className="h-6 w-full" />
+        <div className="flex justify-between">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-14" />
+        </div>
+        <Skeleton className="h-1 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {/* 가격 */}
+      <div className="text-base text-slate-50 font-semibold leading-normal">{formatNumber(price)} 원</div>
+
+      {/* 메타 정보 현재인원/최대인원 */}
+      <div className="flex justify-between items-center text-xs font-semibold">
+        <div className="flex gap-1">
+          <span className={`text-p3-b  ${daysLeft > 0 ? 'text-Brand1-Strong' : 'text-subtle'} leading-3`}>{Math.round(progressRate)}%</span>
+          <span className="text-slate-400 text-caption2 font-normal leading-3">
+            {formatNumber(participantCount)}/{formatNumber(maxPeople)}
+          </span>
+        </div>
+        {daysLeft > 0 && (
+        <div className="text-slate-50 text-caption1-b leading-none">{daysLeft}일 남음</div>
+        )}
+        {daysLeft <= 0 && (
+          <div className="text-slate-50 text-caption1-b leading-none">마감</div>
+        )}
+      </div>
+
+      {/* 진행률 바 */}
+      <Progress value={progressRate} height={4} isExpired={daysLeft <= 0} />
+    </div>
+  );
+};
+
+export { FundingInfo };
+export type { FundingInfoProps };

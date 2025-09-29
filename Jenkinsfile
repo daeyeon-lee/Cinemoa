@@ -71,8 +71,7 @@ pipeline {
                         sh '''
                         cd ./frontend
                         mkdir -p ./ssl
-                        cp $ENV ./.env
-                        chmod 600 ./ssl/*.pem
+                        cp -f $ENV ./.env
                         docker build -t ${DOCKER_IMAGE_FE}:${DOCKER_TAG} .
                         '''
                     }
