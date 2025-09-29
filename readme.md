@@ -22,9 +22,9 @@
 # ⚡주요 기능
 
 ### 1. 상영회
-<img height="200" alt="상영회" src="images/상영회.gif" />
-<img height="200" alt="실시간 인기" src="images/실시간 인기.gif" />
-<img height="200" alt="검색" src="images/검색.gif" />
+<img height="300" alt="상영회" src="images/상영회.gif" />
+<img height="300" alt="실시간 인기" src="images/실시간 인기.gif" />
+<img height="300" alt="검색" src="images/검색.gif" />
 
 - 필터 : 카테고리, 상영관, 지역별 필터링 기능을 통해 원하는 상영회 조회 가능
 
@@ -35,15 +35,15 @@
 - 검색 : 상영물, 상영회 제목으로 검색하여 상영회 조회 가능
 
 ### 2. 수요조사
-<img height="200" alt="검색" src="images/상영회 전환.gif" />
+<img height="300" alt="검색" src="images/상영회 전환.gif" />
 
 - 수요 조사: 상영회 개설 전 예상 대관일 구간과 영화관을 지정하고 수요 예측 제공
 
 - 상영회 전환 : 완료된 수요 조사는 기존 내용을 바탕으로 수요 조사 전환 제공
 
 ### 3. 만들기 
-<img height="200" alt="검색" src="images/영화 검색.gif" />
-<img height="200" alt="검색" src="images/영화관 검색.gif" />
+<img height="300" alt="검색" src="images/영화 검색.gif" />
+<img height="300" alt="검색" src="images/영화관 검색.gif" />
 
 - 크라우드 펀딩 기반 참여자 모집 : 대관비 기반 참가자 결제 금액 자동 결정
 
@@ -52,7 +52,7 @@
 - 영화관 검색 : 영화관 대관비, 시설 정보를 한 눈에 조회
 
 ### 4. 결제 & 정산 시스템
-<img height="200" alt="검색" src="images/결제.gif" />
+<img height="300" alt="검색" src="images/결제.gif" />
 
 - 좌석 점유 / 결제 로직 분리 : 3분간 임시 좌석 점유 -> 결제 -> 참여
 
@@ -63,7 +63,7 @@
 
 ### 4. 부가 서비스
 
-<img width="250" height="400" alt="스마트 티켓" src="images/스마트 티켓.gif" />
+<img width="300" height="400" alt="스마트 티켓" src="images/스마트 티켓.gif" />
 
 - 스마트 티켓: 성공한 펀딩은 배너 이미지를 AI를 통해 영상화하여 스마트 티켓 제공
 
