@@ -4,7 +4,7 @@ import { BarcodeDecor } from './primitives/BarcodeDecor';
 import { PerforationLine } from './primitives/PerforationLine';
 import { VoteInfo } from './blocks/VoteInfo';
 import { FundingInfo } from './blocks/FundingInfo';
-import { HeartIcon } from '@/component/icon/heartIcon';
+import { HeartIcon } from '@/components/icon/heartIcon';
 import { ApiSearchItem, FundingType, FundingState } from '@/types/searchApi';
 import { useAuthStore } from '@/stores/authStore';
 import { useFundingLike } from '@/hooks/queries/useFunding';
@@ -111,9 +111,6 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
 
   return (
     <div className="w-full relative hover:scale-[1.02]">
-
-
-
       <div className={`w-full cursor-pointer transition-transform`} onClick={handleCardClick}>
         <div className="bg-BG-1 rounded-xl p-3 gap-3">
           {/* 이미지영역 */}
@@ -122,7 +119,9 @@ const CineCardVertical: React.FC<CineCardProps> = ({ data, loadingState = 'ready
               <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" loadingState={loadingState} className={`h-full w-full ${isEnded ? 'opacity-30' : ''}`} />
               {isEnded && <div className="absolute text-white p2-b">마감되었습니다</div>}
               {/* 상태 태그 - 카드 외부에 absolute로 배치 */}
-              {showStateTag && data.funding.fundingType === 'FUNDING' && data.funding.state !== 'ON_PROGRESS' &&
+              {showStateTag &&
+                data.funding.fundingType === 'FUNDING' &&
+                data.funding.state !== 'ON_PROGRESS' &&
                 (() => {
                   const badgeInfo = getStateBadgeInfo ? getStateBadgeInfo(data.funding.state, data.funding.fundingType) : { text: '대기중', className: 'bg-amber-300 text-secondary' };
                   return (

@@ -1,10 +1,10 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import NotificationIcon from '@/component/icon/notificationIcon';
-import PaymentSuccessIcon from '@/component/icon/paymentSuccessIcon';
-import FundingSuccessIcon from '@/component/icon/fundingSuccessIcon';
-import RefundIcon from '@/component/icon/refundIcon';
-import VoteNotificationIcon from '@/component/icon/voteNotificationIcon';
+import NotificationIcon from '@/components/icon/notificationIcon';
+import PaymentSuccessIcon from '@/components/icon/paymentSuccessIcon';
+import FundingSuccessIcon from '@/components/icon/fundingSuccessIcon';
+import RefundIcon from '@/components/icon/refundIcon';
+import VoteNotificationIcon from '@/components/icon/voteNotificationIcon';
 import { markNotificationAsRead, markAllNotificationsAsRead } from '@/api/notification';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { NotificationEventDto } from '@/types/notification';
@@ -18,10 +18,10 @@ interface NotificationDropdownProps {
 export default function NotificationDropdown({ isMobile = false }: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
-  
+
   // Store에서 알림 상태 가져오기
   const { notifications, isConnected, hasUnread } = useNotificationStore();
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -56,9 +56,7 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
 
   // 표시할 알림 개수 제한
   const NOTIFICATION_LIMIT = 8;
-  const displayedNotifications = showAllNotifications 
-    ? notifications 
-    : notifications.slice(0, NOTIFICATION_LIMIT);
+  const displayedNotifications = showAllNotifications ? notifications : notifications.slice(0, NOTIFICATION_LIMIT);
   const hasMoreNotifications = notifications.length > NOTIFICATION_LIMIT;
 
   const getNotificationIcon = (eventType: string) => {
@@ -66,27 +64,27 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
 
     switch (eventType) {
       case 'PAYMENT_SUCCESS':
-        return '💳';  
-        // return <PaymentSuccessIcon width={iconSize} height={iconSize} />;
+        return '💳';
+      // return <PaymentSuccessIcon width={iconSize} height={iconSize} />;
       case 'FUNDING_SUCCESS':
-        return '🎉';  
-        // return <FundingSuccessIcon width={iconSize} height={iconSize} />;
+        return '🎉';
+      // return <FundingSuccessIcon width={iconSize} height={iconSize} />;
       case 'FUNDING_FAILED_REFUNDED':
-        // return '💰';  
-        // return '🪙';  
-        // return '💴';  
-        return '💸';  
-        // return <RefundIcon width={iconSize} height={iconSize} />;
+        // return '💰';
+        // return '🪙';
+        // return '💴';
+        return '💸';
+      // return <RefundIcon width={iconSize} height={iconSize} />;
       case 'FUNDING_REFUND':
-        // return '💰';  
-        return '💸';  
-        // return <RefundIcon width={iconSize} height={iconSize} />;
+        // return '💰';
+        return '💸';
+      // return <RefundIcon width={iconSize} height={iconSize} />;
       case 'VOTE_TO_FUNDING':
-        return '📊';  
-        // return <VoteNotificationIcon width={iconSize} height={iconSize} />;
+        return '📊';
+      // return <VoteNotificationIcon width={iconSize} height={iconSize} />;
       default:
-        return '🔔';  
-        // return <NotificationIcon width={iconSize} height={iconSize} stroke="#94A3B8" />;
+        return '🔔';
+      // return <NotificationIcon width={iconSize} height={iconSize} stroke="#94A3B8" />;
     }
   };
 
@@ -115,15 +113,9 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
       <button
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
-        className={`relative flex items-center justify-center rounded-full hover:bg-BG-1 transition-colors duration-200 ${isMobile ? 'w-6 h-6 p-1' : 'w-8 h-8 p-1.5'
-          }`}
+        className={`relative flex items-center justify-center rounded-full hover:bg-BG-1 transition-colors duration-200 ${isMobile ? 'w-6 h-6 p-1' : 'w-8 h-8 p-1.5'}`}
       >
-        <NotificationIcon
-          width={isMobile ? 26 : 30}
-          height={isMobile ? 26 : 30}
-          stroke="#94A3B8"
-          className="hover:stroke-primary transition-colors duration-200"
-        />
+        <NotificationIcon width={isMobile ? 26 : 30} height={isMobile ? 26 : 30} stroke="#94A3B8" className="hover:stroke-primary transition-colors duration-200" />
         {/* 안 읽은 알림 배지 */}
         {hasUnread && (
           <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#e83045] rounded-full border-2 border-[#e83045] flex items-center justify-center">
@@ -135,8 +127,7 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
       {/* 드롭다운 메뉴 */}
       {isOpen && (
         <div
-          className={`absolute right-0 mt-2 w-80 bg-BG-0 border border-BG-1 rounded-lg shadow-lg z-50 ${isMobile ? 'top-10' : 'top-12'
-            }`}
+          className={`absolute right-0 mt-2 w-80 bg-BG-0 border border-BG-1 rounded-lg shadow-lg z-50 ${isMobile ? 'top-10' : 'top-12'}`}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
@@ -144,10 +135,7 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
           <div className="px-4 py-3 border-b border-BG-1">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-primary">알림</h3>
-              <button
-                onClick={handleMarkAllAsRead}
-                className="text-xs text-tertiary hover:text-primary transition-colors"
-              >
+              <button onClick={handleMarkAllAsRead} className="text-xs text-tertiary hover:text-primary transition-colors">
                 모두 읽음
               </button>
             </div>
@@ -162,20 +150,14 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
                   <div
                     key={`${notification.eventId}-${index}`}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`px-4 py-3 border-b border-BG-1 cursor-pointer hover:bg-BG-1 transition-colors ${!isRead ? 'bg-BG-1/50' : ''
-                      }`}
+                    className={`px-4 py-3 border-b border-BG-1 cursor-pointer hover:bg-BG-1 transition-colors ${!isRead ? 'bg-BG-1/50' : ''}`}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="flex items-center justify-center w-6 h-6 mt-0.5">{getNotificationIcon(notification.eventType)}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2">
-                          <p className={`text-sm font-medium ${!isRead ? 'text-primary' : 'text-secondary'
-                            }`}>
-                            {notification.message}
-                          </p>
-                          {!isRead && (
-                            <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          )}
+                          <p className={`text-sm font-medium ${!isRead ? 'text-primary' : 'text-secondary'}`}>{notification.message}</p>
+                          {!isRead && <div className="w-2 h-2 bg-primary rounded-full"></div>}
                         </div>
                         <p className="text-xs text-tertiary mt-1">{formatTimestamp(notification.timestamp)}</p>
                       </div>
@@ -188,14 +170,8 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
                 <div className="flex justify-center mb-2">
                   <NotificationIcon width={32} height={32} stroke="#94A3B8" />
                 </div>
-                <p className="text-sm text-tertiary">
-                  {isConnected ? '새로운 알림이 없습니다' : '알림 연결 중...'}
-                </p>
-                {!isConnected && (
-                  <p className="text-xs text-red-500 mt-2">
-                    연결이 끊어졌습니다. 새로고침 후 다시 시도해주세요.
-                  </p>
-                )}
+                <p className="text-sm text-tertiary">{isConnected ? '새로운 알림이 없습니다' : '알림 연결 중...'}</p>
+                {!isConnected && <p className="text-xs text-red-500 mt-2">연결이 끊어졌습니다. 새로고침 후 다시 시도해주세요.</p>}
               </div>
             )}
           </div>
@@ -203,10 +179,7 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
           {/* 푸터 */}
           {hasMoreNotifications && (
             <div className="px-4 py-3 border-t border-BG-1">
-              <button 
-                onClick={handleShowAllNotifications}
-                className="w-full text-sm text-primary hover:text-primary/80 transition-colors"
-              >
+              <button onClick={handleShowAllNotifications} className="w-full text-sm text-primary hover:text-primary/80 transition-colors">
                 {showAllNotifications ? `최근 알림 보기 (8개)` : `모든 알림 보기 (${notifications.length}개)`}
               </button>
             </div>

@@ -3,12 +3,12 @@
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import VoteFundingInfoTab from './component/VoteFundingInfoTab';
+import VoteFundingInfoTab from './components/VoteFundingInfoTab';
 import { VoteFundinginfo } from '@/types/vote';
 import { VoteMovieinfo } from '@/types/vote';
 import { VoteTheaterinfo } from '@/types/vote';
-import VoteMovieInfoTab from './component/VoteMovieInfoTab';
-import VoteTheaterInfoTab from './component/VoteTheaterInfoTab';
+import VoteMovieInfoTab from './components/VoteMovieInfoTab';
+import VoteTheaterInfoTab from './components/VoteTheaterInfoTab';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 
 // MovieInfoTab에서 전달하는 데이터 타입

@@ -13,7 +13,7 @@ import { RecentlyViewedSection } from './sections/RecentlyViewedSection';
 import { CategoryButton } from '@/components/buttons/CategoryButton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import SearchIcon from '@/component/icon/searchIcon';
+import SearchIcon from '@/components/icon/searchIcon';
 import HorizontalScroller from '@/components/containers/HorizontalScroller';
 import { HOME_CATEGORIES } from '@/constants/categories';
 // 버튼 클릭 시 샹영회 페이지 이동

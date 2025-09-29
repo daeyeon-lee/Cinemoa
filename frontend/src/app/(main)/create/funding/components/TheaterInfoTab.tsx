@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import InformationIcon from '@/component/icon/infomrationIcon';
-import { useGetCinemas, useGetCinemaDetail, useGetReservationTime } from '@/api/hooks/useCinemaQueries';
+import InformationIcon from '@/components/icon/infomrationIcon';
+import { useGetCinemas, useGetCinemaDetail, useGetReservationTime } from '@/hooks/queries/useCinemaQueries';
 import { CinemaResponse } from '@/types/cinema';
 import { createFunding } from '@/api/funding';
 import { convertVotes } from '@/api/convertVotes';
-import { CalendarDemo } from '@/components/calenderdemo';
+import { CalendarDemo } from '@/components/forms/calenderdemo';
 import { theaterinfo, fundinginfo, movieinfo, CreateFundingParams } from '@/types/funding';
 import { useAuthStore } from '@/stores/authStore';
 import { holdSeats } from '@/api/payment';
@@ -79,10 +79,9 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
     };
     const posterUrl = movieData?.posterUrl;
 
-    
     try {
       let result;
-      
+
       if (existingData && existingData.type === 'VOTE') {
         // 투표에서 온 경우: convertVotes API 호출
         const convertData = {
@@ -102,7 +101,7 @@ export default function TheaterInfoTab({ onNext, onPrev, fundingData, movieData,
         // 새로 생성하는 경우: createFunding API 호출
         result = await createFunding(completeData, posterUrl || '');
       }
-      
+
       const fundingId = result.data.fundingId;
       await holdSeats(fundingId, user?.userId || 0);
       alert('펀딩이 성공적으로 생성되었습니다!');

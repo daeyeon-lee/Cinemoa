@@ -1,6 +1,6 @@
 import React from 'react';
 import { Media } from '../primitives/Media';
-import { HeartIcon } from '@/component/icon/heartIcon';
+import { HeartIcon } from '@/components/icon/heartIcon';
 import { ApiSearchItem, FundingState, FundingType } from '@/types/searchApi';
 
 type HorizontalLeftProps = {
@@ -15,8 +15,6 @@ type HorizontalLeftProps = {
   getStateBadgeInfo?: (state: FundingState, fundingType: FundingType) => { text: string; className: string };
   backgroundColor?: 'bg-BG-0' | 'bg-BG-1';
 };
-
-
 
 const HorizontalLeft: React.FC<HorizontalLeftProps> = ({
   data,
@@ -43,7 +41,13 @@ const HorizontalLeft: React.FC<HorizontalLeftProps> = ({
     <div className={`${backgroundColor} flex-1 min-w-0 p-3 flex justify-start items-center gap-3 rounded-xl hover:rounded-xl`}>
       <div className="w-16 relative rounded overflow-hidden flex items-center justify-center">
         <Media src={data.funding.bannerUrl} alt={data.funding.title} aspect="7/10" height={96} rounded={false} loadingState={loadingState} className={`${isEnded ? 'opacity-30' : ''}`} />
-        {isEnded && <div className="absolute text-white caption1-b text-center">마감<br/>되었습니다</div>}
+        {isEnded && (
+          <div className="absolute text-white caption1-b text-center">
+            마감
+            <br />
+            되었습니다
+          </div>
+        )}
         {/* 상태 태그 오버레이 */}
         {showStateTag &&
           (() => {

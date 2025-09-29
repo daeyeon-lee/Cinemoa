@@ -1,6 +1,6 @@
 import React from 'react';
-import PeopleIcon from '@/component/icon/peopleIcon';
-import ClockIcon from '@/component/icon/clockIcon';
+import PeopleIcon from '@/components/icon/peopleIcon';
+import ClockIcon from '@/components/icon/clockIcon';
 
 type StatItemProps = {
   icon: 'people' | 'time';

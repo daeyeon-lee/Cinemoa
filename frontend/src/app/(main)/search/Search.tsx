@@ -10,7 +10,7 @@ import { ChevronDown } from 'lucide-react';
 import { SortBar } from '@/components/filters/SortBar';
 import { ResponsiveCardList } from '@/components/lists/ResponsiveCardList';
 // 웹
-import { ListShell } from '@/components/layouts/ListShell';
+import { ListShell } from '@/components/layout/ListShell';
 import { CategorySelectSection } from '@/components/filters/CategorySelectSection';
 import { RegionFilterPanel } from '@/components/filters/RegionFilterPanel';
 import { TheaterTypeFilterPanel } from '@/components/filters/TheaterTypeFilterPanel';
@@ -28,7 +28,7 @@ import { useSearch } from '@/hooks/queries/useSearch';
 import { useFundingLike } from '@/hooks/queries/useFunding'; // ✅ 동일 훅 import
 import type { SearchParams, SortBy } from '@/types/searchApi';
 //icon
-import SearchIcon from '@/component/icon/searchIcon';
+import SearchIcon from '@/components/icon/searchIcon';
 /**
  * 검색 페이지 컴포넌트
  *

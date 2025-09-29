@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
-import Footer from '@/component/footer/footer';
 import QueryProvider from '@/providers/QueryProvider';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import GoogleAnalytics from '@/lib/GoogleAnalytics';
-import GA4Debugger from '@/components/GA4Debugger';
+import GA4Debugger from '@/components/debug/GA4Debugger';
 const kakaoMapApiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY;
 
 export const metadata: Metadata = {

@@ -2,11 +2,11 @@
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useCallback, useEffect } from 'react';
 // 아이콘
-import SearchIcon from '@/component/icon/searchIcon';
-import TicketIcon from '@/component/icon/ticketIcon';
-import UserIcon from '@/component/icon/userIcon';
-import LoginIcon from '@/component/icon/loginIcon';
-import LogoutIcon from '@/component/icon/logoutIcon';
+import SearchIcon from '@/components/icon/searchIcon';
+import TicketIcon from '@/components/icon/ticketIcon';
+import UserIcon from '@/components/icon/userIcon';
+import LoginIcon from '@/components/icon/loginIcon';
+import LogoutIcon from '@/components/icon/logoutIcon';
 import Link from 'next/link';
 // ui
 import { Button } from '@/components/ui/button';
@@ -20,9 +20,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/api/auth';
 import { getUserInfo } from '@/api/mypage';
 import { UserInfo } from '@/types/mypage';
-import Ticket from './ticket';
-import NotificationDropdown from './NotificationDropdown';
-
+import Ticket from '@/components/layout/ticket';
+import NotificationDropdown from '@/components/layout/NotificationDropdown';
 
 export default function Navbar() {
   // navbar 페이지 활성화 여부 확인 함수
@@ -146,9 +145,7 @@ export default function Navbar() {
               <SearchIcon width={20} height={20} />
             </Link>
             {/* 알림 아이콘 - 로그인한 사용자만 */}
-            {isClient && user && isLoggedIn() && (
-              <NotificationDropdown isMobile={true} />
-            )}
+            {isClient && user && isLoggedIn() && <NotificationDropdown isMobile={true} />}
             {/* 스마트 티켓 아이콘 - 로그인한 사용자만 */}
             {isClient && user && isLoggedIn() && (
               <Dialog open={isMobileTicketOpen} onOpenChange={setIsMobileTicketOpen}>
