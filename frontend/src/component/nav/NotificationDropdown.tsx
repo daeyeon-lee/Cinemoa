@@ -41,32 +41,13 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
   }, [isHovering]);
 
   const handleNotificationClick = (notification: NotificationEventDto) => {
-    // 서버에 읽음 처리
+    // 서버에 읽음 처리 (store 업데이트도 함께 처리됨)
     markNotificationAsRead(notification.eventId);
-    
-    // localStorage 갱신
-    const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-    if (!readNotifications.includes(notification.eventId)) {
-      const updated = [...readNotifications, notification.eventId];
-      localStorage.setItem('readNotifications', JSON.stringify(updated));
-    }
-    
-    // store 업데이트 (읽음 표시 반영)
-    useNotificationStore.getState().markAsRead(notification.eventId);
-    
-    // console.log('알림 클릭:', notification);
   };
 
   const handleMarkAllAsRead = () => {
-    // 서버에 모든 알림 읽음 처리 요청
+    // 서버에 모든 알림 읽음 처리 요청 (store 업데이트도 함께 처리됨)
     markAllNotificationsAsRead();
-    
-    // 로컬 상태 업데이트 - 모든 알림 ID를 localStorage에 저장
-    const allIds = notifications.map((n) => n.eventId);
-    localStorage.setItem('readNotifications', JSON.stringify(allIds));
-    
-    // store 상태 업데이트 (읽음 상태 반영)
-    useNotificationStore.getState().markAllAsRead();
   };
 
   const handleShowAllNotifications = () => {
@@ -121,12 +102,7 @@ export default function NotificationDropdown({ isMobile = false }: NotificationD
   };
 
   const isNotificationRead = (notification: NotificationEventDto): boolean => {
-    try {
-      const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
-      return readNotifications.includes(notification.eventId) || notification.isRead;
-    } catch {
-      return false;
-    }
+    return notification.isRead ?? false;
   };
 
   return (
