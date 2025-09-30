@@ -347,7 +347,7 @@ public class FundingSchedulerService {
                         fundingId, user.getId(), refundAmount, transferResponse.getTransactionUniqueNo());
 
                 // 펀딩 실패 및 환불 알림 전송
-                fundingNotificationService.notifyFailedFundingRefund(user, funding, refundAmount);
+                // fundingNotificationService.notifyFailedFundingRefund(user, funding, refundAmount);
             } else {
                 // 실패 시 에러 로깅 및 개별 참여자 환불 실패 처리
                 log.error("참여자 환불 실패 - 펀딩ID: {}, 사용자ID: {}, 환불금액: {}, 에러코드: {}",

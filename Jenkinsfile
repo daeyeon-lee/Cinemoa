@@ -72,8 +72,6 @@ pipeline {
                         cd ./frontend
                         mkdir -p ./ssl
                         cp $ENV ./.env
-                        cp $SSL_PRIVATE_KEY ./ssl/privkey.pem
-                        cp $SSL_FULL_CHAIN ./ssl/fullchain.pem
                         chmod 600 ./ssl/*.pem
                         docker build -t ${DOCKER_IMAGE_FE}:${DOCKER_TAG} .
                         '''
