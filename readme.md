@@ -35,8 +35,8 @@
 - 검색 : 상영물, 상영회 제목으로 검색하여 상영회 조회 가능
 
 ### 2. 수요 조사 조회
-<img height="300" alt="검색" src="images/수요조사.gif" />
-<img height="300" alt="검색" src="images/상영회 전환.gif" />
+<img height="300" alt="수요조사" src="images/수요조사.gif" />
+<img height="310" alt="상영회 전환" src="images/상영회 전환.gif" />
 
 - 수요 조사: 상영회 개설 전 예상 대관일 구간과 영화관을 지정하고 수요 예측 제공
 
@@ -64,7 +64,7 @@
 
 ### 4. 스마트 티켓
 
-<img width="300" height="400" alt="스마트 티켓" src="images/스마트 티켓.gif" />
+<img width="250" height="400" alt="스마트 티켓" src="images/스마트 티켓.gif" />
 
 - 스마트 티켓: 성공한 펀딩은 배너 이미지를 AI를 통해 영상화하여 스마트 티켓 제공
 
