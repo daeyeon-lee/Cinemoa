@@ -28,8 +28,8 @@ public class NotificationService {
     // 사용자별 SSE 연결 관리 (사용자 ID -> SseEmitter)
     private final ConcurrentMap<Long, SseEmitter> userConnections = new ConcurrentHashMap<>();
 
-    // SSE 연결 타임아웃 (6시간)
-    private static final long TIMEOUT = 6 * 60 * 60 * 1000L;
+    // SSE 연결 타임아웃 (1시간)
+    private static final long TIMEOUT = 60 * 60 * 1000L;
 
     /**
      * 새로운 SSE 연결 생성
@@ -204,8 +204,8 @@ public class NotificationService {
 
     /**
      * 모든 연결된 사용자에게 이벤트 전송 (브로드캐스트)
+     *
      */
-    @Async("sseTaskExecutor")
     public void broadcastEvent(NotificationEventDto event) {
         log.info("SSE 브로드캐스트 - 이벤트 타입: {}, 연결된 사용자 수: {}",
                 event.getEventType(), userConnections.size());

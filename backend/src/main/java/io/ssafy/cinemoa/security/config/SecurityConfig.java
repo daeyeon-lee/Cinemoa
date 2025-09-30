@@ -140,13 +140,15 @@ public class SecurityConfig {
         config.setAllowedOrigins(
                 List.of("http://localhost:3000", "https://j13a110.p.ssafy.io", "https://cinemoa.shop"));
         config.setAllowedMethods(Arrays.stream(HttpMethod.values()).map(HttpMethod::toString).toList());
-        config.setExposedHeaders(List.of("Authorization"));
+        // SSE를 위한 추가 헤더 노출
+        config.setExposedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-Accel-Buffering"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
+        // Preflight 요청 캐시 시간 설정 (1시간) - SSE 연결 성능 향상
+        config.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 
 }
