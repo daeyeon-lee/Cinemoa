@@ -37,8 +37,8 @@ public class NotificationService {
     public SseEmitter createConnection(Long userId) {
         log.info("SSE 연결 생성 - 사용자 ID: {}", userId);
 
-        // 기존 연결이 있다면 종료
-        SseEmitter existingEmitter = userConnections.get(userId);
+        // 기존 연결이 있다면 강제로 정리
+        SseEmitter existingEmitter = userConnections.remove(userId);
         if (existingEmitter != null) {
             try {
                 existingEmitter.complete();
